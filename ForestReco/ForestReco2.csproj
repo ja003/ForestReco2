@@ -53,6 +53,7 @@
     <Compile Include="Controllers\CMaterialManager.cs" />
     <Compile Include="Controllers\CCheckTreeManager.cs" />
     <Compile Include="Controllers\CParameterSetter.cs" />
+    <Compile Include="Controllers\CPreprocessController.cs" />
     <Compile Include="Controllers\CProgramStarter.cs" />
     <Compile Include="Controllers\CResultSize.cs" />
     <Compile Include="Controllers\CSequenceController.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Enums\EClass.cs" />
     <Compile Include="Enums\EDirection.cs" />
     <Compile Include="Enums\EExportStrategy.cs" />
+    <Compile Include="Enums\ESplitMode.cs" />
     <Compile Include="GUI\CTooltipManager.cs" />
     <Compile Include="GUI\CUiInputCheck.cs" />
     <Compile Include="GUI\CUiPathSelection.cs" />

@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace ForestReco
 {
@@ -44,7 +38,7 @@ namespace ForestReco
 		internal static void Error(string pText, bool pWriteInAnalytics = true)
 		{
 			WriteLine("ERROR: " + pText, true);
-			if (pWriteInAnalytics)
+			if(pWriteInAnalytics)
 			{
 				CAnalytics.AddError(pText);
 			}
@@ -58,9 +52,9 @@ namespace ForestReco
 
 		public static void Progress(int pIteration, int pMaxIteration, int pDebugFrequency, ref DateTime pPreviousDebugStart, DateTime pStart, string pText, bool pShowInConsole = false)
 		{
-			if (pIteration % pDebugFrequency == 0 && pIteration > 0)
+			if(pIteration % pDebugFrequency == 0 && pIteration > 0)
 			{
-				
+
 				double lastIterationBatchTime = (DateTime.Now - pPreviousDebugStart).TotalSeconds;
 
 				double timeFromStart = (DateTime.Now - pStart).TotalSeconds;
@@ -71,7 +65,7 @@ namespace ForestReco
 				int percentage = pIteration * 100 / pMaxIteration;
 
 				string comment = "\n" + pText + " " + pIteration + " out of " + pMaxIteration;
-				if (pShowInConsole)
+				if(pShowInConsole)
 				{
 					WriteLine(comment);
 					WriteLine("- time of last " + pDebugFrequency + " = " + lastIterationBatchTime);
@@ -83,7 +77,7 @@ namespace ForestReco
 
 			//after last iteration set progressbar to 0.
 			//next step doesnt have to use progressbar and it wouldnt get refreshed
-			if (pIteration == pMaxIteration - 1)
+			if(pIteration == pMaxIteration - 1)
 			{
 				WriteExtimatedTimeLeft(100, 0, "done", pShowInConsole);
 			}
@@ -97,7 +91,8 @@ namespace ForestReco
 
 			string timeLeftString =
 				$"- estimated time left = {timeString}\n";
-			if(pShowInConsole){WriteLine(timeLeftString);}
+			if(pShowInConsole)
+				WriteLine(timeLeftString);
 
 			CProjectData.backgroundWorker.ReportProgress(pPercentage, new[]
 			{
@@ -109,7 +104,7 @@ namespace ForestReco
 		{
 			lastTextProgress = GetStepText(pStep);
 			string[] message = new[] { lastTextProgress };
-			if (pStep == EProgramStep.Exception)
+			if(pStep == EProgramStep.Exception)
 			{
 				CAnalytics.WriteErrors();
 				return;
@@ -122,7 +117,7 @@ namespace ForestReco
 		{
 			string message = "Problems:" + Environment.NewLine;
 
-			foreach (string p in problems)
+			foreach(string p in problems)
 			{
 				message += p + Environment.NewLine;
 			}
@@ -131,8 +126,9 @@ namespace ForestReco
 			{
 				CProjectData.backgroundWorker.ReportProgress(0, new string[] { message });
 			}
-			//should not happen
-			catch (Exception e)
+			//should not happen 
+			//TODO: happens after process is run once (or aborted) - backgroundWorker cant ReportProgress
+			catch(Exception e)
 			{
 				Error(e.Message, false);
 			}
@@ -140,7 +136,7 @@ namespace ForestReco
 
 		private static string GetStepText(EProgramStep pStep)
 		{
-			if (pStep == EProgramStep.Exception)
+			if(pStep == EProgramStep.Exception)
 			{
 				return "EXCEPTION";
 			}
@@ -151,7 +147,7 @@ namespace ForestReco
 			stepCallCount = Math.Min(stepCallCount, maxSteps); //bug: sometimes writes higher value
 			string progress = stepCallCount + "/" + maxSteps + ": ";
 			string text;
-			switch (pStep)
+			switch(pStep)
 			{
 				case EProgramStep.LoadLines:
 					text = "load forest file lines";
@@ -212,6 +208,7 @@ namespace ForestReco
 
 			return progress + text;
 		}
+
 	}
 
 	public enum EProgramStep

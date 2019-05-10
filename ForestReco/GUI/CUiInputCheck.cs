@@ -52,6 +52,7 @@ namespace ForestReco
 			{
 				CheckPath("Checktree", CParameterSetter.GetStringSettings(ESettings.checkTreeFilePath), true);
 			}
+			CheckRange();
 
 			CheckExport();
 
@@ -59,8 +60,31 @@ namespace ForestReco
 			if (hasProblems)
 			{
 				CDebug.WriteProblems(problems);
+				problems.Clear();
 			}
 			return !hasProblems;
+		}
+
+		private static void CheckRange()
+		{
+			switch((ESplitMode)CParameterSetter.GetIntSettings(ESettings.currentSplitMode))
+			{
+				case ESplitMode.Manual:
+					SSplitRange range = CParameterSetter.GetSplitRange();
+					if(!range.IsValid())
+					{
+						problems.Add($"range {range} is not valid");
+					}
+					break;
+				case ESplitMode.Shapefile:
+					string shapefilePath = CParameterSetter.GetStringSettings(ESettings.shapeFilePath);
+					if(!File.Exists(shapefilePath))
+					{
+						problems.Add($"shapefile not defined. {shapefilePath}");
+					}
+					break;
+			}
+			
 		}
 
 		private static void CheckExport()

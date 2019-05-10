@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 
@@ -14,7 +13,7 @@ namespace ForestReco
 		{
 			CDebug.Step(EProgramStep.LoadLines);
 
-			CProjectData.saveFileName = GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
+			CProjectData.saveFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
 
 			//string fullFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
 			string preprocessedFilePath = GetPreprocessedFilePath();
@@ -28,109 +27,32 @@ namespace ForestReco
 
 		private static string GetPreprocessedFilePath()
 		{
-			string forestFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
-			string forestFileName = GetFileName(forestFilePath);
+			DateTime getPreprocessedFilePathStart = DateTime.Now;
+			DateTime start = DateTime.Now;
+			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
 
-			const string LAS = ".las";
-			string tmpFolder = CParameterSetter.TmpFolder;
-
-			/////// lasground_new //////////
-
-			string groundFileName = forestFileName + "_g" + LAS;
-			string groundFilePath = tmpFolder + groundFileName;
-
-			string ground =
-					"lasground_new -i " +
-					forestFilePath +
-					" -o " +
-					groundFilePath;
-			CCmdController.RunLasToolsCmd(ground, groundFilePath);
-
-			/////// lasheight //////////
-
-			string heightFileName = forestFileName + "_h" + LAS;
-			string heightFilePath = tmpFolder + heightFileName;
-
-			string height =
-					"lasheight -i " +
-					groundFilePath +
-					" -o " +
-					heightFilePath;
-			CCmdController.RunLasToolsCmd(height, heightFilePath);
-			
-			string classifyFileName = forestFileName + "_c" + LAS;
-			string classifyFilePath = tmpFolder + classifyFileName;
-
-			string classify =
-				"lasclassify -i " +
-				heightFilePath +
-				" -o " +
-				classifyFilePath;
-			CCmdController.RunLasToolsCmd(classify, classifyFilePath);
+			string classifyFilePath = CPreprocessController.GetClassifiedFilePath();
 
 			/////// lassplit //////////
 
-			SSplitRange range = CParameterSetter.GetSplitRange();
-			
-			string splitFileName = $"{forestFileName}_s[{range.MinX},{range.MinY}]-[{range.MaxX},{range.MaxY}]";
-			
+			CDebug.Progress(2, 3, 1, ref start, getPreprocessedFilePathStart, "splitFilePath", true);
 
-			string keepXY = $" -keep_xy {range.MinX} {range.MinY} {range.MaxX} {range.MaxY}";
-			string splitFilePath = tmpFolder + splitFileName + LAS;
-			string split =
-					"lassplit -i " +
-					classifyFilePath +
-					keepXY +
-					" -o " +
-					splitFilePath;
-
-			//todo: when split file not created there is no error...(ie when invalid range is given)
-			try
+			//split mode = NONE => split file is same as classified file
+			string splitFilePath = classifyFilePath;
+			switch((ESplitMode)CParameterSetter.GetIntSettings(ESettings.currentSplitMode))
 			{
-				CCmdController.RunLasToolsCmd(split, splitFilePath);
+				case ESplitMode.Manual:
+					splitFilePath = CPreprocessController.LasSplit(classifyFilePath);
+					break;
+				case ESplitMode.Shapefile:
+					splitFilePath = CPreprocessController.LasClip(classifyFilePath);
+					break;
 			}
-			catch(Exception e)
-			{
-				//split command creates file with other name...
-				CDebug.WriteLine($"exception {e}");
-			}
-
-			//for some reason output split file gets appendix: "_0000000" => rename it
-			#region rename
-			//rename split file
-
-			//todo: move to Utils
-			// Source file to be renamed  
-			string sourceFile = splitFileName + "_0000000" + LAS;
-			// Create a FileInfo  
-			FileInfo fi = new FileInfo(tmpFolder + sourceFile);
-			// Check if file is there  
-			if(fi.Exists)
-			{
-				// Move file with a new name. Hence renamed.  
-				fi.MoveTo(tmpFolder + splitFileName + LAS);
-				Console.WriteLine("Split file Renamed.");
-			}
-			//else
-			//{
-			//	//todo: implement my own exception
-			//	throw new Exception("Split file not created");
-			//}
-			#endregion
 
 			/////// las2txt //////////
 
-			//use split file name to get unique file name
-			string txtFileName = splitFileName + ".txt";
-			string txtFilePath = tmpFolder + txtFileName;
-
-			string toTxt =
-				"las2txt -i " +
-				splitFilePath +
-				" -o " +
-				txtFilePath +
-				" -parse xyzcu -sep tab -header percent";
-			CCmdController.RunLasToolsCmd(toTxt, txtFilePath);
+			CDebug.Progress(3, 3, 1, ref start, getPreprocessedFilePathStart, "txtFilePath", true);
+			string txtFilePath = CPreprocessController.Las2Txt(splitFilePath);
 
 			return txtFilePath;
 		}
@@ -159,19 +81,6 @@ namespace ForestReco
 			return lines;
 		}
 
-		private static string GetFileName(string pFullFilePath)
-		{
-			string[] filePathSplit = pFullFilePath.Split('\\');
-			if(filePathSplit.Length < 3)
-			{
-				CDebug.Error($"Wrong file path format: {pFullFilePath}");
-				return "";
-			}
-			string fileNameAndType = filePathSplit[filePathSplit.Length - 1];
-			string fileName = fileNameAndType.Split('.')[0];
-
-			return fileName;
-		}
 
 		/// <summary>
 		/// Reads parsed lines and loads class and point list.

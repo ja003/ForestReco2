@@ -394,5 +394,41 @@ namespace ForestReco.Properties {
                 this["lasToolsFolderPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string forestFolderPath {
+            get {
+                return ((string)(this["forestFolderPath"]));
+            }
+            set {
+                this["forestFolderPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int currentSplitMode {
+            get {
+                return ((int)(this["currentSplitMode"]));
+            }
+            set {
+                this["currentSplitMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string shapeFilePath {
+            get {
+                return ((string)(this["shapeFilePath"]));
+            }
+            set {
+                this["shapeFilePath"] = value;
+            }
+        }
     }
 }

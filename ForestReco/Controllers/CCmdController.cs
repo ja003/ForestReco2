@@ -6,63 +6,73 @@ namespace ForestReco
 {
 	public static class CCmdController
 	{
-		private static string LasToolsFolder => CParameterSetter.GetStringSettings(ESettings.lasToolsFolderPath);
+		private static string lasToolsFolder => CParameterSetter.GetStringSettings(ESettings.lasToolsFolderPath) + "\\";
 
+		private static string ParseCommand(string pLasToolCommand){
+			string[] cmdSplit = pLasToolCommand.Split(' ');
+			if(cmdSplit.Length == 0)
+				return "";
+			string lasCommand = pLasToolCommand.Split(' ')[0];
+			return lasCommand;
+		}
 
-		public static string[] GetHeaderLines(string pForestFilePath)
+		private static bool CanRunCommand(string pLasToolCommand)
 		{
-			if(!File.Exists(pForestFilePath))
+			string lasCommand = ParseCommand(pLasToolCommand);
+
+			if(!Directory.Exists(lasToolsFolder))
 			{
-				CDebug.Error($"file: {pForestFilePath} not found");
-				return null;
+				//todo: make own exception
+				return false;
+				//throw new Exception("LasToolsFolder not found");
 			}
 
-			string infoFileName = Path.GetFileNameWithoutExtension(pForestFilePath) + "_i.txt";
-			string infoFilePath = CParameterSetter.TmpFolder + infoFileName;
-
-			string info =
-					"lasinfo " +
-					pForestFilePath +
-					" -o " +
-					infoFilePath;
-
-			try
+			switch(lasCommand)
 			{
-				RunLasToolsCmd(info, infoFilePath);
+				case "lasinfo":
+				case "lasmerge":
+				case "lastile":
+				case "lasground":
+				case "lasground_new":
+				case "lasheight":
+				case "lasclassify":
+				case "lassplit":
+				case "las2txt":
+				case "lasclip":
+					return File.Exists(lasToolsFolder + lasCommand + ".exe");
 			}
-			catch(Exception e)
-			{
-				CDebug.Error($"Exception {e}");
-			}
-
-			return CProgramLoader.GetFileLines(infoFilePath, 20);
+			return false;
 		}
 
 		public static void RunLasToolsCmd(string pLasToolCommand, string pOutputFilePath)
 		{
+			if(!CanRunCommand(pLasToolCommand))
+			{
+				throw new Exception($"Cannot run command: {ParseCommand(pLasToolCommand)} {Environment.NewLine} {pLasToolCommand}");				
+			}
+
 			//string outputFilePath = tmpFolder + pOutputFilePath;
 			bool outputFileExists = File.Exists(pOutputFilePath);
-			CDebug.WriteLine($"split file: {pOutputFilePath} exists = {outputFileExists}");
+			CDebug.WriteLine($"file: {pOutputFilePath} exists = {outputFileExists}");
 
 			if(!outputFileExists)
 			{
 				string command = "/C " + pLasToolCommand;
 
-				if(!Directory.Exists(LasToolsFolder))
-				{
-					//todo: make own exception
-					throw new Exception("LasToolsFolder not found");
-				}
+				//if(!Directory.Exists(lasToolsFolder))
+				//{
+				//	//todo: make own exception
+				//	throw new Exception("LasToolsFolder not found");
+				//}
 
 				ProcessStartInfo processStartInfo = new ProcessStartInfo
 				{
-					WorkingDirectory = LasToolsFolder,
+					WorkingDirectory = lasToolsFolder,
 					FileName = "CMD.exe",
 					Arguments = command
 				};
 
 				Process currentProcess = Process.Start(processStartInfo);
-				//currentProcess = Process.Start("CMD.exe", info);
 				currentProcess.WaitForExit();
 
 				int result = currentProcess.ExitCode;
@@ -79,41 +89,6 @@ namespace ForestReco
 					throw new Exception($"File {pOutputFilePath} not created");
 				}
 			}
-			//return outputFilePath;
 		}
-
-
-		//TODO: not working! output always = ""
-		//	// Start the child process.
-		//	Process p = new Process();
-		//	// Redirect the output stream of the child process.
-
-		//	p.StartInfo.UseShellExecute = false;
-		//		p.StartInfo.RedirectStandardOutput = true;
-
-		//		string info =
-		//				"/C " +
-		//				"lasinfo " +
-		//				fullFilePath
-		//		;
-
-		//	p.StartInfo = new ProcessStartInfo()
-		//	{
-		//		FileName = "CMD.exe",
-		//			Arguments = info,
-		//			UseShellExecute = false,
-		//			RedirectStandardOutput = true,
-		//			//CreateNoWindow = true
-		//		};
-
-		//	p.Start();
-
-		//		while(!p.HasExited)
-		//		{
-		//			Thread.Sleep(1000);
-		//			CDebug.WriteLine("waiting for lassplit to finish");
-		//		}
-
-		//string output = p.StandardOutput.ReadToEnd();
 	}
 }

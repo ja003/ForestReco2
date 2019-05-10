@@ -49,7 +49,8 @@ namespace ForestReco
 			//rotation
 			output += $"0 0 {treeObj.Rotation.Y} ";
 			//todo: reftree type
-			output += pTree.RefTreeTypeName;
+			bool debugObjName = false;
+			output += pTree.RefTreeTypeName + (debugObjName ? " " + pTree.mostSuitableRefTreeObj.Name : "");
 
 			return output;
 		}

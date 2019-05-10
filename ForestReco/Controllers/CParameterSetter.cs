@@ -189,6 +189,7 @@ namespace ForestReco
 		analyticsFilePath,
 		tmpFilesFolderPath,
 		lasToolsFolderPath,
+		forestFolderPath,
 
 		//ints
 		partitionStep,
@@ -219,5 +220,7 @@ namespace ForestReco
 		autoAverageTreeHeight,
 		exportTreeBoxes,
 		colorTrees,
+		currentSplitMode,
+		shapeFilePath,
 	}
 }

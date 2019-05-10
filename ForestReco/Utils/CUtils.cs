@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
 
 namespace ForestReco
@@ -224,6 +225,10 @@ namespace ForestReco
 			if(value > inclusiveMaximum)
 			{ return inclusiveMaximum; }
 			return value;
+		}
+
+		public static string  GetFileName(string pFilePath, bool pWithExtension = false){
+			return pWithExtension ? Path.GetFileName(pFilePath) : Path.GetFileNameWithoutExtension(pFilePath);
 		}
 	}
 }
