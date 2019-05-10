@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\CBitmapExporter.cs" />
+    <Compile Include="Controllers\CCmdController.cs" />
     <Compile Include="Controllers\CMaterialManager.cs" />
     <Compile Include="Controllers\CCheckTreeManager.cs" />
     <Compile Include="Controllers\CParameterSetter.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="Controllers\CSequenceController.cs" />
     <Compile Include="DataStructures\CAnalytics.cs" />
     <Compile Include="DataStructures\CCheckTree.cs" />
+    <Compile Include="DataStructures\CDartTxt.cs" />
     <Compile Include="DataStructures\CObjPartition.cs" />
     <Compile Include="Controllers\CGroundFieldExporter.cs" />
     <Compile Include="Controllers\CObjExporter.cs" />
@@ -71,12 +73,15 @@
     <Compile Include="DataStructures\CTreePoint.cs" />
     <Compile Include="DataStructures\CGroundArray.cs" />
     <Compile Include="DataStructures\CGroundField.cs" />
+    <Compile Include="DataStructures\SSplitRange.cs" />
     <Compile Include="DataStructures\STreeSimilarity.cs" />
     <Compile Include="Enums\EClass.cs" />
     <Compile Include="Enums\EDirection.cs" />
     <Compile Include="Enums\EExportStrategy.cs" />
     <Compile Include="GUI\CTooltipManager.cs" />
     <Compile Include="GUI\CUiInputCheck.cs" />
+    <Compile Include="GUI\CUiPathSelection.cs" />
+    <Compile Include="GUI\CUiRangeController.cs" />
     <Compile Include="ObjParser\Extent.cs" />
     <Compile Include="ObjParser\Mtl.cs" />
     <Compile Include="ObjParser\Obj.cs" />

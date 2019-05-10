@@ -8,8 +8,11 @@ namespace ForestReco
 	{
 		public Vector3 ScaleFactor;
 		public Vector3 Offset;
-		public Vector3 Min;
+		public Vector3 Min; //used in project (Y = elevation), moved by offset
 		public Vector3 Max;
+
+		public Vector3 Min_orig; //values from input forest file
+		public Vector3 Max_orig;
 
 		public Vector3 BotLeftCorner => new Vector3(Min.X, 0, Min.Z);
 		public Vector3 TopRightCorner => new Vector3(Max.X, 0, Max.Z);
@@ -21,16 +24,18 @@ namespace ForestReco
 
 		public CHeaderInfo(string[] lines)
 		{
-			string pScaleFactorLine = GetLine(lines, EHeaderAttribute.Scale);
-			string pOffsetLine = GetLine(lines, EHeaderAttribute.Offset);
-			string pMinLine = GetLine(lines, EHeaderAttribute.Min);
-			string pMaxLine = GetLine(lines, EHeaderAttribute.Max);
+			string pScaleFactorLine = GetLineContaining(lines, EHeaderAttribute.Scale);
+			string pOffsetLine = GetLineContaining(lines, EHeaderAttribute.Offset);
+			string pMinLine = GetLineContaining(lines, EHeaderAttribute.Min);
+			string pMaxLine = GetLineContaining(lines, EHeaderAttribute.Max);
 
 			ScaleFactor = ParseLineVector3(pScaleFactorLine);
 			Offset = ParseLineVector3(pOffsetLine);
 			//Offset.Z = 0; //given Z offset will not be used
-			Min = ParseLineVector3(pMinLine) - Offset;
-			Max = ParseLineVector3(pMaxLine) - Offset;
+			Min_orig = ParseLineVector3(pMinLine);
+			Min = Min_orig - Offset;
+			Max_orig = ParseLineVector3(pMaxLine);
+			Max = Max_orig - Offset;
 			//transfer to format Y = height
 			float tmpY = Min.Y;
 			Min.Y = Min.Z;
@@ -49,7 +54,7 @@ namespace ForestReco
 			}
 		}
 
-		private string GetLine(string[] lines, EHeaderAttribute pAttribute)
+		/*private string GetLine(string[] lines, EHeaderAttribute pAttribute)
 		{
 			switch (pAttribute)
 			{
@@ -57,6 +62,32 @@ namespace ForestReco
 				case EHeaderAttribute.Offset: return lines[16];
 				case EHeaderAttribute.Min: return lines[17];
 				case EHeaderAttribute.Max: return lines[18];
+			}
+			return "";
+		}*/
+
+		private string GetLineContaining(string[] pLines, EHeaderAttribute pKey)
+		{
+			for(int i = 0; i < pLines.Length; i++)
+			{
+				string line = pLines[i];
+				if(line.Contains(GetHeaderAttributeKeyString(pKey)))
+					return line;
+			}
+			return "";
+		}
+
+		private string GetHeaderAttributeKeyString(EHeaderAttribute pKey){
+			switch(pKey)
+			{
+				case EHeaderAttribute.Scale:
+					return "scale factor x y z";
+				case EHeaderAttribute.Offset:
+					return "offset x y z";
+				case EHeaderAttribute.Min:
+					return "min x y z";
+				case EHeaderAttribute.Max:
+					return "max x y z";
 			}
 			return "";
 		}

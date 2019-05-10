@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForestReco", "ForestReco\ForestReco.csproj", "{48339AFD-B53E-48BC-A139-D4C99159034E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForestReco2", "ForestReco\ForestReco2.csproj", "{48339AFD-B53E-48BC-A139-D4C99159034E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
