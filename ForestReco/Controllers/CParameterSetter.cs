@@ -193,6 +193,7 @@ namespace ForestReco
 
 		//ints
 		partitionStep,
+		tileSize,
 		avgTreeHeigh,
 
 		//floats
@@ -222,5 +223,9 @@ namespace ForestReco
 		colorTrees,
 		currentSplitMode,
 		shapeFilePath,
+
+		ExportBMHeightmap,
+		ExportBMTreePositions,
+		ExportBMTreeBorders,
 	}
 }

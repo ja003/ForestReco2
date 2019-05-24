@@ -37,34 +37,10 @@ namespace ForestReco
 					CGroundField el = pArray.GetElement(x, y);
 					float? height = el.GetHeight(pUseSmoothHeight);
 
-					if (pStrategy == EExportStrategy.FillMissingHeight)
-					{
-						if (height == null)
-						{
-							height = el.GetAverageHeightFromClosestDefined(3, false);
-						}
-					}
-					else if (pStrategy == EExportStrategy.FillHeightsAroundDefined)
-					{
-						if (height == null && el.IsAnyNeighbourDefined())
-						{
-							height = el.GetHeight();
-						}
-					}
-					else if (pStrategy == EExportStrategy.ZeroAroundDefined)
-					{
-						if (height == null && el.IsAnyNeighbourDefined())
-						{
-							height = 0;
-						}
-					}
-					else if (pStrategy == EExportStrategy.CoordHeights)
-					{
-						height = y;
-					}
+					height = GetHeight(pStrategy, y, el, height);
 
 					//create vertex only if height is defined
-					if (height != null)
+					if(height != null)
 					{
 						//TODO: ATTENTION! in OBJ the height value = Y, while in LAS format it is Z and X,Y are space coordinates
 						//move heights so the lowest point touches the 0
@@ -130,6 +106,41 @@ namespace ForestReco
 			}
 
 			return obj;
+		}
+
+		/// <summary>
+		/// Mostly debug function
+		/// TODO: remove if not used
+		/// </summary>
+		private static float? GetHeight(EExportStrategy pStrategy, int y, CGroundField el, float? height)
+		{
+			if(pStrategy == EExportStrategy.FillMissingHeight)
+			{
+				if(height == null)
+				{
+					height = el.GetAverageHeightFromClosestDefined(3, false);
+				}
+			}
+			else if(pStrategy == EExportStrategy.FillHeightsAroundDefined)
+			{
+				if(height == null && el.IsAnyNeighbourDefined())
+				{
+					height = el.GetHeight();
+				}
+			}
+			else if(pStrategy == EExportStrategy.ZeroAroundDefined)
+			{
+				if(height == null && el.IsAnyNeighbourDefined())
+				{
+					height = 0;
+				}
+			}
+			else if(pStrategy == EExportStrategy.CoordHeights)
+			{
+				height = y;
+			}
+
+			return height;
 		}
 
 		private static void WriteObjFile(string pOutputFileName, ObjParser.Obj pObj)

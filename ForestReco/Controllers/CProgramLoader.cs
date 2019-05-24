@@ -9,18 +9,45 @@ namespace ForestReco
 	{
 		public static bool useDebugData = false;
 
-		public static string[] GetFileLines()
+		public static List<string> GetTiledPreprocessedFilePaths()
+		{
+			string preprocessedFilePath = GetPreprocessedFilePath();
+
+			SetMainHeader(preprocessedFilePath);
+
+			CDebug.Step(EProgramStep.Pre_LasToTxt);
+			//split into tiles and convert to txt
+			return CPreprocessController.GetTxtFilesPaths(preprocessedFilePath);
+
+		}
+
+		/// <summary>
+		/// Get info from preprocessed file using lasinfo and set it to main header
+		/// </summary>
+		private static void SetMainHeader(string pPreprocessedFilePath)
+		{
+			FileInfo fi = new FileInfo(pPreprocessedFilePath);
+			string infoFilePath = fi.DirectoryName + "\\" + CUtils.GetFileName(pPreprocessedFilePath) + "_i.txt";
+
+			string[] headerLines = CPreprocessController.GetHeaderLines(pPreprocessedFilePath, infoFilePath);
+			CProjectData.mainHeader = new CHeaderInfo(headerLines);
+
+			//can be inited only after main header is set
+			CBitmapExporter.Init();
+		}
+
+		public static string[] GetFileLines(string pPreprocessedFilePath)
 		{
 			CDebug.Step(EProgramStep.LoadLines);
 
-			CProjectData.saveFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
+			//CProjectData.saveFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
 
 			//string fullFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
-			string preprocessedFilePath = GetPreprocessedFilePath();
+			//string preprocessedFilePath = GetPreprocessedFilePath();
 
 
-			string[] lines = File.ReadAllLines(preprocessedFilePath);
-			CDebug.Action("load", preprocessedFilePath);
+			string[] lines = File.ReadAllLines(pPreprocessedFilePath);
+			CDebug.Action("load", pPreprocessedFilePath);
 
 			return lines;
 		}
@@ -29,11 +56,14 @@ namespace ForestReco
 		{
 			DateTime getPreprocessedFilePathStart = DateTime.Now;
 			DateTime start = DateTime.Now;
-			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
 
+			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
+			
 			string classifyFilePath = CPreprocessController.GetClassifiedFilePath();
 
 			/////// lassplit //////////
+
+			CDebug.Step(EProgramStep.Pre_Split);
 
 			CDebug.Progress(2, 3, 1, ref start, getPreprocessedFilePathStart, "splitFilePath", true);
 
@@ -49,12 +79,7 @@ namespace ForestReco
 					break;
 			}
 
-			/////// las2txt //////////
-
-			CDebug.Progress(3, 3, 1, ref start, getPreprocessedFilePathStart, "txtFilePath", true);
-			string txtFilePath = CPreprocessController.Las2Txt(splitFilePath);
-
-			return txtFilePath;
+			return splitFilePath;
 		}
 
 
@@ -93,7 +118,8 @@ namespace ForestReco
 			if(pArray)
 			{
 				CProjectData.array = new CGroundArray(CParameterSetter.groundArrayStep);
-				float detailStepSize = CGroundArray.GetStepSizeForWidth(800);
+				float detailStepSize = CGroundArray.GetStepSizeForWidth(
+					CBitmapExporter.TILE_WIDTH, CProjectData.currentTileHeader.Width);
 				CProjectData.detailArray = new CGroundArray(detailStepSize);
 
 				//CObjPartition is dependent on Array initialization
@@ -103,7 +129,7 @@ namespace ForestReco
 
 			//store coordinates to corresponding data strucures based on their class
 			const int DEFAULT_START_LINE = 19;
-			int startLine = pUseHeader && CProjectData.header != null ? DEFAULT_START_LINE : 0;
+			int startLine = pUseHeader && CProjectData.mainHeader != null ? DEFAULT_START_LINE : 0;
 
 			CDebug.Warning("loading " + lines.Length + " lines!");
 
@@ -200,7 +226,8 @@ namespace ForestReco
 				CTreeManager.ValidateTrees(true, true, true);
 			}
 
-			CTreeManager.CheckAllTrees();
+			//todo: just debug
+			//CTreeManager.CheckAllTrees();
 
 			CAnalytics.detectedTrees = CTreeManager.Trees.Count;
 			CAnalytics.invalidTrees = CTreeManager.InvalidTrees.Count;

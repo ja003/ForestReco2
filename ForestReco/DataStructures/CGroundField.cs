@@ -199,8 +199,10 @@ namespace ForestReco
 
 		public bool IsPointOutOfField(Vector3 pPoint)
 		{
-			return Math.Abs(pPoint.X - center.X) > CParameterSetter.groundArrayStep / 2 ||
-							Math.Abs(pPoint.Z - center.Z) > CParameterSetter.groundArrayStep / 2;
+			float distX = Math.Abs(pPoint.X - center.X);
+			float distZ = Math.Abs(pPoint.Z - center.Z);
+			return distX > CParameterSetter.groundArrayStep / 2 ||
+							distZ > CParameterSetter.groundArrayStep / 2;
 		}
 
 		public void AddVegePoint(Vector3 pPoint)

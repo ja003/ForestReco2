@@ -14,11 +14,12 @@ namespace ForestReco
 
 		private static string tmpFolder => CParameterSetter.TmpFolder;
 
+
 		private static string forestFilePath => CParameterSetter.GetStringSettings(ESettings.forestFilePath);
 
 		private static string forestFileName => CUtils.GetFileName(forestFilePath);
 
-		private static string currentTmpFolder
+		public static string currentTmpFolder
 		{
 			get
 			{
@@ -28,47 +29,56 @@ namespace ForestReco
 			}
 		}
 
-		private static string tiledFilesFolder
+		private static string tmpTiledFilesFolder
 		{
 			get
 			{
-				string path = currentTmpFolder + "_tiles\\";
+				string path = currentTmpFolder + "_tmpTiles\\";
 				Directory.CreateDirectory(path);
 				return path;
 			}
 		}
 
-		public static string[] GetHeaderLines(string pForestFilePath)
+		/// <summary>
+		/// Returns path to folder containing tiles of given size.
+		/// If doesnt exist => create it
+		/// </summary>
+		private static string GetTiledFilesFolder(string pSourceFileName, int pTileSize)
 		{
-			if(!File.Exists(pForestFilePath))
+			string forestFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
+			string path = currentTmpFolder + $"_tiles[{pTileSize}]_{pSourceFileName}\\";
+			Directory.CreateDirectory(path);
+			return path;
+		}
+
+		public static string[] GetHeaderLines(string pSourceFilePath, string pOutputFilePath)
+		{
+			if(!File.Exists(pSourceFilePath))
 			{
-				CDebug.Error($"file: {pForestFilePath} not found");
+				CDebug.Error($"file: {pSourceFilePath} not found");
 				return null;
 			}
 
-			string infoFileName = Path.GetFileNameWithoutExtension(pForestFilePath) + "_i.txt";
-			string infoFilePath = currentTmpFolder + infoFileName;
+			//string infoFileName = Path.GetFileNameWithoutExtension(pSourceFilePath) + "_i.txt";
+			//string infoFilePath = currentTmpFolder + infoFileName;
 
 			string info =
 					"lasinfo " +
-					pForestFilePath +
+					pSourceFilePath +
 					" -o " +
-					infoFilePath;
+					pOutputFilePath;
 
 			try
 			{
-				CCmdController.RunLasToolsCmd(info, infoFilePath);
+				CCmdController.RunLasToolsCmd(info, pOutputFilePath);
 			}
 			catch(Exception e)
 			{
 				CDebug.Error($"Exception {e}");
 			}
 
-			return CProgramLoader.GetFileLines(infoFilePath, 20);
+			return CProgramLoader.GetFileLines(pOutputFilePath, 20);
 		}
-
-
-
 
 		//private static string classifyFileName => forestFileName + "_c" + LAZ;
 
@@ -114,7 +124,12 @@ namespace ForestReco
 			}
 
 			/////// lastile //////////
-			FileInfo[] tiledFiles = GetTiledFiles(); //long tome for large files
+
+			CDebug.Step(EProgramStep.Pre_Tile);
+
+			//takes long time for large files but cant meassure process
+			FileInfo[] tiledFiles = GetTiledFiles(forestFilePath, tmpTiledFilesFolder, 
+				250, CProjectData.bufferSize);
 
 			List<string> classifyFilePaths = new List<string>();
 			for(int i = 0; i < tiledFiles.Length; i++)
@@ -123,26 +138,38 @@ namespace ForestReco
 
 				FileInfo fi = tiledFiles[i];
 
+				/////// lasnoise //////////
+				//TODO
+
 				/////// lasground //////////
 
+				CDebug.Step(EProgramStep.Pre_LasGround);
 				string groundFilePath = LasGround(fi.FullName);
 
 				/////// lasheight //////////
 
+				CDebug.Step(EProgramStep.Pre_LasHeight);
 				string heightFilePath = LasHeight(groundFilePath);
 
 				/////// lasclassify //////////
 
+				CDebug.Step(EProgramStep.Pre_LasClassify);
 				string classifyFilePath = LasClassify(heightFilePath);
 
 				classifyFilePaths.Add(classifyFilePath);
 			}
 
 			/////// lasmerge //////////
+			//LasMerge(classifyFilePaths);
 
-			LasMerge(classifyFilePaths);
+			CDebug.Step(EProgramStep.Pre_LasReverseTile);
+
+			/////// reverse lastile //////////
+			LasReverseTiles(classifyFilePaths);
 
 			/////// delete unnecessary tmp files //////////
+
+			CDebug.Step(EProgramStep.Pre_DeleteTmp);
 
 			DirectoryInfo di = new DirectoryInfo(currentTmpFolder);
 			FileInfo[] fileInfos = di.GetFiles();
@@ -156,9 +183,30 @@ namespace ForestReco
 				}
 			}
 			//delete tiles folder
-			new DirectoryInfo(tiledFilesFolder).Delete(true);
+			new DirectoryInfo(tmpTiledFilesFolder).Delete(true);
 
 			return preprocessedFilePath;
+		}
+
+		/// <summary>
+		/// Split preprocessed file into tiles and converto to txt
+		/// </summary>
+		internal static List<string> GetTxtFilesPaths(string pPreprocessedFilePath)
+		{
+			List<string> result = new List<string>();
+			int tileSize = CParameterSetter.GetIntSettings(ESettings.tileSize);
+
+			string outputFolderPath = GetTiledFilesFolder(
+				CUtils.GetFileName(pPreprocessedFilePath), tileSize);
+			FileInfo[] tiles = GetTiledFiles(pPreprocessedFilePath,
+				outputFolderPath, tileSize, CProjectData.bufferSize);
+
+			for(int i = 0; i < tiles.Length; i++)
+			{
+				string txtFile = Las2Txt(tiles[i].FullName, outputFolderPath);
+				result.Add(txtFile);
+			}
+			return result;
 		}
 
 		private static bool IsTmpFile(FileInfo fi)
@@ -168,23 +216,32 @@ namespace ForestReco
 				name.Contains(GROUND_EXT + LAZ) || name.Contains(CLASSIFY_EXT + LAZ);
 		}
 
-		private static FileInfo[] GetTiledFiles()
+		private static FileInfo[] GetTiledFiles(string pSourceFilePath, string pOutputFolderPath, int pTileSize, int pBufferSize)
 		{
-			string tiledFileName = forestFileName + "_t" + LAZ;
-			DirectoryInfo tiledFilesFolderInfo = new DirectoryInfo(tiledFilesFolder);
+			string tiledFileName = CUtils.GetFileName(pSourceFilePath) + "_t" + LAZ;
+			DirectoryInfo tiledFilesFolderInfo = new DirectoryInfo(pOutputFolderPath);
 			//string tiledFilesPath = tiledFilesFolder + tiledFileName;
+
+			//we expect that only lax files in folder should be the expected output
+			//if they are already there, skip the process
+			FileInfo[] lazFilesInFolder = tiledFilesFolderInfo.GetFiles("*" + LAZ);
+			if(lazFilesInFolder.Length > 0)
+			{
+				return lazFilesInFolder;
+			}
 
 			string tile =
 					"lastile -i " +
-					forestFilePath +
-					" -tile_size 500 -odir " + //-buffer 10 ???, use -odir?
-					tiledFilesFolder +
+					pSourceFilePath +
+					$" -tile_size {pTileSize} -buffer {pBufferSize}" +
+					" -reversible -odir " +
+					pOutputFolderPath +
 					" -olaz";
 
 			try
 			{
 				//dont know name of the ouput file name -> choose any and catch exception
-				CCmdController.RunLasToolsCmd(tile, tiledFilesFolder + "X");
+				CCmdController.RunLasToolsCmd(tile, tmpTiledFilesFolder + "X");
 			}
 			catch(Exception e)
 			{
@@ -194,7 +251,8 @@ namespace ForestReco
 				}
 			}
 
-			return tiledFilesFolderInfo.GetFiles("*" + LAZ);
+			lazFilesInFolder = tiledFilesFolderInfo.GetFiles("*" + LAZ);
+			return lazFilesInFolder;
 		}
 
 		private static string LasGround(string pForestFilePath)
@@ -227,20 +285,35 @@ namespace ForestReco
 			return heightFilePath;
 		}
 
-		private static void LasMerge(List<string> pClassifyFilePaths)
+		private static void LasReverseTiles(List<string> pClassifyFilePaths)
 		{
-			string pathsString = "";
-			foreach(string path in pClassifyFilePaths)
-			{
-				pathsString += path + " ";
-			}
+			//string pathsString = "";
+			//foreach(string path in pClassifyFilePaths)
+			//{
+			//	pathsString += path + " ";
+			//}
+
+			string reverseTiles =
+					"lastile -i " +
+					currentTmpFolder + "*_c" + LAZ +
+					" -reverse_tiling -o " + preprocessedFilePath;
+			CCmdController.RunLasToolsCmd(reverseTiles, preprocessedFilePath);
+		}
+
+		/*private static void LasMerge(List<string> pClassifyFilePaths)
+		{
+			//string pathsString = "";
+			//foreach(string path in pClassifyFilePaths)
+			//{
+			//	pathsString += path + " ";
+			//}
 
 			string merge =
 					"lasmerge -i " +
 					currentTmpFolder + "*_c" + LAZ +
 					" -o " + preprocessedFilePath;
 			CCmdController.RunLasToolsCmd(merge, preprocessedFilePath);
-		}
+		}*/
 
 		private static string LasClassify(string pHeightFilePath)
 		{
@@ -339,13 +412,13 @@ namespace ForestReco
 			return splitFilePath;
 		}
 
-		internal static string Las2Txt(string splitFilePath)
+		internal static string Las2Txt(string splitFilePath, string pOutputFolder)
 		{
 			string splitFileName = CUtils.GetFileName(splitFilePath);
 
 			//use split file name to get unique file name
 			string txtFileName = splitFileName + ".txt";
-			string txtFilePath = currentTmpFolder + txtFileName;
+			string txtFilePath = pOutputFolder + txtFileName;
 
 			string toTxt =
 				"las2txt -i " +

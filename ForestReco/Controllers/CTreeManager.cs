@@ -27,8 +27,13 @@ namespace ForestReco
 
 		public static void Init()
 		{
-			Trees = new List<CTree>();
 			treeIndex = 0;
+			Reinit();
+		}
+
+		public static void Reinit()
+		{
+			Trees = new List<CTree>();
 			InvalidTrees = new List<CTree>();
 			invalidVegePoints = new List<Vector3>();
 			pointCounter = 0;
@@ -303,7 +308,7 @@ namespace ForestReco
 				}
 				CTree treeToMerge = Trees[i];
 				
-				if (pOnlyInvalid && !treeToMerge.isValid && treeToMerge.IsAtBorder())
+				if (pOnlyInvalid && !treeToMerge.isValid && treeToMerge.IsAtBorderOf(CProjectData.array))
 				{
 					//CDebug.Warning(treeToMerge + " is at border");
 					continue;
@@ -416,6 +421,12 @@ namespace ForestReco
 			BranchDefine
 		}
 
+		/// <summary>
+		/// Evaluates if tree is valid. 
+		/// More restrictive evaluation is optional.
+		/// pCathegorize => assign invalid tree to InvalidTrees and remove from Trees
+		/// pFinal => trees at array buffer positions will be invalid
+		/// </summary>
 		public static void ValidateTrees(bool pCathegorize, bool pRestrictive, bool pFinal = false)
 		{
 			CDebug.WriteLine("Detect invalid trees", true);
@@ -475,7 +486,7 @@ namespace ForestReco
 
 		public static int GetInvalidTreesAtBorderCount()
 		{
-			return InvalidTrees.Count(tree => tree.IsAtBorder());
+			return InvalidTrees.Count(tree => tree.IsAtBorderOf(CProjectData.array));
 		}
 
 		public static float GetAverageTreeHeight()

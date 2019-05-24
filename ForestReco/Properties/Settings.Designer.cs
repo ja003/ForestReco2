@@ -430,5 +430,53 @@ namespace ForestReco.Properties {
                 this["shapeFilePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
+        public int tileSize {
+            get {
+                return ((int)(this["tileSize"]));
+            }
+            set {
+                this["tileSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExportBMTreePositions {
+            get {
+                return ((bool)(this["ExportBMTreePositions"]));
+            }
+            set {
+                this["ExportBMTreePositions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExportBMHeightmap {
+            get {
+                return ((bool)(this["ExportBMHeightmap"]));
+            }
+            set {
+                this["ExportBMHeightmap"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExportBMTreeBorders {
+            get {
+                return ((bool)(this["ExportBMTreeBorders"]));
+            }
+            set {
+                this["ExportBMTreeBorders"] = value;
+            }
+        }
     }
 }

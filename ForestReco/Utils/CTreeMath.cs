@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace ForestReco
 {
@@ -22,18 +21,18 @@ namespace ForestReco
 			float similarity = 0;
 			int definedSimilarityCount = 0;
 
-			foreach (CBranch otherBranch in pOtherTree.Branches)
+			foreach(CBranch otherBranch in pOtherTree.Branches)
 			{
 				int indexOfOtherBranch = pOtherTree.Branches.IndexOf(otherBranch);
 				//int offsetBranchIndex = (indexOfOtherBranch + indexOffset) % branches.Count;
 				int offsetBranchIndex = indexOfOtherBranch + indexOffset;
-				if (offsetBranchIndex < 0)
+				if(offsetBranchIndex < 0)
 				{
 					offsetBranchIndex = pRefTree.Branches.Count + offsetBranchIndex;
 				}
 				CBranch refBranch = pRefTree.Branches[offsetBranchIndex % pRefTree.Branches.Count];
 				float similarityWithOtherBranch = refBranch.GetSimilarityWith(otherBranch, offsetToRefTree, scaleMatrix);
-				if (similarityWithOtherBranch >= 0)
+				if(similarityWithOtherBranch >= 0)
 				{
 					similarity += similarityWithOtherBranch;
 					definedSimilarityCount++;
@@ -41,10 +40,10 @@ namespace ForestReco
 			}
 			//CDebug.WriteLine("\n---------------\nsimilarity of \n" + pRefTree + "\nwith \n" + pOtherTree);
 
-			if (definedSimilarityCount == 0)
+			if(definedSimilarityCount == 0)
 			{
 				CDebug.WriteLine("Error. no similarity defined");
-				return new STreeSimilarity(0,0);
+				return new STreeSimilarity(0, 0);
 			}
 			similarity /= definedSimilarityCount;
 
@@ -85,10 +84,10 @@ namespace ForestReco
 
 			float bestSimilarity = 0;
 			CBranch bestMatchBranch = pRefTree.Branches[0];
-			foreach (CBranch b in pRefTree.Branches)
+			foreach(CBranch b in pRefTree.Branches)
 			{
 				float similarity = b.GetSimilarityWith(pOtherBranch, offsetToRefTree, scaleMatrix);
-				if (similarity > bestSimilarity)
+				if(similarity > bestSimilarity)
 				{
 					bestSimilarity = similarity;
 					bestMatchBranch = b;
@@ -117,6 +116,52 @@ namespace ForestReco
 		{
 			Vector3 offset = pToTree.peak.Center - pFromTree.peak.Center;
 			return offset;
+		}
+
+		public static bool IsTreeAtBufferZone(CTree pTree)
+		{
+			return IsTreeAtBufferZone(pTree.peak.Center);
+		}
+
+		public static bool IsTreeAtBufferZone(Vector3 pPoint)
+		{
+			Vector3 mainBotLeft = CProjectData.mainHeader.BotLeftCorner;
+			Vector3 mainTopRight = CProjectData.mainHeader.TopRightCorner;
+			float distanceFromWholeForestBorder = CUtils.GetDistanceFromBorder(pPoint, mainBotLeft, mainTopRight);
+
+			Vector3 tileBotLeft = CProjectData.currentTileHeader.BotLeftCorner;
+			Vector3 tileTopRight = CProjectData.currentTileHeader.TopRightCorner;
+
+
+			float distanceFromCurrentTileBorder = CUtils.GetDistanceFromBorder(pPoint, tileBotLeft, tileTopRight);
+
+			//is close at tile border
+			if(distanceFromCurrentTileBorder < CProjectData.bufferSize)
+			{
+				//is close at whole forest border - only corners are considered a buffer zone
+				if(distanceFromWholeForestBorder < CProjectData.bufferSize)
+				{
+					float distanceXFromCurrentTileBorder =
+						CUtils.GetDistanceFromBorderX(pPoint, tileBotLeft, tileTopRight);
+					float distanceZFromCurrentTileBorder =
+						CUtils.GetDistanceFromBorderZ(pPoint, tileBotLeft, tileTopRight);
+
+					float distanceXFromForest =
+						CUtils.GetDistanceFromBorderX(pPoint, mainBotLeft, mainTopRight);
+					float distanceZFromForest =
+						CUtils.GetDistanceFromBorderZ(pPoint, mainBotLeft, mainTopRight);
+
+					bool isAtTileCorner = distanceXFromCurrentTileBorder < CProjectData.bufferSize &&
+						distanceZFromCurrentTileBorder < CProjectData.bufferSize;
+
+					bool isNotAtForestCorner = distanceXFromForest > CProjectData.bufferSize ||
+						distanceZFromForest > CProjectData.bufferSize;
+
+					return isAtTileCorner && isNotAtForestCorner;
+				}
+				return true;
+			}
+			return false;
 		}
 	}
 }

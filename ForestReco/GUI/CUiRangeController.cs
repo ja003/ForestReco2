@@ -42,8 +42,8 @@ namespace ForestReco
 			//X
 			//range has to match file coordinates
 			//in project are used coordinates moved by offset
-			Vector3 min = CProjectData.header.Min_orig;
-			Vector3 max = CProjectData.header.Max_orig;
+			Vector3 min = CProjectData.sourceFileHeader.Min_orig;
+			Vector3 max = CProjectData.sourceFileHeader.Max_orig;
 			form.trackBarRangeXmin.SetRange((int)min.X * 10, (int)max.X * 10);
 			form.trackBarRangeXmax.SetRange((int)min.X * 10, (int)max.X * 10);
 
@@ -119,14 +119,34 @@ namespace ForestReco
 		/// When user sets range in textBox manually, update the value after the focus of
 		/// textbox is lost, otherwise it always changes the selection
 		/// </summary>
-		internal void textRange_LostFocus(TrackBar pTrackBar, string textRangeValue)
+		internal void textRange_LostFocus(TrackBar pTrackBar, ESettings pOppositeRange, string textRangeValue)
 		{
-			float pValue = 0;
-			bool parsed = float.TryParse(textRangeValue, out pValue);
-			if(!parsed)
+			float value = 0;
+			if(textRangeValue.Length == 0)
 				return;
 
-			TrySetTrackBarValue(pTrackBar, (int)pValue * 10);
+			bool parsed;
+
+
+			bool hasSign = textRangeValue[0] == '+' || textRangeValue[0] == '-';
+			if(hasSign)
+			{
+				int sign = textRangeValue[0] == '-' ? -1 : +1;
+
+				parsed = float.TryParse(textRangeValue.Substring(1, textRangeValue.Length - 1), out value);
+				if(!parsed)
+					return;
+
+				float newValue = CParameterSetter.GetIntSettings(pOppositeRange) / 10 + sign * value;
+				TrySetTrackBarValue(pTrackBar, (int)newValue * 10);
+			}
+			else
+			{
+				parsed = float.TryParse(textRangeValue, out value);
+				if(!parsed)
+					return;
+				TrySetTrackBarValue(pTrackBar, (int)value * 10);
+			}
 			SetRangeX();
 			SetRangeY();
 		}

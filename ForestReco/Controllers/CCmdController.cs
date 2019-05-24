@@ -69,7 +69,7 @@ namespace ForestReco
 				{
 					WorkingDirectory = lasToolsFolder,
 					FileName = "CMD.exe",
-					Arguments = command
+					Arguments = command					
 				};
 
 				Process currentProcess = Process.Start(processStartInfo);

@@ -16,6 +16,7 @@ namespace ForestReco
 
 		public Vector3 BotLeftCorner => new Vector3(Min.X, 0, Min.Z);
 		public Vector3 TopRightCorner => new Vector3(Max.X, 0, Max.Z);
+		public Vector3 TopLeftCorner => new Vector3(Min.X, 0, Max.Z);
 		public Vector3 Center => (BotLeftCorner + TopRightCorner) / 2;
 		public float MinHeight => Min.Y;
 		public float MaxHeight => Max.Y;

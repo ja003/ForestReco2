@@ -24,6 +24,7 @@ namespace ForestReco
 		Vector3 topRightCorner;
 		Vector3 topLeftCorner;
 
+		//to calculate coordinates of array field index
 		private Vector3 CenterOffset;
 
 		//--------------------------------------------------------------
@@ -32,8 +33,8 @@ namespace ForestReco
 		{
 			stepSize = pStepSize;
 
-			botLeftCorner = CProjectData.header.BotLeftCorner;
-			topRightCorner = CProjectData.header.TopRightCorner;
+			botLeftCorner = CProjectData.currentTileHeader.BotLeftCorner;
+			topRightCorner = CProjectData.currentTileHeader.TopRightCorner;
 			topLeftCorner = new Vector3(botLeftCorner.X, 0, topRightCorner.Z);
 
 			float width = topRightCorner.X - botLeftCorner.X;
@@ -44,12 +45,13 @@ namespace ForestReco
 
 			CenterOffset = new Vector3(arrayXRange / 2f * stepSize, 0, arrayYRange / 2f * stepSize);
 			CenterOffset += new Vector3(-stepSize / 2, 0, -stepSize / 2); //better visualization
+			CenterOffset += GetCurrentTileOffset();
 
 			array = new CGroundField[arrayXRange, arrayYRange];
 			fields = new List<CGroundField>();
-			for (int x = 0; x < arrayXRange; x++)
+			for(int x = 0; x < arrayXRange; x++)
 			{
-				for (int y = 0; y < arrayYRange; y++)
+				for(int y = 0; y < arrayYRange; y++)
 				{
 					CGroundField newGroundField = new CGroundField(new Tuple<int, int>(x, y),
 						new Vector3(
@@ -59,23 +61,23 @@ namespace ForestReco
 					fields.Add(newGroundField);
 				}
 			}
-			for (int x = 0; x < arrayXRange; x++)
+			for(int x = 0; x < arrayXRange; x++)
 			{
-				for (int y = 0; y < arrayYRange; y++)
+				for(int y = 0; y < arrayYRange; y++)
 				{
-					if (x > 0)
+					if(x > 0)
 					{
 						array[x, y].Left = array[x - 1, y];
 					}
-					if (x < arrayXRange - 1)
+					if(x < arrayXRange - 1)
 					{
 						array[x, y].Right = array[x + 1, y];
 					}
-					if (y > 0)
+					if(y > 0)
 					{
 						array[x, y].Top = array[x, y - 1]; //orig
 					}
-					if (y < arrayYRange - 1)
+					if(y < arrayYRange - 1)
 					{
 						array[x, y].Bot = array[x, y + 1]; //orig
 					}
@@ -85,6 +87,16 @@ namespace ForestReco
 			CAnalytics.arrayWidth = width;
 			CAnalytics.arrayHeight = height;
 
+		}
+
+		/// <summary>
+		/// Offset of current tile center from main header center
+		/// </summary>
+		private static Vector3 GetCurrentTileOffset()
+		{
+			Vector3 diff = CProjectData.mainHeader.Center - CProjectData.currentTileHeader.Center;
+			diff.Z *= -1; //to match coord style
+			return diff;
 		}
 
 		///GETTER
@@ -106,7 +118,7 @@ namespace ForestReco
 
 		public CGroundField GetElementContainingPoint(Vector3 pPoint)
 		{
-			Tuple<int, int> index = GetPositionInField(pPoint);
+			Tuple<int, int> index = GetPositionInArray(pPoint);
 			if (!IsWithinBounds(index))
 			{
 				if (index.Item1 == -1) { index = new Tuple<int, int>(0, index.Item2);}
@@ -131,20 +143,29 @@ namespace ForestReco
 		{
 			return GetElementContainingPoint(pPoint).GetHeight(pPoint);
 		}
-
-		private Tuple<int, int> GetPositionInField(Vector3 pPoint)
+			  		
+		public static Tuple<int, int> GetPositionInArray(Vector3 pPoint, 
+			Vector3 pTopLeftCorner, float pStepSize)
 		{
-			int xPos = (int)Math.Floor((pPoint.X - topLeftCorner.X) / stepSize);
+			int xPos = (int)Math.Floor((pPoint.X - pTopLeftCorner.X) / pStepSize);
 			//due to array orientation
-			int yPos = (int)Math.Floor((topLeftCorner.Z - pPoint.Z) / stepSize);
+			int yPos = (int)Math.Floor((pTopLeftCorner.Z - pPoint.Z) / pStepSize);
+			
+			return new Tuple<int, int>(xPos, yPos);
+		}
 
-			CGroundField el = GetElement(xPos, yPos);
+		private Tuple<int, int> GetPositionInArray(Vector3 pPoint)
+		{
+			Tuple<int, int> pos = GetPositionInArray(pPoint, topLeftCorner, stepSize);
+
+			CGroundField el = GetElement(pos.Item1, pos.Item2);
+
 			if (el != null && el.IsPointOutOfField(pPoint))
 			{
 				CDebug.Error($"point {pPoint} is too far from center {el.center}");
 			}
 
-			return new Tuple<int, int>(xPos, yPos);
+			return pos;
 		}
 
 		//PUBLIC
@@ -158,7 +179,7 @@ namespace ForestReco
 
 		public void AddPointInField(Vector3 pPoint, EPointType pType, bool pLogErrorInAnalytics)
 		{
-			Tuple<int, int> index = GetPositionInField(pPoint);
+			Tuple<int, int> index = GetPositionInArray(pPoint);
 			if (!IsWithinBounds(index))
 			{
 				CDebug.Error($"point {pPoint} is OOB {index}", pLogErrorInAnalytics);
@@ -424,7 +445,7 @@ namespace ForestReco
 
 		public List<CTree> GetTreesInDistanceFrom(Vector3 pPoint, float pDistance)
 		{
-			Tuple<int, int> index = GetPositionInField(pPoint);
+			Tuple<int, int> index = GetPositionInArray(pPoint);
 			int steps = (int)(pDistance / stepSize);
 			steps = Math.Max(1, steps);
 
@@ -545,9 +566,9 @@ namespace ForestReco
 			return dist;
 		}
 
-		public static float GetStepSizeForWidth(int pMaxArrayWidth)
+		public static float GetStepSizeForWidth(int pMaxArrayWidth, float pActualArrayWidth)
 		{
-			float width = CProjectData.header.Width; //in meters
+			float width = pActualArrayWidth; //CProjectData.currentTileHeader.Width; //in meters
 			const float minStepSize = .1f;
 			float stepSize = minStepSize;
 			int arrayWidth = (int)(width / stepSize);

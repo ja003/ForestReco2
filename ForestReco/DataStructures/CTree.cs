@@ -1,13 +1,7 @@
-﻿using System;
+﻿using ObjParser;
+using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Net.Http.Headers;
 using System.Numerics;
-using System.Runtime.Remoting.Messaging;
-using System.Runtime.Serialization;
-using System.Security.Principal;
-using ObjParser;
-using ObjParser.Types;
 #pragma warning disable 659
 
 namespace ForestReco
@@ -54,10 +48,11 @@ namespace ForestReco
 			treePointExtent = pTreePointExtent;
 			peak = new CPeak(pPoint, treePointExtent);
 
-			if (CTreeManager.DEBUG) { CDebug.WriteLine("new tree " + pTreeIndex); }
+			if(CTreeManager.DEBUG)
+			{ CDebug.WriteLine("new tree " + pTreeIndex); }
 
 			treeIndex = pTreeIndex;
-			for (int i = 0; i < 360; i += BRANCH_ANGLE_STEP)
+			for(int i = 0; i < 360; i += BRANCH_ANGLE_STEP)
 			{
 				branches.Add(new CBranch(this, i, i + BRANCH_ANGLE_STEP));
 			}
@@ -87,30 +82,31 @@ namespace ForestReco
 		{
 			//CDebug.WriteLine("OnProcess");
 		}
-		
+
 		/// <summary>
 		/// pMerging is used during merging process
 		/// </summary>
 		public float GetAddPointFactor(Vector3 pPoint, CTree pTreeToMerge = null)
 		{
-			if (IsNewPeak(pPoint)) { return 1; }
+			if(IsNewPeak(pPoint))
+			{ return 1; }
 			bool merging = pTreeToMerge != null;
 
 			CBranch branchForPoint = GetBranchFor(pPoint);
 
 			float distToPeak = CUtils.Get2DDistance(pPoint, peak.Center);
-			if (!merging)
+			if(!merging)
 			{
-				if (CParameterSetter.treeExtent < distToPeak)
+				if(CParameterSetter.treeExtent < distToPeak)
 				{
 					return 0;
 				}
 			}
 
-			else if (pTreeToMerge.isValid)
+			else if(pTreeToMerge.isValid)
 			{
 				float peakPointDist = CUtils.Get2DDistance(pPoint, peak.Center);
-				if (peakPointDist > GetTreeExtentFor(pPoint, CParameterSetter.treeExtentMultiply))
+				if(peakPointDist > GetTreeExtentFor(pPoint, CParameterSetter.treeExtentMultiply))
 				{
 					return 0;
 				}
@@ -119,23 +115,29 @@ namespace ForestReco
 			float bestFactor = 0;
 
 			float branchFactor = branchForPoint.GetAddPointFactor(pPoint, true, pTreeToMerge);
-			if (branchFactor > bestFactor) { bestFactor = branchFactor; }
-			if (bestFactor > 0.9f) { return bestFactor; }
+			if(branchFactor > bestFactor)
+			{ bestFactor = branchFactor; }
+			if(bestFactor > 0.9f)
+			{ return bestFactor; }
 
 			branchFactor = branchForPoint.GetNeigbourBranch(1).GetAddPointFactor(pPoint, false, pTreeToMerge);
-			if (branchFactor > bestFactor) { bestFactor = branchFactor; }
-			if (bestFactor > 0.9f) { return bestFactor; }
+			if(branchFactor > bestFactor)
+			{ bestFactor = branchFactor; }
+			if(bestFactor > 0.9f)
+			{ return bestFactor; }
 
 			branchFactor = branchForPoint.GetNeigbourBranch(-1).GetAddPointFactor(pPoint, false, pTreeToMerge);
-			if (branchFactor > bestFactor) { bestFactor = branchFactor; }
-			if (bestFactor > 0.9f) { return bestFactor; }
+			if(branchFactor > bestFactor)
+			{ bestFactor = branchFactor; }
+			if(bestFactor > 0.9f)
+			{ return bestFactor; }
 
 			return bestFactor;
 		}
 
 		public void AddPoint(Vector3 pPoint)
 		{
-			if (peak.Includes(pPoint) || pPoint.Y > peak.minBB.Y)
+			if(peak.Includes(pPoint) || pPoint.Y > peak.minBB.Y)
 			{
 				peak.AddPoint(pPoint);
 			}
@@ -150,18 +152,18 @@ namespace ForestReco
 		public void MergeWith(CTree pSubTree)
 		{
 			int debugIndex = -1;
-			if (CTreeManager.DEBUG || Equals(debugIndex) || pSubTree.Equals(debugIndex))
+			if(CTreeManager.DEBUG || Equals(debugIndex) || pSubTree.Equals(debugIndex))
 			{
 				CDebug.WriteLine(this.ToString(EDebug.Peak) + " MergeWith " + pSubTree.ToString(EDebug.Peak));
 			}
 
-			if (pSubTree.Equals(this))
+			if(pSubTree.Equals(this))
 			{
 				CDebug.Error("cant merge with itself.");
 				return;
 			}
 
-			foreach (Vector3 point in pSubTree.Points)
+			foreach(Vector3 point in pSubTree.Points)
 			{
 				AddPoint(point);
 			}
@@ -176,9 +178,9 @@ namespace ForestReco
 		public CBranch GetMostDefinedBranch()
 		{
 			CBranch mostDefinedBranch = branches[0];
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
-				if (b.TreePoints.Count > mostDefinedBranch.TreePoints.Count)
+				if(b.TreePoints.Count > mostDefinedBranch.TreePoints.Count)
 				{
 					mostDefinedBranch = b;
 				}
@@ -191,10 +193,10 @@ namespace ForestReco
 			float distToPeak = CUtils.Get2DDistance(pPoint, peak.Center);
 
 			float distanceToAnyPoint = int.MaxValue;
-			foreach (Vector3 p in Points)
+			foreach(Vector3 p in Points)
 			{
 				float dist = Vector3.Distance(p, pPoint);
-				if (dist < distanceToAnyPoint)
+				if(dist < distanceToAnyPoint)
 				{
 					distanceToAnyPoint = dist;
 				}
@@ -218,7 +220,7 @@ namespace ForestReco
 			const float DIST_STEP = 0.15f;
 			const float ANGLE_STEP = 2.5f;
 			const int MAX_ANGLE = 100;
-			if (heightDiff < 0.5f)
+			if(heightDiff < 0.5f)
 			{
 				return MAX_ANGLE;
 			}
@@ -231,16 +233,17 @@ namespace ForestReco
 
 		private CBranch GetBranchFor(Vector3 pPoint)
 		{
-			if (peak.maxHeight.Y < pPoint.Y)
+			if(peak.maxHeight.Y < pPoint.Y)
 			{
 				CDebug.Error(pPoint + " is higher than peak " + peak);
 			}
 			Vector2 peak2D = new Vector2(peak.X, peak.Z);
 			Vector2 point2D = new Vector2(pPoint.X, pPoint.Z);
 			Vector2 dir = point2D - peak2D;
-			if (dir.Length() < MAX_STEM_POINT_DISTANCE)
+			if(dir.Length() < MAX_STEM_POINT_DISTANCE)
 			{
-				if (CTreeManager.DEBUG) CDebug.WriteLine("- branch = stem");
+				if(CTreeManager.DEBUG)
+					CDebug.WriteLine("- branch = stem");
 				//return branches[branches.Count - 1]; //stem
 				return stem; //stem
 			}
@@ -248,7 +251,7 @@ namespace ForestReco
 			dir = Vector2.Normalize(dir);
 			float angle = CUtils.GetAngle(Vector2.UnitX, dir);
 			//if (CTreeManager.DEBUG) CDebug.WriteLine("angle " + peak2D + " - " + point2D + " = " + angle);
-			if (angle < 0)
+			if(angle < 0)
 			{
 				angle = 360 + angle;
 			}
@@ -265,7 +268,8 @@ namespace ForestReco
 		/// </summary>
 		public float GetGroundHeight()
 		{
-			if (groundHeight != null) { return (float)this.groundHeight; }
+			if(groundHeight != null)
+			{ return (float)this.groundHeight; }
 			groundHeight = CProjectData.array?.GetHeight(peak.Center);
 			return groundHeight ?? peak.Center.Y;
 		}
@@ -274,9 +278,9 @@ namespace ForestReco
 		{
 			List<CTreePoint> allPoints = new List<CTreePoint>();
 			allPoints.Add(peak);
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
-				foreach (CTreePoint p in b.TreePoints)
+				foreach(CTreePoint p in b.TreePoints)
 				{
 					allPoints.Add(p);
 				}
@@ -287,9 +291,10 @@ namespace ForestReco
 		private int GetBranchesCount()
 		{
 			int count = 0;
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
-				if (b.TreePoints.Count > 0) { count++; }
+				if(b.TreePoints.Count > 0)
+				{ count++; }
 			}
 			return count;
 		}
@@ -297,7 +302,7 @@ namespace ForestReco
 		private int GetBranchesPointCount()
 		{
 			int count = 0;
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
 				count += b.GetPointCount();
 			}
@@ -310,20 +315,24 @@ namespace ForestReco
 			return gp;
 		}
 
+		public string GetObjName()
+		{
+			string prefix = isValid ? "tree_" : "invalidTree_";
+			return prefix + treeIndex;
+		}
+
 		public Obj GetObj(bool pExportBranches, bool pExportPoints, bool pExportSimple)
 		{
 			//if (CTreeManager.DEBUG) CDebug.WriteLine("GetObj " + pName);
 
-			string prefix = isValid ? "tree_" : "invalidTree_";
-
-			Obj obj = new Obj(prefix + treeIndex);
+			Obj obj = new Obj(GetObjName());
 
 			obj.UseMtl = assignedMaterial;
 
 			List<CTreePoint> allTreePoints = GetAllPoints();
 
 			//display all peak points
-			foreach (Vector3 peakPoint in peak.Points)
+			foreach(Vector3 peakPoint in peak.Points)
 			{
 				allTreePoints.Add(new CTreePoint(peakPoint, treePointExtent));
 			}
@@ -331,27 +340,27 @@ namespace ForestReco
 			//display highest peak point
 			allTreePoints.Add(new CTreePoint(peak.maxHeight, treePointExtent));
 
-			if (pExportPoints)
+			if(pExportPoints)
 			{
 				CObjExporter.AddTreePointsBBToObj(ref obj, allTreePoints);
 			}
 
-			if (pExportBranches)
+			if(pExportBranches)
 			{
 				//add centers of all tree points
 				List<Vector3> vectorPoints = new List<Vector3>();
-				foreach (CTreePoint p in allTreePoints)
+				foreach(CTreePoint p in allTreePoints)
 				{
 					vectorPoints.Add(p.Center);
 				}
 				CObjExporter.AddPointsToObj(ref obj, vectorPoints);
 
-				foreach (CBranch b in branches)
+				foreach(CBranch b in branches)
 				{
 					CObjExporter.AddBranchToObj(ref obj, b);
 				}
 			}
-			if (pExportSimple)
+			if(pExportSimple)
 			{
 				Vector3 point1 = b000;
 				Vector3 point2 = b100;
@@ -359,7 +368,7 @@ namespace ForestReco
 				Vector3 point4 = b001;
 
 				float? goundHeight = groundField.GetHeight();
-				if (groundHeight != null)
+				if(groundHeight != null)
 				{
 					point1.Y = (float)goundHeight;
 					point2.Y = (float)goundHeight;
@@ -380,14 +389,20 @@ namespace ForestReco
 
 		public bool Validate(bool pRestrictive, bool pFinal = false)
 		{
+			if(pFinal && CTreeMath.IsTreeAtBufferZone(this))
+			{
+				isValid = false;
+				return isValid;
+			}
+
 			isValid = ValidateBranches(pRestrictive);
 
-			if (pFinal && !isValid && !IsAtBorder())
+			if(pFinal && !isValid && !IsAtBorderOf(CProjectData.array))
 			{
 				isValid = ValidatePoints();
 			}
 
-			if (Equals(debugTree))
+			if(Equals(debugTree))
 			{
 				CDebug.WriteLine(isValid + " Validate " + this);
 			}
@@ -400,11 +415,12 @@ namespace ForestReco
 			//too many branch points are too far from peak
 			const float maxDistOfFirstBranchPoint = 1.5f;
 			int tooFarPointsCount = 0;
-			foreach (CBranch branch in branches)
+			foreach(CBranch branch in branches)
 			{
-				if (branch.TreePoints.Count == 0) { continue; }
+				if(branch.TreePoints.Count == 0)
+				{ continue; }
 				float dist = peak.Y - branch.TreePoints[0].Y;
-				if (dist > maxDistOfFirstBranchPoint)
+				if(dist > maxDistOfFirstBranchPoint)
 				{
 					tooFarPointsCount++;
 				}
@@ -421,31 +437,33 @@ namespace ForestReco
 			//and validation is affected
 			definedHeight = Math.Min(GetTreeHeight() / 2, definedHeight);
 
-			if (definedHeight < 1) { return false; }
+			if(definedHeight < 1)
+			{ return false; }
 
 			int requiredPointsPerMeter = 3;
 			int requiredPointCount = (int)definedHeight * requiredPointsPerMeter;
 			return totalPointCount > requiredPointCount;
 		}
-		
+
 		/// <summary>
 		/// Checks if all branches have good scale ration with its opposite branch
 		/// </summary>
 		private bool ValidateScale()
 		{
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
-				if (b.GetPointCount() == 0) { return false; }
+				if(b.GetPointCount() == 0)
+				{ return false; }
 			}
 
-			for (int i = 0; i < Branches.Count / 2; i++)
+			for(int i = 0; i < Branches.Count / 2; i++)
 			{
 				float br1Scale = Branches[i].furthestPointDistance;
 				CBranch oppositeBranch = Branches[i + Branches.Count / 2];
 				float br2Scale = oppositeBranch.furthestPointDistance;
 				float branchIScaleRatio = br1Scale / br2Scale;
 
-				if (br1Scale > 0.5f && br2Scale > 0.5f)
+				if(br1Scale > 0.5f && br2Scale > 0.5f)
 				{
 					continue;
 				}
@@ -453,7 +471,7 @@ namespace ForestReco
 				//ideal scale ratio = 1
 				//if X > Y => scaleRatio > 1
 				float idealScaleOffset = Math.Abs(1 - branchIScaleRatio);
-				if (Math.Abs(idealScaleOffset) > 0.5f)
+				if(Math.Abs(idealScaleOffset) > 0.5f)
 				{
 					//isValidScale = false;
 					return false;
@@ -471,13 +489,14 @@ namespace ForestReco
 		/// </summary>
 		private bool ValidateBranches(bool pAllBranchesDefined)
 		{
-			if (!ValidateFirstBranchPoints()) { return false; }
+			if(!ValidateFirstBranchPoints())
+			{ return false; }
 
 			float branchDefinedFactor = 0;
 			int undefinedBranchesCount = 0;
 			int wellDefinedBranchesCount = 0;
 
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
 				float branchFactor = b.GetDefinedFactor();
 				//if (Equals(debugTree))
@@ -485,24 +504,27 @@ namespace ForestReco
 				//	CDebug.WriteLine(b + "-- branchFactor " + branchFactor);
 				//}
 
-				if (Math.Abs(branchFactor) < 0.1f)
+				if(Math.Abs(branchFactor) < 0.1f)
 				{
 					undefinedBranchesCount++;
 					continue;
 				}
-				if (branchFactor > 0.5f)
+				if(branchFactor > 0.5f)
 				{
 					wellDefinedBranchesCount++;
 				}
 				branchDefinedFactor += branchFactor;
 			}
-			if (pAllBranchesDefined)
+			if(pAllBranchesDefined)
 			{
-				if (undefinedBranchesCount > 1) { return false; }
+				if(undefinedBranchesCount > 1)
+				{ return false; }
 			}
 
-			if (undefinedBranchesCount > 2) { return false; }
-			if (wellDefinedBranchesCount > 2) { return true; }
+			if(undefinedBranchesCount > 2)
+			{ return false; }
+			if(wellDefinedBranchesCount > 2)
+			{ return true; }
 
 			float validFactor = branchDefinedFactor / (branches.Count - undefinedBranchesCount);
 			//CDebug.WriteLine("VALID " + treeIndex + " height = " + height + " validFactor = " + validFactor);
@@ -516,15 +538,17 @@ namespace ForestReco
 
 		private bool IsNewPeak(Vector3 pPoint)
 		{
-			if (peak.Includes(pPoint)) { return true; }
-			if (pPoint.Y < peak.Y) { return false; }
+			if(peak.Includes(pPoint))
+			{ return true; }
+			if(pPoint.Y < peak.Y)
+			{ return false; }
 			float angle = CUtils.AngleBetweenThreePoints(pPoint - Vector3.UnitY, pPoint, peak.Center);
 			return Math.Abs(angle) < CTreeManager.MAX_BRANCH_ANGLE;
 		}
 
 		public bool BelongsToTree(Vector3 pPoint, bool pDebug = true)
 		{
-			if (IsNewPeak(pPoint))
+			if(IsNewPeak(pPoint))
 			{
 				return true;
 			}
@@ -536,19 +560,21 @@ namespace ForestReco
 
 			float maxTreeExtent = GetTreeExtentFor(pPoint, 1);
 
-			if (dist2D > maxTreeExtent && distToBB > MAX_DIST_TO_TREE_BB)
+			if(dist2D > maxTreeExtent && distToBB > MAX_DIST_TO_TREE_BB)
 			{
-				if (CTreeManager.DEBUG && pDebug) CDebug.WriteLine("- dist too high " + dist2D + "|" + distToBB);
+				if(CTreeManager.DEBUG && pDebug)
+					CDebug.WriteLine("- dist too high " + dist2D + "|" + distToBB);
 				return false;
 			}
 
 			Vector3 suitablePoint = peak.GetClosestPointTo(pPoint);
 			float angle = CUtils.AngleBetweenThreePoints(suitablePoint - Vector3.UnitY, suitablePoint, pPoint);
 			float maxBranchAngle = GetMaxBranchAngle(suitablePoint, pPoint);
-			if (angle > maxBranchAngle)
+			if(angle > maxBranchAngle)
 			{
-				if (CTreeManager.DEBUG && pDebug) CDebug.WriteLine("- angle too high " + angle + "°/" + maxBranchAngle + "°. dist = " +
-					Vector3.Distance(suitablePoint, pPoint));
+				if(CTreeManager.DEBUG && pDebug)
+					CDebug.WriteLine("- angle too high " + angle + "°/" + maxBranchAngle + "°. dist = " +
+Vector3.Distance(suitablePoint, pPoint));
 				return false;
 			}
 
@@ -577,7 +603,7 @@ namespace ForestReco
 
 		public void Rotate(int pYangle)
 		{
-			for (int i = 0; i < Points.Count; i++)
+			for(int i = 0; i < Points.Count; i++)
 			{
 				float angleRadians = CUtils.ToRadians(pYangle);
 				Vector3 point = Points[i];
@@ -585,7 +611,7 @@ namespace ForestReco
 				Points[i] = rotatedPoint;
 			}
 			ResetBounds(Points);
-			if (peak.Points.Count > 1)
+			if(peak.Points.Count > 1)
 			{
 				CDebug.Error("Cant Rotate after process!");
 			}
@@ -596,7 +622,7 @@ namespace ForestReco
 			//scale with center point = ground point
 			//if center point = peak, resulting points might be set under ground level
 			Vector3 groundPosition = GetGroundPosition();
-			for (int i = 0; i < Points.Count; i++)
+			for(int i = 0; i < Points.Count; i++)
 			{
 				Vector3 point = Points[i];
 				Vector3 scaledPoint = Vector3.Transform(point, Matrix4x4.CreateScale(
@@ -604,7 +630,7 @@ namespace ForestReco
 				Points[i] = scaledPoint;
 			}
 			ResetBounds(Points);
-			if (peak.Points.Count > 1)
+			if(peak.Points.Count > 1)
 			{
 				CDebug.Error("Cant Scale after process!");
 			}
@@ -613,14 +639,14 @@ namespace ForestReco
 
 		public void Move(Vector3 pOffset)
 		{
-			for (int i = 0; i < Points.Count; i++)
+			for(int i = 0; i < Points.Count; i++)
 			{
 				Vector3 point = Points[i];
 				Vector3 movedPoint = point + pOffset;
 				Points[i] = movedPoint;
 			}
 			ResetBounds(Points);
-			if (peak.Points.Count > 1)
+			if(peak.Points.Count > 1)
 			{
 				CDebug.Error("Cant move after process!");
 			}
@@ -636,11 +662,14 @@ namespace ForestReco
 
 		public string ToString(EDebug pDebug)
 		{
-			switch (pDebug)
+			switch(pDebug)
 			{
-				case EDebug.Height: return ToString(true, false, false, false, false, false, true);
-				case EDebug.Peak: return ToString(true, false, true, false, false, false, false);
-				case EDebug.Index: return ToString(true, false, false, false, false, false, false);
+				case EDebug.Height:
+					return ToString(true, false, false, false, false, false, true);
+				case EDebug.Peak:
+					return ToString(true, false, true, false, false, false, false);
+				case EDebug.Index:
+					return ToString(true, false, false, false, false, false, false);
 
 			}
 			return ToString();
@@ -664,11 +693,12 @@ namespace ForestReco
 			string refTreeS = pReftree && mostSuitableRefTreeObj != null ? "||reftree = " + mostSuitableRefTreeObj.Name : "";
 			string heightS = pHeight ? "||height = " + GetTreeHeight() : "";
 
-			if (pBranches)
+			if(pBranches)
 			{
-				foreach (CBranch b in branches)
+				foreach(CBranch b in branches)
 				{
-					if (branches.IndexOf(b) == branches.Count - 1) { branchesS += ". Stem = "; }
+					if(branches.IndexOf(b) == branches.Count - 1)
+					{ branchesS += ". Stem = "; }
 					branchesS += b;
 				}
 			}
@@ -680,7 +710,7 @@ namespace ForestReco
 		public void CheckTree()
 		{
 			//CDebug.WriteLine("Check tree " + ToString());
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
 				b.CheckBranch();
 			}
@@ -693,16 +723,16 @@ namespace ForestReco
 
 		public override bool Equals(object obj)
 		{
-			if (obj == null || GetType() != obj.GetType())
+			if(obj == null || GetType() != obj.GetType())
 				return false;
 
 			CTree t = (CTree)obj;
 			return treeIndex == t.treeIndex;
 		}
 
-		public bool IsAtBorder()
+		public bool IsAtBorderOf(CGroundArray pArray)
 		{
-			float distanceToBorder = CProjectData.array.GetDistanceToBorderFrom(this.peak.Center);
+			float distanceToBorder = pArray.GetDistanceToBorderFrom(peak.Center);
 			float borderDistExtentDiff = distanceToBorder - Math.Min(Extent.X, Extent.Z);
 
 			return borderDistExtentDiff < 0;

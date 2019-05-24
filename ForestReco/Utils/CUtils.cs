@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Numerics;
 
@@ -67,6 +68,35 @@ namespace ForestReco
 		public static float Get2DDistance(Vector3 a, CTreePoint b)
 		{
 			return Vector2.Distance(new Vector2(a.X, a.Z), new Vector2(b.X, b.Z));
+		}
+
+		internal static void TransformArrayIndexToBitmapIndex(ref Tuple<int, int> pArrayIndex,
+			CHeaderInfo pArrayHeader, float pStepSize, Bitmap pMap)
+		{
+			float xPercent = pArrayIndex.Item1 * pStepSize / pArrayHeader.Width;
+			float yPercent = pArrayIndex.Item2 * pStepSize / pArrayHeader.Height;
+			yPercent = 1 - yPercent; //bitmap has different orientation than our array
+
+			if(xPercent < 0 || xPercent > 1 || yPercent < 0 || yPercent > 1)
+			{
+				CDebug.Error($"wrong transformation! x = {xPercent}, y = {yPercent}");
+				xPercent = 0;
+				yPercent = 0;
+			}
+
+			int bitmapXindex = (int)((pMap.Width - 1) * xPercent);
+			int bitmapYindex = (int)((pMap.Height - 1)* yPercent);
+
+			//array is oriented from bot to top, bitmap top to bot
+			bitmapYindex = pMap.Height - bitmapYindex - 1;
+
+			pArrayIndex = new Tuple<int, int>(bitmapXindex, bitmapYindex);
+		}
+
+		internal static bool IsInBitmap(Tuple<int, int> pIndex, Bitmap pBitmap)
+		{
+			return pIndex.Item1 >= 0 && pIndex.Item1 < pBitmap.Width &&
+				pIndex.Item2 >= 0 && pIndex.Item2 < pBitmap.Height;
 		}
 
 		public static float Get2DDistance(CTreePoint a, CTreePoint b)
@@ -227,8 +257,36 @@ namespace ForestReco
 			return value;
 		}
 
-		public static string  GetFileName(string pFilePath, bool pWithExtension = false){
+		public static string GetFileName(string pFilePath, bool pWithExtension = false)
+		{
 			return pWithExtension ? Path.GetFileName(pFilePath) : Path.GetFileNameWithoutExtension(pFilePath);
+		}
+
+		public static float GetDistanceFromBorder(Vector3 pPoint,
+			Vector3 pBorderBotLeft, Vector3 pBorderTopRight)
+		{
+			float xDiff = GetDistanceFromBorderX(pPoint, pBorderBotLeft, pBorderTopRight);
+			float zDiff = GetDistanceFromBorderZ(pPoint, pBorderBotLeft, pBorderTopRight);
+
+			return Math.Min(xDiff, zDiff);
+		}
+
+		public static float GetDistanceFromBorderX(Vector3 pPoint,
+			Vector3 pBorderBotLeft, Vector3 pBorderTopRight)
+		{
+			float xDiff = Math.Abs(pPoint.X - pBorderBotLeft.X);
+			xDiff = Math.Min(xDiff, Math.Abs(pPoint.X - pBorderTopRight.X));
+
+			return xDiff;
+		}
+
+		public static float GetDistanceFromBorderZ(Vector3 pPoint,
+			Vector3 pBorderBotLeft, Vector3 pBorderTopRight)
+		{
+			float zDiff = Math.Abs(pPoint.Z - pBorderBotLeft.Z);
+			zDiff = Math.Min(zDiff, Math.Abs(pPoint.Z - pBorderTopRight.Z));
+
+			return zDiff;
 		}
 	}
 }

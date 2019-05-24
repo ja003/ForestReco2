@@ -1,9 +1,8 @@
-﻿using System;
+﻿using ObjParser;
+using ObjParser.Types;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using ObjParser;
-using ObjParser.Types;
 
 namespace ForestReco
 {
@@ -30,11 +29,17 @@ namespace ForestReco
 
 		public static void AddPointsToObj(ref Obj obj, List<Vector3> pPoints, Vector3 pOffset, bool pMoveToCenter = true)
 		{
-			foreach (Vector3 p in pPoints)
+			foreach(Vector3 p in pPoints)
 			{
 				Vector3 clonePoint = p;
-				if (pMoveToCenter) { MoveToCenter(ref clonePoint); }
-				else { MoveByOffset(ref clonePoint, pOffset); }
+				if(pMoveToCenter)
+				{
+					MoveToCenter(ref clonePoint);
+				}
+				else
+				{
+					MoveByOffset(ref clonePoint, pOffset);
+				}
 
 				Vertex v1 = new Vertex(clonePoint, obj.GetNextVertexIndex());
 				obj.AddVertex(v1);
@@ -44,26 +49,28 @@ namespace ForestReco
 
 				Vertex v3 = new Vertex(clonePoint + Vector3.UnitZ * POINT_OFFSET, obj.GetNextVertexIndex());
 				obj.AddVertex(v3);
-				
+
 				obj.FaceList.Add(new Face(new List<Vertex> { v1, v2, v3 }));
 
 				//create 4-side representation of point - otherwise just triangle - big data save
-				if (!simplePointsObj)
+				if(!simplePointsObj)
 				{
 					Vertex v4 = new Vertex(clonePoint + Vector3.UnitY * POINT_OFFSET, obj.GetNextVertexIndex());
-					obj.AddVertex(v4); obj.FaceList.Add(new Face(new List<Vertex> {v1, v2, v4}));
-					obj.FaceList.Add(new Face(new List<Vertex> {v1, v3, v4}));
-					obj.FaceList.Add(new Face(new List<Vertex> {v2, v3, v4}));
+					obj.AddVertex(v4);
+					obj.FaceList.Add(new Face(new List<Vertex> { v1, v2, v4 }));
+					obj.FaceList.Add(new Face(new List<Vertex> { v1, v3, v4 }));
+					obj.FaceList.Add(new Face(new List<Vertex> { v2, v3, v4 }));
 				}
 			}
 		}
 
 		public static void AddTreePointsBBToObj(ref Obj obj, List<CTreePoint> pTreePoints)
 		{
-			foreach (CTreePoint p in pTreePoints)
+			foreach(CTreePoint p in pTreePoints)
 			{
 				//big performance improve and space reduction
-				if(p.Points.Count < 2){ continue; }
+				if(p.Points.Count < 2)
+				{ continue; }
 
 				//bot side
 				AddPointsToObj(ref obj, p.GetBBPoints(), Vector3.Zero);
@@ -130,23 +137,23 @@ namespace ForestReco
 			obj.AddVertex(v2);
 			Vertex v3 = new Vertex(pPoint3, obj.GetNextVertexIndex());
 			obj.AddVertex(v3);
-			
+
 			obj.FaceList.Add(new Face(new List<Vertex> { v1, v2, v3 }));
 		}
 
 		public static void AddBranchToObj(ref Obj obj, CBranch pBranch)
 		{
-			for (int i = 0; i < pBranch.TreePoints.Count; i++)
+			for(int i = 0; i < pBranch.TreePoints.Count; i++)
 			{
 				//for first point in branch use peak as a first point
 				Vector3 p = i == 0 ? pBranch.tree.peak.Center : pBranch.TreePoints[i - 1].Center;
 				//for first point set first point to connect to peak
 				Vector3 nextP = i == 0 ? pBranch.TreePoints[0].Center : pBranch.TreePoints[i].Center;
-				
+
 				AddLineToObj(ref obj, p, nextP);
 			}
 		}
-		
+
 		public static void ExportObj(Obj pObj, string pFileName)
 		{
 			ExportObjs(new List<Obj> { pObj }, pFileName, "");
@@ -156,24 +163,25 @@ namespace ForestReco
 		{
 			string filePath = GetFileExportPath(pFileName, pFolderPath);
 
-			using (var outStream = File.OpenWrite(filePath))
-			using (var writer = new StreamWriter(outStream))
+			using(var outStream = File.OpenWrite(filePath))
+			using(var writer = new StreamWriter(outStream))
 			{
 				// Write some header data
 				WriteHeader(writer, pObjs);
 
-				if (CProjectData.useMaterial)
+				if(CProjectData.useMaterial)
 				{
 					writer.WriteLine(CMaterialManager.materials);
-					CMaterialManager.materials.WriteMtlFile(pFolderPath, new[] {"materials"});
+					CMaterialManager.materials.WriteMtlFile(pFolderPath, new[] { "materials" });
 				}
 
 				int vertexIndexOffset = 0;
-				foreach (Obj obj in pObjs)
+				foreach(Obj obj in pObjs)
 				{
-					if (CProjectData.backgroundWorker.CancellationPending) { return; }
+					if(CProjectData.backgroundWorker.CancellationPending)
+					{ return; }
 
-					if (obj == null)
+					if(obj == null)
 					{
 						CDebug.WriteLine("Error: obj is null...WTF!");
 						continue;
@@ -181,19 +189,19 @@ namespace ForestReco
 					writer.WriteLine("o " + obj.Name);
 
 					int thisTreeVertexIndexOffset = vertexIndexOffset;
-					foreach (Vertex v in obj.VertexList)
+					foreach(Vertex v in obj.VertexList)
 					{
 						string vertexString = v.ToString(obj.GetVertexTransform());
 						writer.WriteLine(vertexString);
 						vertexIndexOffset++;
 					}
 
-					if (CProjectData.useMaterial)
+					if(CProjectData.useMaterial)
 					{
 						writer.WriteLine("usemtl " + obj.UseMtl);
 					}
 
-					foreach (Face f in obj.FaceList)
+					foreach(Face f in obj.FaceList)
 					{
 						writer.WriteLine(f.ToString(thisTreeVertexIndexOffset));
 					}
@@ -202,13 +210,14 @@ namespace ForestReco
 			CDebug.WriteLine("Exported to " + filePath, true);
 		}
 
-		public static string CreateFolder(string pFileName)
+		public static string CreateFolderIn(string pFileName, string pInFolder)
 		{
-			string path = CParameterSetter.GetStringSettings(ESettings.outputFolderPath);
+			//string path = CParameterSetter.GetStringSettings(ESettings.outputFolderPath);
+			string path = pInFolder;
 
 			int folderIndex = 0;
-			string chosenFolderName = path + "\\" + pFileName + "_" + folderIndex;
-			while (Directory.Exists(chosenFolderName))
+			string chosenFolderName = path + "\\" + pFileName;
+			while(Directory.Exists(chosenFolderName))
 			{
 				chosenFolderName = path + "\\" + pFileName + "_" + folderIndex;
 				folderIndex++;
@@ -223,15 +232,15 @@ namespace ForestReco
 			string chosenFileName = fileName;
 			string extension = ".Obj";
 			string path = pFolder;
-			if (!Directory.Exists(path))
+			if(!Directory.Exists(path))
 			{
 				CDebug.Error("Given folder does not exist! " + pFolder);
 				path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\output\\";
 			}
-			
+
 			string fullPath = path + chosenFileName + extension;
 			int fileIndex = 0;
-			while (File.Exists(fullPath))
+			while(File.Exists(fullPath))
 			{
 				chosenFileName = fileName + "_" + fileIndex;
 				fullPath = path + chosenFileName + extension;
@@ -242,7 +251,9 @@ namespace ForestReco
 
 		private static void MoveToCenter(ref Vector3 pPoint)
 		{
-			if (CProgramLoader.useDebugData) { return; }
+			if(CProgramLoader.useDebugData)
+				return;
+
 			pPoint = GetMovedPoint(pPoint);
 		}
 

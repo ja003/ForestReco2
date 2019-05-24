@@ -17,7 +17,8 @@ namespace ForestReco
 		/// </summary>
 		private static float GetResultFileSize()
 		{
-			CHeaderInfo header = CProjectData.header;
+			CDebug.Warning("Estimated result size is not correct since it does not take a split into account.");
+			CHeaderInfo header = CProjectData.sourceFileHeader;
 			if (header == null) { return 0; }
 
 			arrayHeight = header.Height;

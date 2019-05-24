@@ -102,7 +102,10 @@ namespace ForestReco
 
 		public static void Step(EProgramStep pStep)
 		{
-			lastTextProgress = GetStepText(pStep);
+			string tileProgress = GetTileProgress(pStep);
+
+			lastTextProgress = tileProgress + GetStepText(pStep);
+
 			string[] message = new[] { lastTextProgress };
 			if(pStep == EProgramStep.Exception)
 			{
@@ -111,6 +114,16 @@ namespace ForestReco
 			}
 
 			CProjectData.backgroundWorker.ReportProgress(0, message);
+		}
+
+		private static string GetTileProgress(EProgramStep pStep)
+		{
+			if(!IsCountableStep(pStep))
+				return "";
+			string progress = $"{CProgramStarter.currentTileIndex + 1} / {CProgramStarter.tilesCount}";
+			string nl = Environment.NewLine;
+			string sep = "==========";
+			return $"{sep}{nl}TILE: {progress} {nl}{sep}{nl}";
 		}
 
 		public static void WriteProblems(List<string> problems)
@@ -143,9 +156,38 @@ namespace ForestReco
 
 			stepCallCount++;
 			//-2 for abort states
-			int maxSteps = (Enum.GetNames(typeof(EProgramStep)).Length - 2);
+			int maxSteps = GetCountedStepsCount();
 			stepCallCount = Math.Min(stepCallCount, maxSteps); //bug: sometimes writes higher value
-			string progress = stepCallCount + "/" + maxSteps + ": ";
+			string progress = IsCountableStep(pStep) ?
+				stepCallCount + "/" + maxSteps + ": " : "";
+			string text = GetStepString(pStep);
+
+			return progress + text;
+		}
+
+		private static int GetCountedStepsCount()
+		{
+			return Enum.GetNames(typeof(EProgramStep)).Length - 3;
+		}
+
+		private static bool IsCountableStep(EProgramStep pStep)
+		{
+			//todo: tmp hack for preprocessing steps
+			if(pStep.ToString().Contains("Pre_"))
+				return false;
+
+			switch(pStep)
+			{
+				case EProgramStep.Exception:
+				case EProgramStep.Cancelled:
+				case EProgramStep.LoadReftrees:
+					return false;
+			}
+			return true;
+		}
+
+		private static string GetStepString(EProgramStep pStep)
+		{
 			string text;
 			switch(pStep)
 			{
@@ -202,19 +244,18 @@ namespace ForestReco
 					break;
 
 				default:
-					text = "comment not specified";
+					text = $"{pStep} - comment not specified";
 					break;
 			}
 
-			return progress + text;
+			return text;
 		}
-
 	}
 
 	public enum EProgramStep
 	{
 		LoadLines = 1,
-		LoadReftrees = 2,
+		LoadReftrees = 2, //not part of tile processing
 		ParseLines = 3,
 		ProcessGroundPoints = 4,
 		PreprocessVegePoints = 5,
@@ -232,6 +273,14 @@ namespace ForestReco
 		Done = 17,
 
 		Cancelled,
-		Exception
+		Exception,
+		Pre_Split,
+		Pre_LasClassify,
+		Pre_Tile,
+		Pre_DeleteTmp,
+		Pre_LasReverseTile,
+		Pre_LasHeight,
+		Pre_LasGround,
+		Pre_LasToTxt
 	}
 }

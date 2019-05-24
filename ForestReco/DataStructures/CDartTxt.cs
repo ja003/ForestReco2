@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Xml;
 
 namespace ForestReco
 {
@@ -13,22 +11,59 @@ namespace ForestReco
 	/// </summary>
 	public static class CDartTxt
 	{
+		private static List<FileInfo> exportedFiles;
 
 		private static string newLine => Environment.NewLine;
+		static string HEADER_LINE = "complete transformation	"; //TODO: is it neccessary?
+
+		public static void Init()
+		{
+			exportedFiles = new List<FileInfo>();
+		}
+
+		/// <summary>
+		/// Merges all exported files into one
+		/// </summary>
+		public static void MergeAll()
+		{
+
+			List<string[]> filesLines = new List<string[]>();
+
+			foreach(FileInfo fi in exportedFiles)
+			{
+				filesLines.Add(File.ReadAllLines(fi.FullName));
+			}
+
+			using(StreamWriter writer = File.CreateText($"{CProjectData.outputFolder}\\dart.txt"))
+			{
+				writer.WriteLine(HEADER_LINE);
+
+				foreach(string[] fileLines in filesLines)
+				{
+					int lineNum = 1; //skip header
+					while(lineNum < fileLines.Length)
+					{
+						writer.WriteLine(fileLines[lineNum]);
+						lineNum++;
+					}
+				}
+			}
+
+		}
 
 		public static void Export()
 		{
-			string output = "complete transformation	" + newLine;
+			string output = HEADER_LINE + newLine;
 
-			foreach(CTree tree in CTreeManager.Trees){
+			foreach(CTree tree in CTreeManager.Trees)
+			{
 				string line = GetLine(tree);
 				if(line != null)
 					output += line + newLine;
 			}
-			
+
 			CDebug.WriteLine(output);
 			WriteToFile(output);
-
 		}
 
 		/// <summary>
@@ -38,7 +73,8 @@ namespace ForestReco
 		{
 			string output = "0 ";
 			ObjParser.Obj treeObj = pTree.mostSuitableRefTreeObj;
-			if(treeObj == null){ return null; }
+			if(treeObj == null)
+			{ return null; }
 
 			//get coordinates relative to botleft corner of the area
 			Vector3 treePos = GetMovedPoint(pTree.Center);
@@ -48,9 +84,11 @@ namespace ForestReco
 			output += $"{treeObj.Scale.X} {treeObj.Scale.Z} {treeObj.Scale.Y} ";
 			//rotation
 			output += $"0 0 {treeObj.Rotation.Y} ";
-			//todo: reftree type
-			bool debugObjName = false;
-			output += pTree.RefTreeTypeName + (debugObjName ? " " + pTree.mostSuitableRefTreeObj.Name : "");
+
+			//to know which tree in OBJ is this one 
+			bool debugObjName = true;
+			string objName = debugObjName ? " " + pTree.GetObjName() : "";
+			output += pTree.RefTreeTypeName + objName;
 
 			return output;
 		}
@@ -60,8 +98,9 @@ namespace ForestReco
 		/// </summary>
 		private static Vector3 GetMovedPoint(Vector3 pPoint)
 		{
-			pPoint.Z = CProjectData.header.TopRightCorner.Z - pPoint.Z;
-			pPoint.X -= CProjectData.header.BotLeftCorner.X;
+			//todo fix
+			pPoint.Z = CProjectData.mainHeader.TopRightCorner.Z - pPoint.Z;
+			pPoint.X -= CProjectData.mainHeader.BotLeftCorner.X;
 
 			//pPoint -= CProjectData.header.BotLeftCorner; //use this for botleft corner
 			return pPoint;
@@ -74,12 +113,14 @@ namespace ForestReco
 		private static void WriteToFile(string pText)
 		{
 			string fileName = "dart.txt";
-			string filePath = CObjPartition.folderPath + "/" + fileName;
-			using (var outStream = File.OpenWrite(filePath))
-			using (var writer = new StreamWriter(outStream))
+			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
+			using(var outStream = File.OpenWrite(filePath))
+			using(var writer = new StreamWriter(outStream))
 			{
 				writer.Write(pText);
 			}
+
+			exportedFiles.Add(new FileInfo(filePath));
 		}
 	}
 }

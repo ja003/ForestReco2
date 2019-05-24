@@ -98,6 +98,10 @@ namespace ForestReco
 		public TextBox textShapefile;
 		public Button btnShapefile;
 		private Label label5;
+		private TrackBar trackBarTileSize;
+		private TextBox textTileSize;
+		private Label label6;
+		private CheckedListBox checkedListBoxBitmaps;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -130,8 +134,12 @@ namespace ForestReco
 
 
 			//partition
-			textPartition.Text = CParameterSetter.GetIntSettings(ESettings.partitionStep) + " m";
 			trackBarPartition.Value = CParameterSetter.GetIntSettings(ESettings.partitionStep);
+			trackBarPartition_Scroll(null, null); //force text refresh
+
+			trackBarTileSize.Value = CParameterSetter.GetIntSettings(ESettings.tileSize);
+			trackBarTileSize_Scroll(null, null);
+
 
 			comboBoxSplitMode.SelectedIndex = CParameterSetter.GetIntSettings(ESettings.currentSplitMode);
 
@@ -161,6 +169,13 @@ namespace ForestReco
 
 			checkBoxExportBitmap.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.exportBitmap);
+			checkedListBoxBitmaps.SetItemChecked(0,
+				CParameterSetter.GetBoolSettings(ESettings.ExportBMHeightmap));
+			checkedListBoxBitmaps.SetItemChecked(1,
+				CParameterSetter.GetBoolSettings(ESettings.ExportBMTreePositions));
+			checkedListBoxBitmaps.SetItemChecked(2,
+				CParameterSetter.GetBoolSettings(ESettings.ExportBMTreeBorders));
+
 			checkBoxExportTreeStructures.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures);
 			checkBoxExportInvalidTrees.Checked =
@@ -350,6 +365,10 @@ namespace ForestReco
 			this.textShapefile = new System.Windows.Forms.TextBox();
 			this.btnShapefile = new System.Windows.Forms.Button();
 			this.label5 = new System.Windows.Forms.Label();
+			this.trackBarTileSize = new System.Windows.Forms.TrackBar();
+			this.textTileSize = new System.Windows.Forms.TextBox();
+			this.label6 = new System.Windows.Forms.Label();
+			this.checkedListBoxBitmaps = new System.Windows.Forms.CheckedListBox();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -359,6 +378,7 @@ namespace ForestReco
 			((System.ComponentModel.ISupportInitialize)(this.trackBarRangeXmax)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarRangeYmax)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarRangeYmin)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarTileSize)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnSellectForest
@@ -1090,6 +1110,7 @@ namespace ForestReco
 			this.textRangeXmax.Size = new System.Drawing.Size(85, 22);
 			this.textRangeXmax.TabIndex = 76;
 			this.textRangeXmax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			this.textRangeXmax.TextChanged += new System.EventHandler(this.textRangeXmax_TextChanged);
 			this.textRangeXmax.LostFocus += new System.EventHandler(this.textRangeXmax_LostFocus);
 			// 
 			// label3
@@ -1132,9 +1153,9 @@ namespace ForestReco
 			// 
 			this.comboBoxSplitMode.FormattingEnabled = true;
 			this.comboBoxSplitMode.Items.AddRange(new object[] {
-				"None",
-				"Manual",
-				"Shapefile"});
+            "None",
+            "Manual",
+            "Shapefile"});
 			this.comboBoxSplitMode.Location = new System.Drawing.Point(1019, 248);
 			this.comboBoxSplitMode.Name = "comboBoxSplitMode";
 			this.comboBoxSplitMode.Size = new System.Drawing.Size(121, 24);
@@ -1168,10 +1189,61 @@ namespace ForestReco
 			this.label5.TabIndex = 88;
 			this.label5.Text = "split mode";
 			// 
+			// trackBarTileSize
+			// 
+			this.trackBarTileSize.AutoSize = false;
+			this.trackBarTileSize.LargeChange = 10;
+			this.trackBarTileSize.Location = new System.Drawing.Point(884, 181);
+			this.trackBarTileSize.Maximum = 250;
+			this.trackBarTileSize.Minimum = 20;
+			this.trackBarTileSize.Name = "trackBarTileSize";
+			this.trackBarTileSize.Size = new System.Drawing.Size(140, 30);
+			this.trackBarTileSize.SmallChange = 5;
+			this.trackBarTileSize.TabIndex = 91;
+			this.trackBarTileSize.TickFrequency = 5;
+			this.trackBarTileSize.Value = 30;
+			this.trackBarTileSize.Scroll += new System.EventHandler(this.trackBarTileSize_Scroll);
+			// 
+			// textTileSize
+			// 
+			this.textTileSize.Location = new System.Drawing.Point(982, 156);
+			this.textTileSize.Name = "textTileSize";
+			this.textTileSize.ReadOnly = true;
+			this.textTileSize.Size = new System.Drawing.Size(40, 22);
+			this.textTileSize.TabIndex = 90;
+			this.textTileSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			// 
+			// label6
+			// 
+			this.label6.AutoSize = true;
+			this.label6.Location = new System.Drawing.Point(891, 158);
+			this.label6.Name = "label6";
+			this.label6.Size = new System.Drawing.Size(55, 17);
+			this.label6.TabIndex = 89;
+			this.label6.Text = "tile size";
+			// 
+			// checkedListBoxBitmaps
+			// 
+			this.checkedListBoxBitmaps.FormattingEnabled = true;
+			this.checkedListBoxBitmaps.Items.AddRange(new object[] {
+            "heightmap",
+            "tree positions",
+            "tree borders"});
+			this.checkedListBoxBitmaps.Location = new System.Drawing.Point(260, 526);
+			this.checkedListBoxBitmaps.Margin = new System.Windows.Forms.Padding(15);
+			this.checkedListBoxBitmaps.Name = "checkedListBoxBitmaps";
+			this.checkedListBoxBitmaps.Size = new System.Drawing.Size(126, 55);
+			this.checkedListBoxBitmaps.TabIndex = 92;
+			this.checkedListBoxBitmaps.SelectedIndexChanged += new System.EventHandler(this.checkedListBox1_SelectedIndexChanged);
+			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
-			this.ClientSize = new System.Drawing.Size(1182, 573);
+			this.ClientSize = new System.Drawing.Size(1182, 633);
+			this.Controls.Add(this.checkedListBoxBitmaps);
+			this.Controls.Add(this.trackBarTileSize);
+			this.Controls.Add(this.textTileSize);
+			this.Controls.Add(this.label6);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.textShapefile);
 			this.Controls.Add(this.btnShapefile);
@@ -1263,6 +1335,7 @@ namespace ForestReco
 			((System.ComponentModel.ISupportInitialize)(this.trackBarRangeXmax)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarRangeYmax)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarRangeYmin)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarTileSize)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -1309,7 +1382,10 @@ namespace ForestReco
 
 			string fullFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
 
-			string[] lines = CPreprocessController.GetHeaderLines(fullFilePath);
+			string infoFileName = CUtils.GetFileName(fullFilePath) + "_i.txt";
+			string infoFilePath = CPreprocessController.currentTmpFolder + infoFileName;
+
+			string[] lines = CPreprocessController.GetHeaderLines(fullFilePath, infoFilePath);
 
 			if(lines == null)
 				return;
@@ -1317,7 +1393,7 @@ namespace ForestReco
 			if(CSequenceController.IsSequence())
 			{ return; }
 
-			CProjectData.header = new CHeaderInfo(lines);
+			CProjectData.sourceFileHeader = new CHeaderInfo(lines);
 			RefreshEstimatedSize();
 
 			//dont update if not inited yet
@@ -1537,7 +1613,9 @@ namespace ForestReco
 
 		private void checkBoxExportBitmap_CheckedChanged(object sender, EventArgs e)
 		{
-			CParameterSetter.SetParameter(ESettings.exportBitmap, checkBoxExportBitmap.Checked);
+			CParameterSetter.SetParameter(
+				ESettings.exportBitmap, checkBoxExportBitmap.Checked);
+			checkedListBoxBitmaps.Enabled = checkBoxExportBitmap.Checked;
 		}
 
 		public void SetStartBtnEnabled(bool pValue)
@@ -1548,11 +1626,13 @@ namespace ForestReco
 
 		private void btnOpenResult_Click(object sender, EventArgs e)
 		{
-			string folderPath = CObjPartition.folderPath;
+			string folderPath = CProjectData.outputFolder;
+
 			if(string.IsNullOrEmpty(folderPath))
-			{ return; }
+				return;
 			if(!Directory.Exists(folderPath))
-			{ return; }
+				return;
+
 			Process.Start(folderPath);
 		}
 
@@ -1672,22 +1752,22 @@ namespace ForestReco
 
 		private void textRangeXmin_LostFocus(object sender, EventArgs e)
 		{
-			rangeController.textRange_LostFocus(trackBarRangeXmin, textRangeXmin.Text);
+			rangeController.textRange_LostFocus(trackBarRangeXmin, ESettings.rangeXmax, textRangeXmin.Text);
 		}
 
 		private void textRangeXmax_LostFocus(object sender, EventArgs e)
 		{
-			rangeController.textRange_LostFocus(trackBarRangeXmax, textRangeXmax.Text);
+			rangeController.textRange_LostFocus(trackBarRangeXmax, ESettings.rangeXmin, textRangeXmax.Text);
 		}
 
 		private void textRangeYmin_LostFocus(object sender, EventArgs e)
 		{
-			rangeController.textRange_LostFocus(trackBarRangeYmin, textRangeYmin.Text);
+			rangeController.textRange_LostFocus(trackBarRangeYmin, ESettings.rangeYmax, textRangeYmin.Text);
 		}
 
 		private void textRangeYmax_LostFocus(object sender, EventArgs e)
 		{
-			rangeController.textRange_LostFocus(trackBarRangeYmax, textRangeYmax.Text);
+			rangeController.textRange_LostFocus(trackBarRangeYmax, ESettings.rangeYmin, textRangeYmax.Text);
 		}
 
 
@@ -1745,5 +1825,38 @@ namespace ForestReco
 			}
 		}
 
+		private void trackBarTileSize_Scroll(object sender, EventArgs e)
+		{
+			if(blockRecursion)
+				return;
+
+			trackValue = trackBarTileSize.Value;
+			if(trackValue % smallChangeValue != 0)
+			{
+				trackValue = trackValue / smallChangeValue * smallChangeValue;
+
+				blockRecursion = true;
+				trackBarTileSize.Value = trackValue;
+				blockRecursion = false;
+			}
+
+			textTileSize.Text = trackBarTileSize.Value + " m";
+			CParameterSetter.SetParameter(ESettings.tileSize, trackBarTileSize.Value);
+		}
+
+		private void textRangeXmax_TextChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.ExportBMHeightmap,
+				checkedListBoxBitmaps.GetItemCheckState(0) == CheckState.Checked);
+			CParameterSetter.SetParameter(ESettings.ExportBMTreePositions,
+				checkedListBoxBitmaps.GetItemCheckState(1) == CheckState.Checked);
+			CParameterSetter.SetParameter(ESettings.ExportBMTreeBorders,
+				checkedListBoxBitmaps.GetItemCheckState(2) == CheckState.Checked);
+		}
 	}
 }

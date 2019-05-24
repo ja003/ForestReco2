@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace ForestReco
 {
@@ -15,8 +13,12 @@ namespace ForestReco
 		Done
 	}
 
+
 	public static class CProgramStarter
 	{
+		public static int currentTileIndex;
+		public static int tilesCount;
+
 		public static void PrepareSequence()
 		{
 			CSequenceController.Init();
@@ -28,8 +30,9 @@ namespace ForestReco
 
 			DateTime startTime = DateTime.Now;
 			CProjectData.Init();
-			CDebug.Init();
 			CTreeManager.Init();
+			CDartTxt.Init();
+			CReftreeManager.Init();
 
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
@@ -46,64 +49,15 @@ namespace ForestReco
 
 			try
 			{
+				List<string> tiledFiles = CProgramLoader.GetTiledPreprocessedFilePaths();
 
-				string[] lines = CProgramLoader.GetFileLines();
-
-				if (CProjectData.backgroundWorker.CancellationPending) { return EProcessResult.Cancelled; }
-
-				bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);
-				if (linesOk && CHeaderInfo.HasHeader(lines[0]))
+				tilesCount = tiledFiles.Count;
+				foreach(string tiledFilePath in tiledFiles)
 				{
-					CProjectData.header = new CHeaderInfo(lines);
+					EProcessResult tileProcess = ProcessTile(tiledFilePath, tiledFiles.IndexOf(tiledFilePath));
 				}
-				else
-				{
-					CDebug.Error("No header is defined");
-					throw new Exception("No header is defined");
-				}
-
-				CReftreeManager.Init();
-				if (CProjectData.backgroundWorker.CancellationPending) { return EProcessResult.Cancelled; }
-
-				List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, CProjectData.header != null, true);
-				CProgramLoader.ProcessParsedLines(parsedLines);
-
-				if (CProjectData.backgroundWorker.CancellationPending) { return EProcessResult.Cancelled; }
-
-
-				//has to be called after array initialization
-				CCheckTreeManager.Init();
-				if (CProjectData.backgroundWorker.CancellationPending) { return EProcessResult.Cancelled; }
-
-				CTreeManager.DebugTrees();
-
-				CDebug.Step(EProgramStep.Export);
-				CObjPartition.ExportPartition();
-				if (CProjectData.backgroundWorker.CancellationPending) { return EProcessResult.Cancelled; }
-
-				//has to be called after ExportPartition where final folder location is determined
-				try
-				{
-					CDebug.Step(EProgramStep.Bitmap);
-					if (CParameterSetter.GetBoolSettings(ESettings.exportBitmap))
-					{
-						CBitmapExporter.Export();
-					}
-				}
-				catch (Exception e)
-				{
-					CDebug.Error("exception: " + e.Message);
-				}
-
-				CAnalytics.totalDuration = CAnalytics.GetDuration(startTime);
-				CDebug.Duration("total time", startTime);
-
-				CAnalytics.Write(true);
-
-				CDartTxt.Export();
-
 			}
-			catch (Exception e)
+			catch(Exception e)
 			{
 				CDebug.Error(
 					$"{Environment.NewLine}exception: {e.Message} {Environment.NewLine}{Environment.NewLine}" +
@@ -112,15 +66,19 @@ namespace ForestReco
 				return EProcessResult.Exception;
 			}
 
-			if (CProjectData.backgroundWorker.CancellationPending)
+			if(CProjectData.backgroundWorker.CancellationPending)
 			{
 				CDebug.Step(EProgramStep.Cancelled);
 				return EProcessResult.Cancelled;
 			}
 
+			CDartTxt.MergeAll();
+			CBitmapExporter.ExportMain();
+
+
 			CDebug.Step(EProgramStep.Done);
 
-			if (CSequenceController.IsLastSequence())
+			if(CSequenceController.IsLastSequence())
 			{
 				CSequenceController.OnLastSequenceEnd();
 				return EProcessResult.Done;
@@ -128,6 +86,76 @@ namespace ForestReco
 
 			CSequenceController.currentConfigIndex++;
 			return Start();
+		}
+
+		private static EProcessResult ProcessTile(string pTilePath, int pTileIndex)
+		{
+			DateTime startTime = DateTime.Now;
+			currentTileIndex = pTileIndex;
+			CProjectData.ReInit(pTileIndex); //has to reinit after each tile is processed
+			CTreeManager.Reinit();
+			CDebug.Init();
+
+			string[] lines = CProgramLoader.GetFileLines(pTilePath);
+
+			if(CProjectData.backgroundWorker.CancellationPending)
+			{ return EProcessResult.Cancelled; }
+
+			bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);
+			if(linesOk && CHeaderInfo.HasHeader(lines[0]))
+			{
+				//todo: where to init header?
+				CProjectData.currentTileHeader = new CHeaderInfo(lines);
+			}
+			else
+			{
+				CDebug.Error("No header is defined");
+				throw new Exception("No header is defined");
+			}
+
+			if(CProjectData.backgroundWorker.CancellationPending)
+			{ return EProcessResult.Cancelled; }
+
+			List<Tuple<EClass, Vector3>> parsedLines =
+				CProgramLoader.ParseLines(lines, CProjectData.mainHeader != null, true);
+
+			CProgramLoader.ProcessParsedLines(parsedLines);
+
+			if(CProjectData.backgroundWorker.CancellationPending)
+			{ return EProcessResult.Cancelled; }
+
+
+			//has to be called after array initialization
+			CCheckTreeManager.Init(); //todo: has to be inited for every tile...not good: fix
+			if(CProjectData.backgroundWorker.CancellationPending)
+				return EProcessResult.Cancelled;
+
+			CTreeManager.DebugTrees();
+
+			CDebug.Step(EProgramStep.Export);
+			CObjPartition.ExportPartition("", "tile"+ pTileIndex);
+
+			if(CProjectData.backgroundWorker.CancellationPending)
+				return EProcessResult.Cancelled;
+
+			//has to be called after ExportPartition where final folder location is determined
+			try
+			{
+				CDebug.Step(EProgramStep.Bitmap);
+				CBitmapExporter.Export(pTileIndex);				
+			}
+			catch(Exception e)
+			{
+				CDebug.Error("exception: " + e.Message);
+			}
+
+			CAnalytics.totalDuration = CAnalytics.GetDuration(startTime);
+			CDebug.Duration("total time", startTime);
+
+			CAnalytics.Write(true);
+
+			CDartTxt.Export();
+			return EProcessResult.Done;
 		}
 
 		public static void OnException()

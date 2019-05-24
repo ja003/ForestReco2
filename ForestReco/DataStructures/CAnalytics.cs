@@ -105,9 +105,14 @@ namespace ForestReco
 			}
 
 			output += $"\nERRORS" + newLine;
+			int counter = 0;
+			const int MAX_ERROR_DEBUG = 100;
 			foreach (string error in errors)
 			{
 				output += $"- {error} " + newLine;
+				counter++;
+				if(counter > MAX_ERROR_DEBUG)
+					break;
 			}
 
 			//before WriteToFile (it can fail there too)
@@ -179,8 +184,8 @@ namespace ForestReco
 				case ECsvAnalytics.Summary:
 					ExportCsv(new List<Tuple<string, object>>
 						{
-							new Tuple<string, object>("width", CProjectData.header.Width),
-							new Tuple<string, object>("Height",CProjectData.header.Height),
+							new Tuple<string, object>("width", CProjectData.currentTileHeader.Width),
+							new Tuple<string, object>("Height",CProjectData.currentTileHeader.Height),
 							new Tuple<string, object>("treeExtent",
 								CParameterSetter.GetFloatSettings(ESettings.treeExtent)),
 							new Tuple<string, object>("treeExtentMultiply",
@@ -210,8 +215,8 @@ namespace ForestReco
 		private static void ExportCsv(List<Tuple<string, object>> pParams, string pName, bool pExportGlobal = false)
 		{
 			string fileName = pName + ".csv";
-			string filePath = CObjPartition.folderPath + "/" + fileName;
-			string[] pathSplit = CObjPartition.folderPath.Split('\\');
+			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
+			string[] pathSplit = CProjectData.outputTileSubfolder.Split('\\');
 			string folderName = pathSplit[pathSplit.Length - 2];
 
 			string line;
@@ -295,7 +300,7 @@ namespace ForestReco
 		private static void WriteToFile(string pText)
 		{
 			string fileName = "analytics.txt";
-			string filePath = CObjPartition.folderPath + "/" + fileName;
+			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
 			using (var outStream = File.OpenWrite(filePath))
 			using (var writer = new StreamWriter(outStream))
 			{

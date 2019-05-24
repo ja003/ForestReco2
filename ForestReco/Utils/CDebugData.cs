@@ -56,7 +56,7 @@ namespace ForestReco
 		{
 			CDebug.WriteLine("Define debug array");
 
-			CProjectData.header = new CHeaderInfo(new[]
+			CProjectData.mainHeader = new CHeaderInfo(new[]
 			{
 				"","","","","","","","","","","","","","","",
 				"0 0 0", "0 0 0" , "0 0 0" , "0 0 0"
