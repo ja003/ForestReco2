@@ -55,8 +55,10 @@ namespace ForestReco
 				foreach(string tiledFilePath in tiledFiles)
 				{
 					EProcessResult tileProcess = ProcessTile(tiledFilePath, tiledFiles.IndexOf(tiledFilePath));
-				}
-			}
+                    if(CProjectData.backgroundWorker.CancellationPending)
+                        break;
+                }
+            }
 			catch(Exception e)
 			{
 				CDebug.Error(

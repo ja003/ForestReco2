@@ -7,10 +7,14 @@ namespace ForestReco
 	{
 		private static int stepCallCount;
 
-		public static void Init()
+        private static int countedStepsCount; //cache value
+
+        public static void Init()
 		{
 			stepCallCount = 0;
-		}
+            countedStepsCount = GetCountedStepsCount();
+
+        }
 
 		public static void Count(string pText, int pCount, int pOutOf = -1)
 		{
@@ -156,7 +160,7 @@ namespace ForestReco
 
 			stepCallCount++;
 			//-2 for abort states
-			int maxSteps = GetCountedStepsCount();
+			int maxSteps = countedStepsCount;
 			stepCallCount = Math.Min(stepCallCount, maxSteps); //bug: sometimes writes higher value
 			string progress = IsCountableStep(pStep) ?
 				stepCallCount + "/" + maxSteps + ": " : "";
@@ -165,11 +169,25 @@ namespace ForestReco
 			return progress + text;
 		}
 
+
+        /// <summary>
+        /// Preprocess steps are not counted.
+        /// </summary>
 		private static int GetCountedStepsCount()
 		{
-			return Enum.GetNames(typeof(EProgramStep)).Length - 3;
+            int count = 0;
+            foreach(EProgramStep type in Enum.GetValues(typeof(EProgramStep)))
+            {
+                if(IsCountableStep(type))
+                    count++;
+            }
+            return count;
+            //return Enum.GetNames(typeof(EProgramStep)).Length - 3;
 		}
 
+        /// <summary>
+        /// Steps from preprocessing are not counted
+        /// </summary>
 		private static bool IsCountableStep(EProgramStep pStep)
 		{
 			//todo: tmp hack for preprocessing steps
@@ -281,6 +299,7 @@ namespace ForestReco
 		Pre_LasReverseTile,
 		Pre_LasHeight,
 		Pre_LasGround,
-		Pre_LasToTxt
-	}
+		Pre_LasToTxt,
+        Pre_Noise
+    }
 }

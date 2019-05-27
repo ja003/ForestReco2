@@ -26,8 +26,8 @@ namespace ForestReco
 		/// </summary>
 		private static void SetMainHeader(string pPreprocessedFilePath)
 		{
-			FileInfo fi = new FileInfo(pPreprocessedFilePath);
-			string infoFilePath = fi.DirectoryName + "\\" + CUtils.GetFileName(pPreprocessedFilePath) + "_i.txt";
+			//FileInfo fi = new FileInfo(pPreprocessedFilePath);
+			string infoFilePath =  CPreprocessController.currentTmpFolder + "\\" + CUtils.GetFileName(pPreprocessedFilePath) + "_i.txt";
 
 			string[] headerLines = CPreprocessController.GetHeaderLines(pPreprocessedFilePath, infoFilePath);
 			CProjectData.mainHeader = new CHeaderInfo(headerLines);

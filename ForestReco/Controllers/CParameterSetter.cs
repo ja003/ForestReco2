@@ -227,5 +227,7 @@ namespace ForestReco
 		ExportBMHeightmap,
 		ExportBMTreePositions,
 		ExportBMTreeBorders,
-	}
+        preprocess,
+        deleteTmp,
+    }
 }

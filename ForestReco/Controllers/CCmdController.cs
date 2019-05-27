@@ -32,8 +32,9 @@ namespace ForestReco
 				case "lasinfo":
 				case "lasmerge":
 				case "lastile":
+				case "lasnoise":
 				case "lasground":
-				case "lasground_new":
+                case "lasground_new":
 				case "lasheight":
 				case "lasclassify":
 				case "lassplit":

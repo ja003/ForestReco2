@@ -29,8 +29,16 @@ namespace ForestReco
 			string pOffsetLine = GetLineContaining(lines, EHeaderAttribute.Offset);
 			string pMinLine = GetLineContaining(lines, EHeaderAttribute.Min);
 			string pMaxLine = GetLineContaining(lines, EHeaderAttribute.Max);
+            if(pScaleFactorLine.Length == 0)
+                throw new Exception($"Invalid header line pScaleFactorLine");
+            if(pOffsetLine.Length == 0)
+                throw new Exception($"Invalid header line pOffsetLine");
+            if(pMinLine.Length == 0)
+                throw new Exception($"Invalid header line pMinLine");
+            if(pMaxLine.Length == 0)
+                throw new Exception($"Invalid header line pMaxLine");
 
-			ScaleFactor = ParseLineVector3(pScaleFactorLine);
+            ScaleFactor = ParseLineVector3(pScaleFactorLine);
 			Offset = ParseLineVector3(pOffsetLine);
 			//Offset.Z = 0; //given Z offset will not be used
 			Min_orig = ParseLineVector3(pMinLine);

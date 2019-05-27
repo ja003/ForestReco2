@@ -478,5 +478,29 @@ namespace ForestReco.Properties {
                 this["ExportBMTreeBorders"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool preprocess {
+            get {
+                return ((bool)(this["preprocess"]));
+            }
+            set {
+                this["preprocess"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool deleteTmp {
+            get {
+                return ((bool)(this["deleteTmp"]));
+            }
+            set {
+                this["deleteTmp"] = value;
+            }
+        }
     }
 }
