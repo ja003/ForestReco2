@@ -32,7 +32,10 @@ namespace ForestReco
 			CProjectData.Init();
 			CTreeManager.Init();
 			CDartTxt.Init();
-			CReftreeManager.Init();
+			CBiomassController.Init(
+                CParameterSetter.GetStringSettings(ESettings.dbh),
+                CParameterSetter.GetStringSettings(ESettings.agb));
+            CReftreeManager.Init();
 
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
@@ -75,6 +78,7 @@ namespace ForestReco
 			}
 
 			CDartTxt.MergeAll();
+			CBiomassController.MergeAll();
 			CBitmapExporter.ExportMain();
 
 
@@ -157,7 +161,8 @@ namespace ForestReco
 			CAnalytics.Write(true);
 
 			CDartTxt.Export();
-			return EProcessResult.Done;
+			CBiomassController.Export();
+            return EProcessResult.Done;
 		}
 
 		public static void OnException()

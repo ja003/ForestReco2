@@ -14,7 +14,8 @@ namespace ForestReco
 		private static List<FileInfo> exportedFiles;
 
 		private static string newLine => Environment.NewLine;
-		static string HEADER_LINE = "complete transformation	"; //TODO: is it neccessary?
+
+		private static string HEADER_LINE = "complete transformation	"; //TODO: is it neccessary?
 
 		public static void Init()
 		{
@@ -34,7 +35,7 @@ namespace ForestReco
 				filesLines.Add(File.ReadAllLines(fi.FullName));
 			}
 
-			using(StreamWriter writer = File.CreateText($"{CProjectData.outputFolder}\\dart.txt"))
+			using(StreamWriter writer = File.CreateText($"{CProjectData.outputFolder}\\dart_all.txt"))
 			{
 				writer.WriteLine(HEADER_LINE);
 
@@ -74,7 +75,7 @@ namespace ForestReco
 			string output = "0 ";
 			ObjParser.Obj treeObj = pTree.mostSuitableRefTreeObj;
 			if(treeObj == null)
-			{ return null; }
+				return null;
 
 			//get coordinates relative to botleft corner of the area
 			Vector3 treePos = GetMovedPoint(pTree.Center);

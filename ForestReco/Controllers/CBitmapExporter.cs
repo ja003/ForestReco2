@@ -199,10 +199,11 @@ namespace ForestReco
 
 		private static void AddTreesToBitmap(CGroundArray pArray, Bitmap pBitmap, bool pTreePostition, bool pTreeBorder)
 		{
-			List<CTree> allTrees = CTreeManager.Trees;
+			List<CTree> allTrees = new List<CTree>();
+			allTrees.AddRange(CTreeManager.Trees);
 			allTrees.AddRange(CTreeManager.InvalidTrees);
 
-			foreach(CTree tree in allTrees)
+			foreach (CTree tree in allTrees)
 			{
 				try
 				{

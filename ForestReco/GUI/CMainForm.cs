@@ -104,6 +104,10 @@ namespace ForestReco
 		private CheckedListBox checkedListBoxBitmaps;
         private CheckBox checkBoxPreprocess;
         private CheckBox checkBoxDeleteTmp;
+        private RichTextBox richTextDBH;
+        private Label label7;
+        private Label label8;
+        private RichTextBox richTextAGB;
         private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -164,8 +168,11 @@ namespace ForestReco
 			textAvgTreeHeight.Text = CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh) + " m";
 			trackBarAvgTreeHeight.Value = CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh);
 
-			//bools
-			checkBoxExport3d.Checked =
+            richTextDBH.Text = CParameterSetter.GetStringSettings(ESettings.dbh);
+            richTextAGB.Text = CParameterSetter.GetStringSettings(ESettings.agb);
+
+            //bools
+            checkBoxExport3d.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.export3d);
 			checkBoxExort3d_CheckedChanged(this, EventArgs.Empty); //force refresh
 
@@ -335,6 +342,8 @@ namespace ForestReco
             this.checkBoxExportTreeBoxes = new System.Windows.Forms.CheckBox();
             this.checkBoxExport3d = new System.Windows.Forms.CheckBox();
             this.checkBoxExportBitmap = new System.Windows.Forms.CheckBox();
+            this.checkBoxPreprocess = new System.Windows.Forms.CheckBox();
+            this.checkBoxDeleteTmp = new System.Windows.Forms.CheckBox();
             this.btnOpenResult = new System.Windows.Forms.Button();
             this.textBoxEstimatedSize = new System.Windows.Forms.TextBox();
             this.labelEstimatedTotalSize = new System.Windows.Forms.Label();
@@ -375,8 +384,10 @@ namespace ForestReco
             this.textTileSize = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.checkedListBoxBitmaps = new System.Windows.Forms.CheckedListBox();
-            this.checkBoxPreprocess = new System.Windows.Forms.CheckBox();
-            this.checkBoxDeleteTmp = new System.Windows.Forms.CheckBox();
+            this.richTextDBH = new System.Windows.Forms.RichTextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.richTextAGB = new System.Windows.Forms.RichTextBox();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -842,6 +853,30 @@ namespace ForestReco
             this.checkBoxExportBitmap.UseVisualStyleBackColor = true;
             this.checkBoxExportBitmap.CheckedChanged += new System.EventHandler(this.checkBoxExportBitmap_CheckedChanged);
             // 
+            // checkBoxPreprocess
+            // 
+            this.checkBoxPreprocess.AutoSize = true;
+            this.checkBoxPreprocess.Location = new System.Drawing.Point(411, 318);
+            this.checkBoxPreprocess.Name = "checkBoxPreprocess";
+            this.checkBoxPreprocess.Size = new System.Drawing.Size(101, 21);
+            this.checkBoxPreprocess.TabIndex = 93;
+            this.checkBoxPreprocess.Text = "preprocess";
+            this.myToolTip.SetToolTip(this.checkBoxPreprocess, "hh");
+            this.checkBoxPreprocess.UseVisualStyleBackColor = true;
+            this.checkBoxPreprocess.CheckedChanged += new System.EventHandler(this.checkBoxPreprocess_CheckedChanged);
+            // 
+            // checkBoxDeleteTmp
+            // 
+            this.checkBoxDeleteTmp.AutoSize = true;
+            this.checkBoxDeleteTmp.Location = new System.Drawing.Point(411, 342);
+            this.checkBoxDeleteTmp.Name = "checkBoxDeleteTmp";
+            this.checkBoxDeleteTmp.Size = new System.Drawing.Size(125, 21);
+            this.checkBoxDeleteTmp.TabIndex = 94;
+            this.checkBoxDeleteTmp.Text = "delete tmp files";
+            this.myToolTip.SetToolTip(this.checkBoxDeleteTmp, "hh");
+            this.checkBoxDeleteTmp.UseVisualStyleBackColor = true;
+            this.checkBoxDeleteTmp.CheckedChanged += new System.EventHandler(this.checkBoxDeleteTmp_CheckedChanged);
+            // 
             // btnOpenResult
             // 
             this.btnOpenResult.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(161)))), ((int)(((byte)(212)))));
@@ -934,9 +969,9 @@ namespace ForestReco
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(901, 10);
+            this.button1.Location = new System.Drawing.Point(1076, 595);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(117, 62);
+            this.button1.Size = new System.Drawing.Size(88, 26);
             this.button1.TabIndex = 60;
             this.button1.Text = "test 1";
             this.button1.UseVisualStyleBackColor = true;
@@ -1201,7 +1236,7 @@ namespace ForestReco
             // 
             this.trackBarTileSize.AutoSize = false;
             this.trackBarTileSize.LargeChange = 10;
-            this.trackBarTileSize.Location = new System.Drawing.Point(884, 181);
+            this.trackBarTileSize.Location = new System.Drawing.Point(884, 196);
             this.trackBarTileSize.Maximum = 250;
             this.trackBarTileSize.Minimum = 20;
             this.trackBarTileSize.Name = "trackBarTileSize";
@@ -1214,7 +1249,7 @@ namespace ForestReco
             // 
             // textTileSize
             // 
-            this.textTileSize.Location = new System.Drawing.Point(982, 156);
+            this.textTileSize.Location = new System.Drawing.Point(982, 171);
             this.textTileSize.Name = "textTileSize";
             this.textTileSize.ReadOnly = true;
             this.textTileSize.Size = new System.Drawing.Size(40, 22);
@@ -1224,7 +1259,7 @@ namespace ForestReco
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(891, 158);
+            this.label6.Location = new System.Drawing.Point(891, 173);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(55, 17);
             this.label6.TabIndex = 89;
@@ -1244,34 +1279,50 @@ namespace ForestReco
             this.checkedListBoxBitmaps.TabIndex = 92;
             this.checkedListBoxBitmaps.SelectedIndexChanged += new System.EventHandler(this.checkedListBox1_SelectedIndexChanged);
             // 
-            // checkBoxPreprocess
+            // richTextDBH
             // 
-            this.checkBoxPreprocess.AutoSize = true;
-            this.checkBoxPreprocess.Location = new System.Drawing.Point(411, 318);
-            this.checkBoxPreprocess.Name = "checkBoxPreprocess";
-            this.checkBoxPreprocess.Size = new System.Drawing.Size(101, 21);
-            this.checkBoxPreprocess.TabIndex = 93;
-            this.checkBoxPreprocess.Text = "preprocess";
-            this.myToolTip.SetToolTip(this.checkBoxPreprocess, "hh");
-            this.checkBoxPreprocess.UseVisualStyleBackColor = true;
-            this.checkBoxPreprocess.CheckedChanged += new System.EventHandler(this.checkBoxPreprocess_CheckedChanged);
+            this.richTextDBH.Location = new System.Drawing.Point(929, 14);
+            this.richTextDBH.Name = "richTextDBH";
+            this.richTextDBH.Size = new System.Drawing.Size(238, 27);
+            this.richTextDBH.TabIndex = 95;
+            this.richTextDBH.Text = "";
+            this.richTextDBH.TextChanged += new System.EventHandler(this.richTextDBH_TextChanged);
             // 
-            // checkBoxDeleteTmp
+            // label7
             // 
-            this.checkBoxDeleteTmp.AutoSize = true;
-            this.checkBoxDeleteTmp.Location = new System.Drawing.Point(411, 342);
-            this.checkBoxDeleteTmp.Name = "checkBoxDeleteTmp";
-            this.checkBoxDeleteTmp.Size = new System.Drawing.Size(125, 21);
-            this.checkBoxDeleteTmp.TabIndex = 94;
-            this.checkBoxDeleteTmp.Text = "delete tmp files";
-            this.myToolTip.SetToolTip(this.checkBoxDeleteTmp, "hh");
-            this.checkBoxDeleteTmp.UseVisualStyleBackColor = true;
-            this.checkBoxDeleteTmp.CheckedChanged += new System.EventHandler(this.checkBoxDeleteTmp_CheckedChanged);
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(875, 19);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(49, 17);
+            this.label7.TabIndex = 96;
+            this.label7.Text = "DBH =";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(875, 60);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(49, 17);
+            this.label8.TabIndex = 98;
+            this.label8.Text = "AGB =";
+            // 
+            // richTextAGB
+            // 
+            this.richTextAGB.Location = new System.Drawing.Point(929, 55);
+            this.richTextAGB.Name = "richTextAGB";
+            this.richTextAGB.Size = new System.Drawing.Size(238, 27);
+            this.richTextAGB.TabIndex = 97;
+            this.richTextAGB.Text = "";
+            this.richTextAGB.TextChanged += new System.EventHandler(this.richTextAGB_TextChanged);
             // 
             // CMainForm
             // 
             this.BackColor = System.Drawing.SystemColors.MenuBar;
             this.ClientSize = new System.Drawing.Size(1182, 633);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.richTextAGB);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.richTextDBH);
             this.Controls.Add(this.checkBoxDeleteTmp);
             this.Controls.Add(this.checkBoxPreprocess);
             this.Controls.Add(this.checkedListBoxBitmaps);
@@ -1902,6 +1953,16 @@ namespace ForestReco
         {
             CParameterSetter.SetParameter(ESettings.deleteTmp, checkBoxDeleteTmp.Checked);
 
+        }
+
+        private void richTextDBH_TextChanged(object sender, EventArgs e)
+        {
+            CParameterSetter.SetParameter(ESettings.dbh, richTextDBH.Text);
+        }
+
+        private void richTextAGB_TextChanged(object sender, EventArgs e)
+        {
+            CParameterSetter.SetParameter(ESettings.agb, richTextAGB.Text);
         }
     }
 }

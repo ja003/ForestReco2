@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="forestFilePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">D:\Resources\ForestReco\podklady\data-small\TXT\BK_1000AGL_59_72_97_x90_y62.txt</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="reftreeFolderPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -121,6 +121,12 @@
     </Setting>
     <Setting Name="deleteTmp" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="dbh" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="agb" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

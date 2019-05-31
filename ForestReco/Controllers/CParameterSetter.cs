@@ -229,5 +229,7 @@ namespace ForestReco
 		ExportBMTreeBorders,
         preprocess,
         deleteTmp,
+        dbh,
+        agb,
     }
 }

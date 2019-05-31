@@ -25,7 +25,7 @@ namespace ForestReco.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Resources\\ForestReco\\podklady\\data-small\\TXT\\BK_1000AGL_59_72_97_x90_y62.txt")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string forestFilePath {
             get {
                 return ((string)(this["forestFilePath"]));
@@ -500,6 +500,30 @@ namespace ForestReco.Properties {
             }
             set {
                 this["deleteTmp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string dbh {
+            get {
+                return ((string)(this["dbh"]));
+            }
+            set {
+                this["dbh"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string agb {
+            get {
+                return ((string)(this["agb"]));
+            }
+            set {
+                this["agb"] = value;
             }
         }
     }

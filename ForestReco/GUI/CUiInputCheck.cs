@@ -56,7 +56,10 @@ namespace ForestReco
 
 			CheckExport();
 
-			bool hasProblems = problems.Count > 0;
+            CheckDBH();
+            CheckAGB();
+
+            bool hasProblems = problems.Count > 0;
 			if (hasProblems)
 			{
 				CDebug.WriteProblems(problems);
@@ -107,5 +110,19 @@ namespace ForestReco
 				problems.Add($"No reason to process when exportReftrees, exportTreeStructures and exportTreeBoxes are false. Result will be empty.");
 			}
 		}
-	}
+
+        private static void CheckDBH()
+        {
+            string problem = CBiomassController.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.dbh));
+            if(problem.Length > 0)
+                problems.Add($"DBH equation problem: {problem}");
+        }
+
+        private static void CheckAGB()
+        {
+            string problem = CBiomassController.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.agb));
+            if (problem.Length > 0)
+                problems.Add($"DBH equation problem: {problem}");
+        }
+    }
 }
