@@ -158,6 +158,8 @@ namespace ForestReco
 		public static bool debugSimilarites = true; //todo: nějak omezit?
 		public static bool forceAlgorithm = false;
 
+		private static readonly Random random = new Random();
+
 		private static Tuple<CRefTree, STreeSimilarity> GetMostSuitableRefTree(CTree pTree)
 		{
 			if (Trees.Count == 0)
@@ -179,9 +181,11 @@ namespace ForestReco
 				&& pTree.treeIndex != debugTree;
 			if (forceRandom || randomReftree)
 			{
-				int random = new Random().Next(0, Trees.Count);
+				//int random = new Random().Next(0, Trees.Count);
+				int rnd = random.Next(0, Trees.Count);
+
 				//if (debugSimilarites) { CDebug.WriteLine($"random = {random}"); }
-				return new Tuple<CRefTree, STreeSimilarity>(Trees[random], treeSimilarity);
+				return new Tuple<CRefTree, STreeSimilarity>(Trees[rnd], treeSimilarity);
 			}
 			if (debugSimilarites) { CDebug.WriteLine("\n" + pTree.treeIndex + " similarities = "); }
 

@@ -211,9 +211,22 @@ namespace ForestReco
 			return lines;
 		}
 
+		/// <summary>
+		/// Reftree is not on ground so it cant be detemined using ground height (as in CTree).
+		/// It can be meassured:
+		/// a) as height of an asociated OBJ file
+		/// b) diff between highest and lowest point
+		/// - problem a) OBJ file doesnt have to match the source points
+		/// - problem b) source points dont have to be captured at ground level => result height is lower
+		/// 
+		/// https://redmine.czechglobe.cz/issues/239
+		/// => we choose b)
+		/// </summary>
 		public override float GetTreeHeight()
 		{
-			return Obj.Size.YMax - Obj.Size.YMin;
+			float heightPoints = maxBB.Y - minBB.Y;
+			//float heightObj = Obj.Size.YMax - Obj.Size.YMin;
+			return heightPoints;
 		}
 		
 		protected override void OnProcess()

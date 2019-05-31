@@ -63,7 +63,7 @@ namespace ForestReco
 					output += line + newLine;
 			}
 
-			CDebug.WriteLine(output);
+			//CDebug.WriteLine(output);
 			WriteToFile(output);
 		}
 
