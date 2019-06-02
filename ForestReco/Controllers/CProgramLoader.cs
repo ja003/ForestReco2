@@ -184,16 +184,16 @@ namespace ForestReco
 			CTreeManager.ValidateTrees(false, false);
 
 			//export before merge
-			if(CProjectData.exportBeforeMerge)
-			{
-				CTreeManager.AssignMaterials(); //call before export
+			//if(CProjectData.exportBeforeMerge)
+			//{
+			//	CTreeManager.AssignMaterials(); //call before export
 
-				CObjPartition.AddTrees(true);
-				CObjPartition.AddTrees(false);
-				CObjPartition.ExportPartition("_noMerge");
-				CObjPartition.Init();
-				CObjPartition.AddArray();
-			}
+			//	CObjPartition.AddTrees(true);
+			//	CObjPartition.AddTrees(false);
+			//	CObjPartition.ExportPartition("_noMerge");
+			//	CObjPartition.Init();
+			//	CObjPartition.AddArray();
+			//}
 
 			CAnalytics.firstDetectedTrees = CTreeManager.Trees.Count;
 
@@ -309,7 +309,7 @@ namespace ForestReco
 
 			CAnalytics.vegePoints = CProjectData.vegePoints.Count;
 			CAnalytics.groundPoints = CProjectData.groundPoints.Count;
-			CAnalytics.filteredPoints = CProjectData.fakePoints.Count;
+			CAnalytics.filteredPoints = CProjectData.filteredPoints.Count;
 
 			CDebug.Step(EProgramStep.ProcessVegePoints);
 			ProcessVegePoints();

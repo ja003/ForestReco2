@@ -25,7 +25,7 @@ namespace ForestReco
 		/// <summary>
 		/// Merges all exported files into one
 		/// </summary>
-		public static void MergeAll()
+		public static void ExportMain()
 		{
 
 			List<string[]> filesLines = new List<string[]>();
@@ -35,7 +35,7 @@ namespace ForestReco
 				filesLines.Add(File.ReadAllLines(fi.FullName));
 			}
 
-			using(StreamWriter writer = File.CreateText($"{CProjectData.outputFolder}\\dart_all.txt"))
+			using(StreamWriter writer = File.CreateText($"{CProjectData.outputFolder}\\dart_main.txt"))
 			{
 				writer.WriteLine(HEADER_LINE);
 
@@ -52,7 +52,7 @@ namespace ForestReco
 
 		}
 
-		public static void Export()
+		public static void ExportTile()
 		{
 			string output = HEADER_LINE + newLine;
 
@@ -73,7 +73,7 @@ namespace ForestReco
 		private static string GetLine(CTree pTree)
 		{
 			string output = "0 ";
-			ObjParser.Obj treeObj = pTree.mostSuitableRefTreeObj;
+			ObjParser.Obj treeObj = pTree.assignedRefTreeObj;
 			if(treeObj == null)
 				return null;
 
@@ -89,7 +89,7 @@ namespace ForestReco
 			//to know which tree in OBJ is this one 
 			bool debugObjName = true;
 			string objName = debugObjName ? " " + pTree.GetObjName() : "";
-			output += pTree.RefTreeTypeName + objName;
+			output += pTree.assignedRefTree.RefTreeTypeName + objName;
 
 			return output;
 		}

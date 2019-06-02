@@ -293,7 +293,7 @@ namespace ForestReco
 		public void ApplyFilteredPoints()
 		{
 			CProjectData.vegePoints.AddRange(validPoints);
-			CProjectData.fakePoints.AddRange(fakePoints);
+			CProjectData.filteredPoints.AddRange(fakePoints);
 		}
 		
 		public bool IsDefined()

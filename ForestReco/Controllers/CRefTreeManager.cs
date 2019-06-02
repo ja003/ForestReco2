@@ -77,10 +77,11 @@ namespace ForestReco
 
 				Obj suitableTreeObj = mostSuitableRefTree.Obj.Clone();
 				suitableTreeObj.Name += "_" + t.treeIndex;
-				t.mostSuitableRefTreeObj = suitableTreeObj;
-				t.RefTreeTypeName = mostSuitableRefTree.RefTreeTypeName; //copy the type name
+				t.assignedRefTreeObj = suitableTreeObj;
+				t.assignedRefTree = mostSuitableRefTree;
+				//t.RefTreeTypeName = mostSuitableRefTree.RefTreeTypeName; //copy the type name
 
-				suitableTreeObj.UseMtl = t.assignedMaterial;
+				suitableTreeObj.UseMtl = t.assignedMaterial.Name;
 
 				CDebug.Progress(counter, CTreeManager.Trees.Count, debugFrequency, ref previousDebugStart, assignRefTreesStart, "Assigned reftree");
 				counter++;
@@ -120,7 +121,7 @@ namespace ForestReco
 
 				CRefTree deserializedRefTree = CRefTree.Deserialize(fileName);
 				CRefTree refTree = deserializedRefTree ??
-										 new CRefTree(fileName, pFileNames.IndexOf(fileName), TREE_POINT_EXTENT, true);
+										 new CRefTree(fileName, i, TREE_POINT_EXTENT, true);
 
 				refTree.RefTreeTypeName = fileName; //GetTypeName(fileName);
 

@@ -11,15 +11,15 @@ namespace ForestReco
 	public static class CProjectData
 	{
 		public static string saveFileName;
-		public static string outputFolder;
-		public static string outputTileSubfolder;
+		public static string outputFolder; //ends with \\
+		public static string outputTileSubfolder; //ends with \\
 
 		public static BackgroundWorker backgroundWorker;
 
 		//during one session is always processed one array file
 		public static List<Vector3> groundPoints = new List<Vector3>();
 		public static List<Vector3> vegePoints = new List<Vector3>();
-		public static List<Vector3> fakePoints = new List<Vector3>();
+		public static List<Vector3> filteredPoints = new List<Vector3>();
 
 		public static CGroundArray array;
 		public static CGroundArray detailArray;
@@ -30,7 +30,7 @@ namespace ForestReco
 
 		public static bool tryMergeTrees = true; //default true, user dont choose
 		public static bool tryMergeTrees2 = true;//default true, user dont choose
-		public static bool exportBeforeMerge = false;
+		//public static bool exportBeforeMerge = false;
 
 		public static bool useMaterial;
 
@@ -63,7 +63,7 @@ namespace ForestReco
 
 			vegePoints.Clear();
 			groundPoints.Clear();
-			fakePoints.Clear();
+			filteredPoints.Clear();
 
 			lowestHeight = int.MaxValue;
 			highestHeight = int.MinValue;

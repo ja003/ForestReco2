@@ -163,6 +163,21 @@ namespace ForestReco
 			return volume;
 		}
 
+		/// <summary>
+		/// https://keisan.casio.com/exec/system/1223520411
+		/// </summary>
+		public static float GetArea(Vector3 p1, Vector3 p2, Vector3 p3)
+		{
+			float _1 = p1.X * p2.Z;
+			float _2 = p2.X * p3.Z;
+			float _3 = p3.X * p1.Z;
+			float _4 = p1.Z * p2.X;
+			float _5 = p2.Z * p3.X;
+			float _6 = p3.Z * p1.X;
+			float sum = _1 + _2 + _3 - _4 - _5 - _6;
+			return Math.Abs(sum) / 2;
+		}
+
 		public static double[,] CalculateGaussKernel(int lenght, double weight)
 		{
 			if(lenght % 2 == 0)

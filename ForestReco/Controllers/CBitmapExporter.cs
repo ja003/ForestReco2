@@ -15,7 +15,7 @@ namespace ForestReco
 		private static bool exportBorders =>
 			CParameterSetter.GetBoolSettings(ESettings.ExportBMTreeBorders);
 
-		public static bool FILTER_MAIN_MAP = true; //slows export
+		public static bool FILTER_MAIN_MAP = false; //slows export
 		private static bool exportMain = true;
 
 		public const int TILE_WIDTH = 400; //todo: set from GUI?
@@ -70,7 +70,7 @@ namespace ForestReco
 				 GetKernelSize(mainMapStepSize, .5f), EFilter.ColorOrMax);
 			}
 
-			ExportBitmap(mainMap, "main", -1);
+			ExportBitmap(mainMap, "tree_positions_main", -1);
 		}
 
 		public static void Export(int pTileIndex)
@@ -226,11 +226,12 @@ namespace ForestReco
 					//draw branch extents
 					if(pTreeBorder && tree.isValid)
 					{
-						List<Vector3> furthestPoints = new List<Vector3>();
-						foreach(CBranch branch in tree.Branches)
-						{
-							furthestPoints.Add(branch.furthestPoint);
-						}
+						List<Vector3> furthestPoints = tree.GetFurthestPoints();
+						//	new List<Vector3>();
+						//foreach(CBranch branch in tree.Branches)
+						//{
+						//	furthestPoints.Add(branch.furthestPoint);
+						//}
 						for(int i = 0; i < furthestPoints.Count; i++)
 						{
 							Vector3 furthestPoint = furthestPoints[i];
@@ -529,8 +530,8 @@ namespace ForestReco
 			ResizeBitmap(ref pBitmap, pIsMain ? MAIN_WIDTH : TILE_WIDTH);
 
 			string fileName = pName + (pIsMain ? "" : "_" + pTileIndex) + ".jpg";
-			//string folder = pIsMain ? CProjectData.outputFolder : CProjectData.outputTileSubfolder;
-			string folder = CProjectData.outputFolder;
+			string folder = pIsMain ? CProjectData.outputFolder : CProjectData.outputTileSubfolder;
+			//string folder = CProjectData.outputFolder;
 			string filePath = folder + "/" + fileName;
 			pBitmap.Save(filePath, ImageFormat.Jpeg);
 		}

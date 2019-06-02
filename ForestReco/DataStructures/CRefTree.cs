@@ -15,6 +15,7 @@ namespace ForestReco
 	{
 		public Obj Obj;
 		public string fileName;
+		public string RefTreeTypeName;
 
 		public CRefTree() { }
 

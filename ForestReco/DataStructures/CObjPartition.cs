@@ -112,7 +112,7 @@ namespace ForestReco
 			foreach(Tuple<Tuple<int, int>, CTree> exportTree in treesToExport)
 			{
 				Obj obj = exportTree.Item2.GetObj(exportTreeStrucure, false, exportBoxes);
-				if(!pValid) { obj.UseMtl = CMaterialManager.GetInvalidMaterial(); }
+				if(!pValid) { obj.UseMtl = CMaterialManager.GetInvalidMaterial().Name; }
 
 				AddObj(exportTree.Item1, obj);
 			}
@@ -126,7 +126,7 @@ namespace ForestReco
 				{
 					if(t.isValid)
 					{
-						if(t.mostSuitableRefTreeObj == null)
+						if(t.assignedRefTreeObj == null)
 						{
 							//not error if reftrees were not loaded
 							if(CReftreeManager.Trees.Count > 0)
@@ -135,7 +135,7 @@ namespace ForestReco
 							}
 							return;
 						}
-						AddObj(f.indexInField, t.mostSuitableRefTreeObj);
+						AddObj(f.indexInField, t.assignedRefTreeObj);
 					}
 				}
 			}
@@ -148,9 +148,9 @@ namespace ForestReco
 				foreach(CCheckTree tree in f.CheckTrees)
 				{
 					Obj treeObj = tree.GetObj();
-					if(tree.assignedTree != null) { treeObj.UseMtl = CMaterialManager.GetCheckTreeMaterial(); }
-					else if(tree.isInvalid) { treeObj.UseMtl = CMaterialManager.GetInvalidMaterial(); }
-					else { treeObj.UseMtl = CMaterialManager.GetAlarmMaterial(); }
+					if(tree.assignedTree != null) { treeObj.UseMtl = CMaterialManager.GetCheckTreeMaterial().Name; }
+					else if(tree.isInvalid) { treeObj.UseMtl = CMaterialManager.GetInvalidMaterial().Name; }
+					else { treeObj.UseMtl = CMaterialManager.GetAlarmMaterial().Name; }
 					AddObj(f.indexInField, treeObj);
 
 				}
