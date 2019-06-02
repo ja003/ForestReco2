@@ -7,7 +7,7 @@ namespace ForestReco
 	public class CHeaderInfo
 	{
 		public Vector3 ScaleFactor;
-		public Vector3 Offset;
+		public Vector3 Offset { get; private set; }
 		public Vector3 Min; //used in project (Y = elevation), moved by offset
 		public Vector3 Max;
 

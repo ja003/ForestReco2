@@ -1,4 +1,5 @@
 ﻿using ObjParser;
+using ObjParser.Types;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -26,11 +27,12 @@ namespace ForestReco
 
 		public List<Vector3> Points = new List<Vector3>();
 
-		public Obj mostSuitableRefTreeObj;
-		public string RefTreeTypeName;
+		public CRefTree assignedRefTree;
+		public Obj assignedRefTreeObj;
+		//public string RefTreeTypeName;
 
 		public CCheckTree assignedCheckTree;
-		public string assignedMaterial;
+		public Material assignedMaterial;
 
 		public bool isValid; //invalid by default - until Validate is called
 
@@ -188,6 +190,24 @@ namespace ForestReco
 			return mostDefinedBranch;
 		}
 
+		/// <summary>
+		/// Calculates the area of the tree projection on the 2D plane.
+		/// - based on furthest points of each branch
+		/// </summary>
+		public float GetArea()
+		{
+			float area = 0;
+			for(int i = 0; i < branches.Count; i++)
+			{
+				CBranch nextBranch = branches[(i + 1) % branches.Count];
+				Vector3 p1 = peak.Center;
+				Vector3 p2 = branches[i].furthestPoint;
+				Vector3 p3 = nextBranch.furthestPoint;
+				area += CUtils.GetArea(p1, p2, p3);
+			}
+			return area;
+		}
+
 		public float GetDistanceTo(Vector3 pPoint)
 		{
 			float distToPeak = CUtils.Get2DDistance(pPoint, peak.Center);
@@ -327,7 +347,7 @@ namespace ForestReco
 
 			Obj obj = new Obj(GetObjName());
 
-			obj.UseMtl = assignedMaterial;
+			obj.UseMtl = assignedMaterial?.Name; //assignedMaterial can be null
 
 			List<CTreePoint> allTreePoints = GetAllPoints();
 
@@ -599,6 +619,16 @@ Vector3.Distance(suitablePoint, pPoint));
 			return Math.Min(extent, maxExtent);
 		}
 
+		public List<Vector3> GetFurthestPoints()
+		{
+			List<Vector3> points = new List<Vector3>();
+			foreach(CBranch b in branches)
+			{
+				points.Add(b.furthestPoint);
+			}
+			return points;
+		}
+
 		//DEBUG TRANSFORMATIONS - NOT CORRECT ON ALL TREES
 
 		public void Rotate(int pYangle)
@@ -690,7 +720,7 @@ Vector3.Distance(suitablePoint, pPoint));
 			string peakS = pPeak ? "||peak = " + peak : "";
 			string branchesS = pBranches ? "||BR=" + GetBranchesCount() +
 				"[" + GetBranchesPointCount().ToString("000") + "]" + "_|" : "";
-			string refTreeS = pReftree && mostSuitableRefTreeObj != null ? "||reftree = " + mostSuitableRefTreeObj.Name : "";
+			string refTreeS = pReftree && assignedRefTreeObj != null ? "||reftree = " + assignedRefTreeObj.Name : "";
 			string heightS = pHeight ? "||height = " + GetTreeHeight() : "";
 
 			if(pBranches)

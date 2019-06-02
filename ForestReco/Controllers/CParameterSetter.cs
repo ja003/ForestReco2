@@ -223,6 +223,9 @@ namespace ForestReco
 		colorTrees,
 		currentSplitMode,
 		shapeFilePath,
+		exportShape,
+		exportShapeTreePositions,
+		exportShapeTreeAreas,
 
 		ExportBMHeightmap,
 		ExportBMTreePositions,
@@ -231,5 +234,8 @@ namespace ForestReco
         deleteTmp,
         dbh,
         agb,
-    }
+		exportLas,
+		calculateDBH,
+		calculateAGB,
+	}
 }

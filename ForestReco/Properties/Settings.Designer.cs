@@ -526,5 +526,77 @@ namespace ForestReco.Properties {
                 this["agb"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportShape {
+            get {
+                return ((bool)(this["exportShape"]));
+            }
+            set {
+                this["exportShape"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportShapeTreePositions {
+            get {
+                return ((bool)(this["exportShapeTreePositions"]));
+            }
+            set {
+                this["exportShapeTreePositions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportShapeTreeAreas {
+            get {
+                return ((bool)(this["exportShapeTreeAreas"]));
+            }
+            set {
+                this["exportShapeTreeAreas"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportLas {
+            get {
+                return ((bool)(this["exportLas"]));
+            }
+            set {
+                this["exportLas"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool calculateDBH {
+            get {
+                return ((bool)(this["calculateDBH"]));
+            }
+            set {
+                this["calculateDBH"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool calculateAGB {
+            get {
+                return ((bool)(this["calculateAGB"]));
+            }
+            set {
+                this["calculateAGB"] = value;
+            }
+        }
     }
 }

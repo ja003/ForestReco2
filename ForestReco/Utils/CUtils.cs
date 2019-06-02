@@ -163,6 +163,21 @@ namespace ForestReco
 			return volume;
 		}
 
+		/// <summary>
+		/// https://keisan.casio.com/exec/system/1223520411
+		/// </summary>
+		public static float GetArea(Vector3 p1, Vector3 p2, Vector3 p3)
+		{
+			float _1 = p1.X * p2.Z;
+			float _2 = p2.X * p3.Z;
+			float _3 = p3.X * p1.Z;
+			float _4 = p1.Z * p2.X;
+			float _5 = p2.Z * p3.X;
+			float _6 = p3.Z * p1.X;
+			float sum = _1 + _2 + _3 - _4 - _5 - _6;
+			return Math.Abs(sum) / 2;
+		}
+
 		public static double[,] CalculateGaussKernel(int lenght, double weight)
 		{
 			if(lenght % 2 == 0)
@@ -237,8 +252,7 @@ namespace ForestReco
 		{
 			return Vector3.Distance(pPoint, new Vector3(675.94f, 128.04f, 1140.9f)) < pTolerance;
 		}
-
-
+		
 		public static float LimitToRange(this float value, float inclusiveMinimum, float inclusiveMaximum)
 		{
 			if(value < inclusiveMinimum)
@@ -287,6 +301,19 @@ namespace ForestReco
 			zDiff = Math.Min(zDiff, Math.Abs(pPoint.Z - pBorderTopRight.Z));
 
 			return zDiff;
+		}
+
+		public static Vector3 GetGlobalPosition(Vector3 pLocalPos)
+		{
+			return pLocalPos + CProjectData.mainHeader.Offset.GetSwappedYZ();
+		}
+
+		public static Vector3 GetSwappedYZ(this Vector3 pVec)
+		{
+			float tmp = pVec.Z;
+			pVec.Z = pVec.Y;
+			pVec.Y = tmp;
+			return pVec;
 		}
 	}
 }

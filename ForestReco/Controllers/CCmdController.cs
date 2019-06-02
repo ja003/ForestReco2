@@ -8,7 +8,8 @@ namespace ForestReco
 	{
 		private static string lasToolsFolder => CParameterSetter.GetStringSettings(ESettings.lasToolsFolderPath) + "\\";
 
-		private static string ParseCommand(string pLasToolCommand){
+		private static string ParseCommand(string pLasToolCommand)
+		{
 			string[] cmdSplit = pLasToolCommand.Split(' ');
 			if(cmdSplit.Length == 0)
 				return "";
@@ -27,29 +28,31 @@ namespace ForestReco
 				//throw new Exception("LasToolsFolder not found");
 			}
 
-			switch(lasCommand)
-			{
-				case "lasinfo":
-				case "lasmerge":
-				case "lastile":
-				case "lasnoise":
-				case "lasground":
-                case "lasground_new":
-				case "lasheight":
-				case "lasclassify":
-				case "lassplit":
-				case "las2txt":
-				case "lasclip":
-					return File.Exists(lasToolsFolder + lasCommand + ".exe");
-			}
-			return false;
+			return File.Exists(lasToolsFolder + lasCommand + ".exe");
+			//switch(lasCommand)
+			//{
+			//	case "lasinfo":
+			//	case "lasmerge":
+			//	case "lastile":
+			//	case "lasnoise":
+			//	case "lasground":
+			//case "lasground_new":
+			//	case "lasheight":
+			//	case "lasclassify":
+			//	case "lassplit":
+			//	case "las2txt":
+			//	case "lasclip":
+			//	case "txt2las":					
+			//		return File.Exists(lasToolsFolder + lasCommand + ".exe");
+			//}
+			//return false;
 		}
 
 		public static void RunLasToolsCmd(string pLasToolCommand, string pOutputFilePath)
 		{
 			if(!CanRunCommand(pLasToolCommand))
 			{
-				throw new Exception($"Cannot run command: {ParseCommand(pLasToolCommand)} {Environment.NewLine} {pLasToolCommand}");				
+				throw new Exception($"Cannot run command: {ParseCommand(pLasToolCommand)} {Environment.NewLine} {pLasToolCommand}");
 			}
 
 			//string outputFilePath = tmpFolder + pOutputFilePath;
@@ -70,7 +73,7 @@ namespace ForestReco
 				{
 					WorkingDirectory = lasToolsFolder,
 					FileName = "CMD.exe",
-					Arguments = command					
+					Arguments = command
 				};
 
 				Process currentProcess = Process.Start(processStartInfo);
