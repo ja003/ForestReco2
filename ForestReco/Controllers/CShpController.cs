@@ -92,14 +92,14 @@ namespace ForestReco
 		/// </summary>
 		private static Feature GetTreePosition(CTree pTree)
 		{
-			IPoint myPoint = factory.CreatePoint(new Coordinate(pTree.peak.Center.X, pTree.peak.Center.Z));
+			Vector3 globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
+			IPoint myPoint = factory.CreatePoint(new Coordinate(globalTreepos.X, globalTreepos.Z));
 
 			AttributesTable attributesTable = new AttributesTable();
 			attributesTable.Add(ATTR_ID, pTree.treeIndex);
 
-			Vector3 globalpos = CUtils.GetGlobalPosition(pTree.peak.Center);
-			attributesTable.Add(ATTR_X, globalpos.X.ToString(NUM_FORMAT));
-			attributesTable.Add(ATTR_Y, globalpos.Z.ToString(NUM_FORMAT));
+			attributesTable.Add(ATTR_X, globalTreepos.X.ToString(NUM_FORMAT));
+			attributesTable.Add(ATTR_Y, globalTreepos.Z.ToString(NUM_FORMAT));
 
 			float treeHeight = pTree.GetTreeHeight();
 			attributesTable.Add(ATTR_HEIGHT, treeHeight.ToString(NUM_FORMAT));
@@ -132,24 +132,30 @@ namespace ForestReco
 			List<Coordinate> pointsCoords = new List<Coordinate>();
 			foreach(Vector3 p in furthestPoints)
 			{
-				pointsCoords.Add(new Coordinate(p.X, p.Z));
+				Vector3 globalP = CUtils.GetGlobalPosition(p);
+				pointsCoords.Add(new Coordinate(globalP.X, globalP.Z));
 			}
 			pointsCoords.Add(pointsCoords[0]); //to close polygon
 
 			IPolygon polygon = factory.CreatePolygon(pointsCoords.ToArray());
 
+			//id
 			AttributesTable attributesTable = new AttributesTable();
 			attributesTable.Add(ATTR_ID, pTree.treeIndex);
 
-			attributesTable.Add(ATTR_X, pTree.peak.Center.X.ToString(NUM_FORMAT));
-			attributesTable.Add(ATTR_Y, pTree.peak.Center.Z.ToString(NUM_FORMAT));
+			//position
+			Vector3 globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
+			attributesTable.Add(ATTR_X, globalTreepos.X.ToString(NUM_FORMAT));
+			attributesTable.Add(ATTR_Y, globalTreepos.Z.ToString(NUM_FORMAT));
 
-			//TODO: calculate area
+			//area
 			attributesTable.Add(ATTR_AREA, pTree.GetArea());
 
+			//tree height
 			float treeHeight = pTree.GetTreeHeight();
 			attributesTable.Add(ATTR_HEIGHT, treeHeight.ToString(NUM_FORMAT));
 
+			//reftree type
 			attributesTable.Add(ATTR_TYPE, pTree.assignedRefTree.RefTreeTypeName);
 
 			Feature feature = new Feature(polygon, attributesTable);

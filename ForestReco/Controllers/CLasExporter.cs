@@ -42,7 +42,8 @@ namespace ForestReco
 			//ground points
 			foreach(Vector3 p in CProjectData.groundPoints)
 			{
-				res = GetPointLine(p, 2, (byte)0, GROUND_COLOR) + newLine;
+				Vector3 globalP = CUtils.GetGlobalPosition(p);
+				res = GetPointLine(globalP, 2, (byte)0, GROUND_COLOR) + newLine;
 				output += res;
 				mainOutput += res;
 			}
@@ -96,7 +97,8 @@ namespace ForestReco
 				//int treeIndex = pTree.isValid ? pTree.assignedRefTree.treeIndex : 0;
 				int treeIndex = pTree.treeIndex;
 
-				output += GetPointLine(p, 5, (byte)treeIndex, color) + newLine;
+				Vector3 globalP = CUtils.GetGlobalPosition(p);
+				output += GetPointLine(globalP, 5, (byte)treeIndex, color) + newLine;
 			}
 			return output;
 		}
