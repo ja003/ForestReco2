@@ -111,13 +111,14 @@ namespace ForestReco
 				vegePoints.Add(point);
 			}
 
-			if(point.Y < lowestHeight)
+			float height = point.Z;
+			if (height < lowestHeight)
 			{
-				lowestHeight = point.Y;
+				lowestHeight = height;
 			}
-			if(point.Y > highestHeight)
+			if(height > highestHeight)
 			{
-				highestHeight = point.Y;
+				highestHeight = height;
 			}
 		}
 	}

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ForestReco;
+using System;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using ForestReco;
 
 namespace ObjParser.Types
 {
@@ -17,6 +13,8 @@ namespace ObjParser.Types
 
 		public Vertex(Vector3 pVector3, int pVertexIndex)
 		{
+			CUtils.SwapYZ(ref pVector3);
+
 			X = pVector3.X;
 			Y = pVector3.Y;
 			Z = pVector3.Z;
@@ -34,10 +32,10 @@ namespace ObjParser.Types
 
 		public void LoadFromStringArray(string[] data)
 		{
-			if (data.Length < MinimumDataLength)
+			if(data.Length < MinimumDataLength)
 				throw new ArgumentException("Input array must be of minimum length " + MinimumDataLength, "data");
 
-			if (!data[0].ToLower().Equals(Prefix))
+			if(!data[0].ToLower().Equals(Prefix))
 				throw new ArgumentException("Data prefix must be '" + Prefix + "'", "data");
 
 			bool success;
@@ -45,15 +43,15 @@ namespace ObjParser.Types
 			float x, y, z;
 
 			success = float.TryParse(data[1], NumberStyles.Any, CultureInfo.InvariantCulture, out x);
-			if (!success)
+			if(!success)
 				throw new ArgumentException("Could not parse X parameter as float");
 
 			success = float.TryParse(data[2], NumberStyles.Any, CultureInfo.InvariantCulture, out y);
-			if (!success)
+			if(!success)
 				throw new ArgumentException("Could not parse Y parameter as float");
 
 			success = float.TryParse(data[3], NumberStyles.Any, CultureInfo.InvariantCulture, out z);
-			if (!success)
+			if(!success)
 				throw new ArgumentException("Could not parse Z parameter as float");
 
 			X = x;
@@ -72,7 +70,7 @@ namespace ObjParser.Types
 		public string ToString(SVertexTransform pTransform)
 		{
 			Vector3 newPos = position;
-			if (pTransform.Defined)
+			if(pTransform.Defined)
 			{
 				//1.scale
 				newPos = Vector3.Transform(newPos, Matrix4x4.CreateScale(

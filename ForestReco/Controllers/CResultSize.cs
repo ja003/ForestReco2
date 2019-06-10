@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ForestReco
@@ -17,13 +13,21 @@ namespace ForestReco
 		/// </summary>
 		private static float GetResultFileSize()
 		{
-			CDebug.Warning("Estimated result size is not correct since it does not take a split into account.");
 			CHeaderInfo header = CProjectData.sourceFileHeader;
-			if (header == null) { return 0; }
+			if(header == null)
+				return 0;
 
 			arrayHeight = header.Height;
 			arrayWidth = header.Width;
-			float area = header.Width * header.Height;
+			if((ESplitMode)CParameterSetter.GetIntSettings(ESettings.currentSplitMode) == ESplitMode.Manual)
+			{
+				SSplitRange range = CParameterSetter.GetSplitRange();
+				arrayWidth = range.RangeX;
+				arrayHeight = range.RangeY;
+			}
+
+			float area = arrayWidth * arrayHeight;
+
 			const float treeStructure = .05f;
 			const float reftreeSize = 1;
 			const float treeBoxSize = .01f;
@@ -34,15 +38,15 @@ namespace ForestReco
 			float totalSize = groundSize;
 
 
-			if (CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures))
+			if(CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures))
 			{
 				totalSize += area * treeDensity * treeStructure;
 			}
-			if (CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes))
+			if(CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes))
 			{
 				totalSize += area * treeDensity * treeBoxSize;
 			}
-			if (CParameterSetter.GetBoolSettings(ESettings.exportRefTrees))
+			if(CParameterSetter.GetBoolSettings(ESettings.exportRefTrees))
 			{
 				totalSize += area * treeDensity * reftreeSize;
 			}

@@ -118,12 +118,12 @@ namespace ForestReco
 			return offset;
 		}
 
-		public static bool IsTreeAtBufferZone(CTree pTree)
+		public static bool IsAtBufferZone(CTree pTree)
 		{
-			return IsTreeAtBufferZone(pTree.peak.Center);
+			return IsAtBufferZone(pTree.peak.Center);
 		}
 
-		public static bool IsTreeAtBufferZone(Vector3 pPoint)
+		public static bool IsAtBufferZone(Vector3 pPoint)
 		{
 			Vector3 mainBotLeft = CProjectData.mainHeader.BotLeftCorner;
 			Vector3 mainTopRight = CProjectData.mainHeader.TopRightCorner;
@@ -143,19 +143,19 @@ namespace ForestReco
 				{
 					float distanceXFromCurrentTileBorder =
 						CUtils.GetDistanceFromBorderX(pPoint, tileBotLeft, tileTopRight);
-					float distanceZFromCurrentTileBorder =
-						CUtils.GetDistanceFromBorderZ(pPoint, tileBotLeft, tileTopRight);
+					float distanceYFromCurrentTileBorder =
+						CUtils.GetDistanceFromBorderY(pPoint, tileBotLeft, tileTopRight);
 
 					float distanceXFromForest =
 						CUtils.GetDistanceFromBorderX(pPoint, mainBotLeft, mainTopRight);
-					float distanceZFromForest =
-						CUtils.GetDistanceFromBorderZ(pPoint, mainBotLeft, mainTopRight);
+					float distanceYFromForest =
+						CUtils.GetDistanceFromBorderY(pPoint, mainBotLeft, mainTopRight);
 
 					bool isAtTileCorner = distanceXFromCurrentTileBorder < CProjectData.bufferSize &&
-						distanceZFromCurrentTileBorder < CProjectData.bufferSize;
+						distanceYFromCurrentTileBorder < CProjectData.bufferSize;
 
 					bool isNotAtForestCorner = distanceXFromForest > CProjectData.bufferSize ||
-						distanceZFromForest > CProjectData.bufferSize;
+						distanceYFromForest > CProjectData.bufferSize;
 
 					return isAtTileCorner && isNotAtForestCorner;
 				}

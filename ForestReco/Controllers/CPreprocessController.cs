@@ -13,14 +13,14 @@ namespace ForestReco
 		private const string CLASSIFY_EXT = "_c";
 		private const string SPLIT_EXT = "_s";
 
-        //this number can very based on current lastool version...better to pick bigger
-        private const int HEADER_FILE_LINES = 30;
+		//this number can very based on current lastool version...better to pick bigger
+		private const int HEADER_FILE_LINES = 30;
 
-        //TODO: make settable
-        //WARNING: too large can cause error with unlicensed version
-        private const int PREPROCESS_TILE_SIZE = 250; 
+		//TODO: make settable
+		//WARNING: too large can cause error with unlicensed version
+		private const int PREPROCESS_TILE_SIZE = 250;
 
-        private static string tmpFolder => CParameterSetter.TmpFolder;
+		private static string tmpFolder => CParameterSetter.TmpFolder;
 
 		private static string forestFilePath => CParameterSetter.GetStringSettings(ESettings.forestFilePath);
 
@@ -130,11 +130,11 @@ namespace ForestReco
 				return preprocessedFilePath;
 			}
 
-            //forest file is already processed
-            if(!CParameterSetter.GetBoolSettings(ESettings.preprocess))
-            {
-                return forestFilePath;
-            }
+			//forest file is already processed
+			if(!CParameterSetter.GetBoolSettings(ESettings.preprocess))
+			{
+				return forestFilePath;
+			}
 
 			/////// lastile //////////
 
@@ -142,7 +142,7 @@ namespace ForestReco
 
 			//takes long time for large files but cant meassure process
 			FileInfo[] tiledFiles = GetTiledFiles(forestFilePath, tmpTiledFilesFolder,
-                PREPROCESS_TILE_SIZE, CProjectData.bufferSize);
+				PREPROCESS_TILE_SIZE, CProjectData.bufferSize);
 
 			List<string> classifyFilePaths = new List<string>();
 			for(int i = 0; i < tiledFiles.Length; i++)
@@ -151,14 +151,14 @@ namespace ForestReco
 
 				FileInfo fi = tiledFiles[i];
 
-                /////// lasnoise //////////
-                
-                CDebug.Step(EProgramStep.Pre_Noise);
-                string noiseFilePath = LasNoise(fi.FullName);
+				/////// lasnoise //////////
 
-                /////// lasground //////////
+				CDebug.Step(EProgramStep.Pre_Noise);
+				string noiseFilePath = LasNoise(fi.FullName);
 
-                CDebug.Step(EProgramStep.Pre_LasGround);
+				/////// lasground //////////
+
+				CDebug.Step(EProgramStep.Pre_LasGround);
 				string groundFilePath = LasGround(noiseFilePath);
 
 				/////// lasheight //////////
@@ -182,26 +182,26 @@ namespace ForestReco
 			/////// reverse lastile //////////
 			LasReverseTiles(classifyFilePaths);
 
-            /////// delete unnecessary tmp files //////////
+			/////// delete unnecessary tmp files //////////
 
-            if(CParameterSetter.GetBoolSettings(ESettings.deleteTmp))
-            {
-                CDebug.Step(EProgramStep.Pre_DeleteTmp);
+			if(CParameterSetter.GetBoolSettings(ESettings.deleteTmp))
+			{
+				CDebug.Step(EProgramStep.Pre_DeleteTmp);
 
-                DirectoryInfo di = new DirectoryInfo(currentTmpFolder);
-                FileInfo[] fileInfos = di.GetFiles();
-                for(int i = 0; i < fileInfos.Length; i++)
-                {
-                    FileInfo fi = fileInfos[i];
-                    if(IsTmpFile(fi))
-                    {
-                        CDebug.WriteLine($"delete tmp file {fi.Name}");
-                        fi.Delete();
-                    }
-                }
-                //delete tiles folder
-                new DirectoryInfo(tmpTiledFilesFolder).Delete(true);
-            }
+				DirectoryInfo di = new DirectoryInfo(currentTmpFolder);
+				FileInfo[] fileInfos = di.GetFiles();
+				for(int i = 0; i < fileInfos.Length; i++)
+				{
+					FileInfo fi = fileInfos[i];
+					if(IsTmpFile(fi))
+					{
+						CDebug.WriteLine($"delete tmp file {fi.Name}");
+						fi.Delete();
+					}
+				}
+				//delete tiles folder
+				new DirectoryInfo(tmpTiledFilesFolder).Delete(true);
+			}
 			return preprocessedFilePath;
 		}
 
@@ -216,20 +216,20 @@ namespace ForestReco
 			string outputFolderPath = GetTiledFilesFolder(
 				CUtils.GetFileName(pPreprocessedFilePath), tileSize);
 
-            FileInfo[] tiles;
-            //lastile splits file into tiles even if tileSize is bigger
-            //todo: WHY?
-            //=> dont split to tiles
-            if(CProjectData.mainHeader.Width <= tileSize &&
-                CProjectData.mainHeader.Height <= tileSize)
-            {
-                tiles = new FileInfo[] { new FileInfo(pPreprocessedFilePath) };
-            }
-            else
-            {
-                tiles = GetTiledFiles(pPreprocessedFilePath,
-                outputFolderPath, tileSize, CProjectData.bufferSize);
-            }
+			FileInfo[] tiles;
+			//lastile splits file into tiles even if tileSize is bigger
+			//todo: WHY?
+			//=> dont split to tiles
+			if(CProjectData.mainHeader.Width <= tileSize &&
+				CProjectData.mainHeader.Height <= tileSize)
+			{
+				tiles = new FileInfo[] { new FileInfo(pPreprocessedFilePath) };
+			}
+			else
+			{
+				tiles = GetTiledFiles(pPreprocessedFilePath,
+				outputFolderPath, tileSize, CProjectData.bufferSize);
+			}
 
 			for(int i = 0; i < tiles.Length; i++)
 			{
@@ -249,7 +249,7 @@ namespace ForestReco
 		private static FileInfo[] GetTiledFiles(string pSourceFilePath, string pOutputFolderPath, int pTileSize, int pBufferSize)
 		{
 			DirectoryInfo tiledFilesFolderInfo = new DirectoryInfo(pOutputFolderPath);
-            
+
 			//we expect that only laz files in folder should be the expected output
 			//if they are already there, skip the process
 			FileInfo[] lazFilesInFolder = tiledFilesFolderInfo.GetFiles("*" + LAZ);
@@ -283,22 +283,22 @@ namespace ForestReco
 			return lazFilesInFolder;
 		}
 
-        private static string LasNoise(string pForestFilePath)
-        {
-            string noiseFileName = CUtils.GetFileName(pForestFilePath) + "_n" + LAZ;
-            string noiseFilePath = currentTmpFolder + noiseFileName;
+		private static string LasNoise(string pForestFilePath)
+		{
+			string noiseFileName = CUtils.GetFileName(pForestFilePath) + "_n" + LAZ;
+			string noiseFilePath = currentTmpFolder + noiseFileName;
 
-            string ground =
-                    "lasnoise -i " +
-                    pForestFilePath +
-                    " -o " +
-                    noiseFilePath;
-            CCmdController.RunLasToolsCmd(ground, noiseFilePath);
+			string ground =
+					"lasnoise -i " +
+					pForestFilePath +
+					" -o " +
+					noiseFilePath;
+			CCmdController.RunLasToolsCmd(ground, noiseFilePath);
 
-            return noiseFilePath;
-        }
+			return noiseFilePath;
+		}
 
-        private static string LasGround(string pNoiseFilePath)
+		private static string LasGround(string pNoiseFilePath)
 		{
 			string groundFileName = CUtils.GetFileName(pNoiseFilePath) + "_g" + LAZ;
 			string groundFilePath = currentTmpFolder + groundFileName;

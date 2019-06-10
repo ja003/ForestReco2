@@ -31,13 +31,15 @@ namespace ForestReco
 			DateTime startTime = DateTime.Now;
 			CProjectData.Init();
 			CTreeManager.Init();
+			CAnalytics.Init();
+
 			CDartTxt.Init();
 			CLasExporter.Init();
 			CBiomassController.Init(
-                CParameterSetter.GetStringSettings(ESettings.dbh),
-                CParameterSetter.GetStringSettings(ESettings.agb));
+				CParameterSetter.GetStringSettings(ESettings.dbh),
+				CParameterSetter.GetStringSettings(ESettings.agb));
 			CShpController.Init();
-            CReftreeManager.Init();
+			CReftreeManager.Init();
 
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
@@ -60,10 +62,10 @@ namespace ForestReco
 				foreach(string tiledFilePath in tiledFiles)
 				{
 					EProcessResult tileProcess = ProcessTile(tiledFilePath, tiledFiles.IndexOf(tiledFilePath));
-                    if(CProjectData.backgroundWorker.CancellationPending)
-                        break;
-                }
-            }
+					if(CProjectData.backgroundWorker.CancellationPending)
+						break;
+				}
+			}
 			catch(Exception e)
 			{
 				CDebug.Error(
@@ -142,7 +144,7 @@ namespace ForestReco
 			CTreeManager.DebugTrees();
 
 			CDebug.Step(EProgramStep.Export);
-			CObjPartition.ExportPartition("", "tile"+ pTileIndex);
+			CObjPartition.ExportPartition("", "tile" + pTileIndex);
 
 			if(CProjectData.backgroundWorker.CancellationPending)
 				return EProcessResult.Cancelled;
@@ -151,7 +153,7 @@ namespace ForestReco
 			try
 			{
 				CDebug.Step(EProgramStep.Bitmap);
-				CBitmapExporter.Export(pTileIndex);				
+				CBitmapExporter.Export(pTileIndex);
 			}
 			catch(Exception e)
 			{

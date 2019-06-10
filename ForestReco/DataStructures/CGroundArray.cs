@@ -35,10 +35,10 @@ namespace ForestReco
 
 			botLeftCorner = CProjectData.currentTileHeader.BotLeftCorner;
 			topRightCorner = CProjectData.currentTileHeader.TopRightCorner;
-			topLeftCorner = new Vector3(botLeftCorner.X, 0, topRightCorner.Z);
+			topLeftCorner = new Vector3(botLeftCorner.X, topRightCorner.Y, 0);
 
 			float width = topRightCorner.X - botLeftCorner.X;
-			float height = topRightCorner.Z - botLeftCorner.Z;
+			float height = topRightCorner.Y - botLeftCorner.Y;
 
 			arrayXRange = (int)(width / stepSize) + 1;
 			arrayYRange = (int)(height / stepSize) + 1;
@@ -55,8 +55,9 @@ namespace ForestReco
 				{
 					CGroundField newGroundField = new CGroundField(new Tuple<int, int>(x, y),
 						new Vector3(
-							topLeftCorner.X + x * stepSize + stepSize / 2, 0,
-							topLeftCorner.Z - y * stepSize - stepSize / 2));
+							topLeftCorner.X + x * stepSize + stepSize / 2,
+							topLeftCorner.Y - y * stepSize - stepSize / 2,
+							0));
 					array[x, y] = newGroundField;
 					fields.Add(newGroundField);
 				}
@@ -95,7 +96,7 @@ namespace ForestReco
 		private static Vector3 GetCurrentTileOffset()
 		{
 			Vector3 diff = CProjectData.mainHeader.Center - CProjectData.currentTileHeader.Center;
-			diff.Z *= -1; //to match coord style
+			diff.Y *= -1; //to match coord style //TODO: check..weird
 			return diff;
 		}
 
@@ -148,8 +149,8 @@ namespace ForestReco
 			Vector3 pTopLeftCorner, float pStepSize)
 		{
 			int xPos = (int)Math.Floor((pPoint.X - pTopLeftCorner.X) / pStepSize);
-			//due to array orientation
-			int yPos = (int)Math.Floor((pTopLeftCorner.Z - pPoint.Z) / pStepSize);
+			//due to array orientation //changed
+			int yPos = (int)Math.Floor((pTopLeftCorner.Y - pPoint.Y) / pStepSize);
 			
 			return new Tuple<int, int>(xPos, yPos);
 		}
@@ -287,11 +288,11 @@ namespace ForestReco
 					float vegeHeight = (float)preProcessVegeHeight - (float)groundHeight;
 					if (vegeHeight > CTreeManager.AVERAGE_MAX_TREE_HEIGHT) { continue; }
 					Vector3 fieldCenter = field.center;
-					fieldCenter.Y = vegeHeight;
+					fieldCenter.Z = vegeHeight;
 					heights.Add(fieldCenter);
 				}
 			}
-			heights.Sort((a, b) => b.Y.CompareTo(a.Y));
+			heights.Sort((a, b) => b.Z.CompareTo(a.Z));
 			Vector3 selectedPoint = heights[0];
 			int okHeightsInRow = 0;
 			int estimatedFakePointsCount = GetEstimatedFakePointsCount();
@@ -306,7 +307,7 @@ namespace ForestReco
 					selectedPoint = currentPoint;
 					continue;
 				}
-				float heightDiff = selectedPoint.Y - currentPoint.Y;
+				float heightDiff = selectedPoint.Z - currentPoint.Z;
 				if (heightDiff > minDistBetweenFakeAndOkPoint)
 				{
 					okHeightsInRow = 0;
@@ -323,7 +324,7 @@ namespace ForestReco
 				}
 			}
 
-			return selectedPoint.Y;
+			return selectedPoint.Z;
 		}
 
 		public int GetEstimatedFakePointsCount()
@@ -543,7 +544,7 @@ namespace ForestReco
 		{
 			float? groundHeight = GetHeight(pPoint);
 			if (groundHeight == null) { return null; }
-			return pPoint.Y - groundHeight;
+			return pPoint.Z - groundHeight;
 		}
 
 		public bool IsAtBorder(Vector3 pPoint)
@@ -558,11 +559,11 @@ namespace ForestReco
 			float xDistToLeft = pPoint.X - botLeftCorner.X;
 			float xDist = Math.Min(xDistToLeft, xDistToRight);
 
-			float zDistToTop = topRightCorner.Z - pPoint.Z;
-			float zDistToBot = pPoint.Z - botLeftCorner.Z;
-			float zDist = Math.Min(zDistToBot, zDistToTop);
+			float yDistToTop = topRightCorner.Y - pPoint.Y;
+			float yDistToBot = pPoint.Y - botLeftCorner.Y;
+			float yDist = Math.Min(yDistToBot, yDistToTop);
 
-			float dist = Math.Min(xDist, zDist);
+			float dist = Math.Min(xDist, yDist);
 			return dist;
 		}
 

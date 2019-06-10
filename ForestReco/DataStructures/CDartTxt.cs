@@ -79,10 +79,10 @@ namespace ForestReco
 
 			//get coordinates relative to botleft corner of the area
 			Vector3 treePos = GetMovedPoint(pTree.Center);
-			//in final file Z = height, but here Y = height
-			output += $"{treePos.X} {treePos.Z} 0 ";
+			//in final file Z = height, but here Y = height //changed!
+			output += $"{treePos.X} {treePos.Y} 0 ";
 			//scale will be same at all axix
-			output += $"{treeObj.Scale.X} {treeObj.Scale.Z} {treeObj.Scale.Y} ";
+			output += $"{treeObj.Scale.X} {treeObj.Scale.Y} {treeObj.Scale.Z} ";
 			//rotation
 			output += $"0 0 {treeObj.Rotation.Y} ";
 

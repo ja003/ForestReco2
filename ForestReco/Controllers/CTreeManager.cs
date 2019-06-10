@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using ObjParser;
 
 namespace ForestReco
 {
@@ -14,7 +13,7 @@ namespace ForestReco
 		public static List<Vector3> invalidVegePoints;
 
 		public const float TREE_POINT_EXTENT = 0.1f;
-		
+
 		public const float MIN_TREE_EXTENT = 0.5f;
 
 		public static float AVERAGE_TREE_HEIGHT;
@@ -51,7 +50,7 @@ namespace ForestReco
 		{
 			float treeHeight = Math.Max(pTree1.GetTreeHeight(), pTree2.GetTreeHeight());
 			float ratio = treeHeight / AVERAGE_TREE_HEIGHT;
-			if (ratio < 1) { return CParameterSetter.treeExtent; }
+			if(ratio < 1) { return CParameterSetter.treeExtent; }
 			const float EXTENT_VALUE_STEP = 1.5f;
 
 			return GetMinPeakDistance(1) + (ratio - 1) * EXTENT_VALUE_STEP;
@@ -59,7 +58,7 @@ namespace ForestReco
 
 		public static void AssignMaterials()
 		{
-			foreach (CTree tree in Trees)
+			foreach(CTree tree in Trees)
 			{
 				tree.AssignMaterial();
 			}
@@ -83,20 +82,20 @@ namespace ForestReco
 			CProjectData.detailArray.AddPointInField(pPoint, CGroundArray.EPointType.Vege, false);
 
 			List<CTree> possibleTrees = GetPossibleTreesFor(pPoint, EPossibleTreesMethos.ClosestHigher);
-			
+
 			float bestAddPointFactor = 0;
-			foreach (CTree t in possibleTrees)
+			foreach(CTree t in possibleTrees)
 			{
-				if (DEBUG) { CDebug.WriteLine("- try add to : " + t.ToString(CTree.EDebug.Peak)); }
-				
+				if(DEBUG) { CDebug.WriteLine("- try add to : " + t.ToString(CTree.EDebug.Peak)); }
+
 				float addPointFactor = t.GetAddPointFactor(pPoint);
-				if (addPointFactor > 0.5f)
+				if(addPointFactor > 0.5f)
 				{
-					if (t.Equals(0))
+					if(t.Equals(0))
 					{
 						//Console.Write("");
 					}
-					else if (addPointFactor > bestAddPointFactor)
+					else if(addPointFactor > bestAddPointFactor)
 					{
 						selectedTree = t;
 						bestAddPointFactor = addPointFactor;
@@ -104,9 +103,9 @@ namespace ForestReco
 				}
 			}
 
-			if (selectedTree != null)
+			if(selectedTree != null)
 			{
-				if (DEBUG)
+				if(DEBUG)
 				{
 					CDebug.WriteLine(bestAddPointFactor + " SELECTED TREE " +
 						selectedTree + " for " + pPointIndex + ": " + pPoint);
@@ -116,12 +115,12 @@ namespace ForestReco
 			else
 			{
 				bool debugFrequency = false;
-				if (treeIndex < MAX_DEBUG_COUNT || (debugFrequency && treeIndex % MAX_DEBUG_COUNT == 0))
+				if(treeIndex < MAX_DEBUG_COUNT || (debugFrequency && treeIndex % MAX_DEBUG_COUNT == 0))
 				{
 					CDebug.WriteLine("NEW TREE " + treeIndex + ": point[" + pPointIndex + "]: " + pPoint);
-						// + ". Best factor = " + bestAddPointFactor);
+					// + ". Best factor = " + bestAddPointFactor);
 				}
-				if (treeIndex == MAX_DEBUG_COUNT)
+				if(treeIndex == MAX_DEBUG_COUNT)
 				{
 					CDebug.WriteLine("....");
 				}
@@ -129,12 +128,12 @@ namespace ForestReco
 			}
 
 			//check if first tree was asigned correct point count
-			if (Trees.Count == 1 && pPointIndex != Trees[0].Points.Count - 1 + invalidVegePoints.Count)
+			if(Trees.Count == 1 && pPointIndex != Trees[0].Points.Count - 1 + invalidVegePoints.Count)
 			{
 				CDebug.Error(pPointIndex + " Incorrect point count. " + pPoint);
 			}
 		}
-		
+
 		private static void CreateNewTree(Vector3 pPoint)
 		{
 			CTree newTree = new CTree(pPoint, treeIndex, TREE_POINT_EXTENT);
@@ -142,8 +141,8 @@ namespace ForestReco
 			treeIndex++;
 
 			CGroundField element = CProjectData.array.GetElementContainingPoint(pPoint);
-			if (element == null)
-			{	
+			if(element == null)
+			{
 				CDebug.Error($"Cant create tree. point {pPoint} is OOB!");
 				return;
 			}
@@ -154,14 +153,14 @@ namespace ForestReco
 
 		private static void DeleteTree(CTree pTree)
 		{
-			if (!Trees.Contains(pTree))
+			if(!Trees.Contains(pTree))
 			{
 				CDebug.Error("Trees dont contain " + pTree);
 				return;
 			}
 			CGroundField element = pTree.groundField;
 			Trees.Remove(pTree);
-			if (!element.DetectedTrees.Contains(pTree))
+			if(!element.DetectedTrees.Contains(pTree))
 			{
 				CDebug.Error("element " + element + " doesnt contain " + pTree);
 				return;
@@ -171,7 +170,7 @@ namespace ForestReco
 
 		private static void DebugPoint(Vector3 pPoint, int pPointIndex)
 		{
-			if (DEBUG) { CDebug.WriteLine("\n" + pointCounter + " AddPoint " + pPoint); }
+			if(DEBUG) { CDebug.WriteLine("\n" + pointCounter + " AddPoint " + pPoint); }
 
 			Vector3 debugPoint = CObjExporter.GetMovedPoint(pPoint);
 			debugPoint.Z *= -1;
@@ -186,35 +185,35 @@ namespace ForestReco
 			CTree pExcludeTree = null)
 		{
 			List<CTree> possibleTrees = new List<CTree>();
-			if (pMethod == EPossibleTreesMethos.Belongs)
+			if(pMethod == EPossibleTreesMethos.Belongs)
 			{
-				foreach (CTree t in Trees)
+				foreach(CTree t in Trees)
 				{
-					if (pExcludeTree != null && pExcludeTree.Equals(t))
+					if(pExcludeTree != null && pExcludeTree.Equals(t))
 					{
 						continue;
 					}
 
-					if (t.BelongsToTree(pPoint, false))
+					if(t.BelongsToTree(pPoint, false))
 					{
 						possibleTrees.Add(t);
 						t.possibleNewPoint = pPoint;
 					}
 				}
 			}
-			else if (pMethod == EPossibleTreesMethos.ClosestHigher)
+			else if(pMethod == EPossibleTreesMethos.ClosestHigher)
 			{
 				possibleTrees.AddRange(CProjectData.array.GetTreesInDistanceFrom(pPoint, MAX_DISTANCE_FOR_POSSIBLE_TREES));
 			}
-			else if (pMethod == EPossibleTreesMethos.Contains)
+			else if(pMethod == EPossibleTreesMethos.Contains)
 			{
-				foreach (CTree t in Trees)
+				foreach(CTree t in Trees)
 				{
-					if (pExcludeTree != null && pExcludeTree.Equals(t))
+					if(pExcludeTree != null && pExcludeTree.Equals(t))
 					{
 						continue;
 					}
-					if (t.Contains(pPoint))
+					if(t.Contains(pPoint))
 					{
 						possibleTrees.Add(t);
 					}
@@ -222,10 +221,10 @@ namespace ForestReco
 			}
 
 			//sort trees by 2D distance of given point to them
-			possibleTrees.Sort((x, y) => CUtils.Get2DDistance(x.peak.Center, pPoint).CompareTo(
-				CUtils.Get2DDistance(y.peak.Center, pPoint)));
+			possibleTrees.Sort((a, b) => CUtils.Get2DDistance(a.peak.Center, pPoint).CompareTo(
+				CUtils.Get2DDistance(b.peak.Center, pPoint)));
 
-			if (pMethod == EPossibleTreesMethos.ClosestHigher)
+			if(pMethod == EPossibleTreesMethos.ClosestHigher)
 			{
 				//CDebug.WriteLine("SELECT FROM " + possibleTrees.Count);
 
@@ -233,15 +232,15 @@ namespace ForestReco
 				//no reason to select more. small chance that point would fit better to further tree
 				const int maxClosestTreesCount = 3;
 				int counter = 0;
-				foreach (CTree possibleTree in possibleTrees)
+				foreach(CTree possibleTree in possibleTrees)
 				{
-					if (possibleTree.Equals(pExcludeTree)) { continue; }
+					if(possibleTree.Equals(pExcludeTree)) { continue; }
 					//we dont want trees that are lower than given point
-					if (possibleTree.peak.Center.Y < pPoint.Y) { continue; }
+					if(possibleTree.peak.Center.Z < pPoint.Z) { continue; }
 
 					closestTrees.Add(possibleTree);
 					counter++;
-					if (counter > maxClosestTreesCount)
+					if(counter > maxClosestTreesCount)
 					{
 						break;
 					}
@@ -269,13 +268,13 @@ namespace ForestReco
 			DateTime mergeStartTime = DateTime.Now;
 			CDebug.WriteLine("TryMergeAllTrees");
 
-			Trees.Sort((x, y) => y.peak.Center.Y.CompareTo(x.peak.Center.Y));
+			Trees.Sort((a, b) => b.peak.Center.Z.CompareTo(a.peak.Center.Z));
 
 			int treeCountBeforeMerge = Trees.Count;
 
 			MergeGoodAddFactorTrees(pOnlyInvalid);
 
-			if (pOnlyInvalid)
+			if(pOnlyInvalid)
 			{
 				CAnalytics.secondMergeDuration = CAnalytics.GetDuration(mergeStartTime);
 			}
@@ -297,18 +296,18 @@ namespace ForestReco
 			DateTime previousMergeStart = DateTime.Now;
 			int iteration = 0;
 			int maxIterations = Trees.Count;
-			for (int i = Trees.Count - 1; i >= 0; i--)
+			for(int i = Trees.Count - 1; i >= 0; i--)
 			{
-				if (CProjectData.backgroundWorker.CancellationPending) { return; }
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
 
-				if (i >= Trees.Count)
+				if(i >= Trees.Count)
 				{
 					//CDebug.WriteLine("Tree was deleted");
 					continue;
 				}
 				CTree treeToMerge = Trees[i];
-				
-				if (pOnlyInvalid && !treeToMerge.isValid && treeToMerge.IsAtBorderOf(CProjectData.array))
+
+				if(pOnlyInvalid && !treeToMerge.isValid && treeToMerge.IsAtBorderOf(CProjectData.array))
 				{
 					//CDebug.Warning(treeToMerge + " is at border");
 					continue;
@@ -318,60 +317,60 @@ namespace ForestReco
 				Vector3 pPoint = treeToMerge.peak.Center;
 				float bestAddPointFactor = 0;
 				CTree selectedTree = null;
-				
-				foreach (CTree possibleTree in possibleTrees)
+
+				foreach(CTree possibleTree in possibleTrees)
 				{
 					bool isFar = false;
 					bool isSimilarHeight = false;
 
-					if (possibleTree.isValid && treeToMerge.isValid)
+					if(possibleTree.isValid && treeToMerge.isValid)
 					{
 						float mergeFactor = GetMergeValidFacor(treeToMerge, possibleTree);
-						if (mergeFactor > 0.9f)
+						if(mergeFactor > 0.9f)
 						{
 							selectedTree = possibleTree;
 							break;
 						}
 					}
-					if (pOnlyInvalid && possibleTree.isValid && treeToMerge.isValid)
+					if(pOnlyInvalid && possibleTree.isValid && treeToMerge.isValid)
 					{
 						continue;
 					}
-					
-					if (treeToMerge.isValid)
+
+					if(treeToMerge.isValid)
 					{
 						//treeToMerge is always lower
 						float possibleTreeHeight = possibleTree.GetTreeHeight();
 						float treeToMergeHeight = treeToMerge.GetTreeHeight();
-						
+
 						const float maxPeaksDistance = 1;
 						float peaksDist = CUtils.Get2DDistance(treeToMerge.peak, possibleTree.peak);
-						if (peaksDist > maxPeaksDistance)
+						if(peaksDist > maxPeaksDistance)
 						{
 							isFar = true;
 						}
 
 						const float maxPeakHeightDiff = 1;
-						if (possibleTreeHeight - treeToMergeHeight < maxPeakHeightDiff)
+						if(possibleTreeHeight - treeToMergeHeight < maxPeakHeightDiff)
 						{
 							isSimilarHeight = true;
 						}
 					}
-					
+
 					float addPointFactor = possibleTree.GetAddPointFactor(pPoint, treeToMerge);
 					float requiredFactor = 0.5f;
-					if (isFar) { requiredFactor += 0.1f; }
-					if (isSimilarHeight) { requiredFactor += 0.1f; }
-					if (pOnlyInvalid) { requiredFactor -= 0.2f; }
+					if(isFar) { requiredFactor += 0.1f; }
+					if(isSimilarHeight) { requiredFactor += 0.1f; }
+					if(pOnlyInvalid) { requiredFactor -= 0.2f; }
 
-					if (addPointFactor > requiredFactor && addPointFactor > bestAddPointFactor)
+					if(addPointFactor > requiredFactor && addPointFactor > bestAddPointFactor)
 					{
 						selectedTree = possibleTree;
 						bestAddPointFactor = addPointFactor;
-						if (bestAddPointFactor > 0.9f) { break; }
+						if(bestAddPointFactor > 0.9f) { break; }
 					}
 				}
-				if (selectedTree != null)
+				if(selectedTree != null)
 				{
 					treeToMerge = MergeTrees(ref treeToMerge, ref selectedTree, pOnlyInvalid);
 				}
@@ -387,14 +386,14 @@ namespace ForestReco
 		private static float GetMergeValidFacor(CTree pTreeToMerge, CTree pPossibleTree)
 		{
 			float factor = 0;
-			float peakHeightDiff = pPossibleTree.peak.Y - pTreeToMerge.peak.Y;
+			float peakHeightDiff = pPossibleTree.peak.Z - pTreeToMerge.peak.Z;
 			float treeExtent = CParameterSetter.treeExtent * CParameterSetter.treeExtentMultiply;
 			float similarHeightFactor = (treeExtent - peakHeightDiff) / treeExtent;
 			bool isSimilarHeight = similarHeightFactor > 0.5f;
-			if (!isSimilarHeight) { return 0; }
+			if(!isSimilarHeight) { return 0; }
 
 			float peakDist2D = CUtils.Get2DDistance(pTreeToMerge.peak, pPossibleTree.peak);
-			if (peakDist2D < treeExtent)
+			if(peakDist2D < treeExtent)
 			{
 				return 1;
 			}
@@ -404,9 +403,9 @@ namespace ForestReco
 
 		private static CTree MergeTrees(ref CTree pTree1, ref CTree pTree2, bool pValidateRestrictive)
 		{
-			CTree higherTree = pTree1.peak.maxHeight.Y >= pTree2.peak.maxHeight.Y ? pTree1 : pTree2;
-			CTree lowerTree = pTree1.peak.maxHeight.Y < pTree2.peak.maxHeight.Y ? pTree1 : pTree2;
-			
+			CTree higherTree = pTree1.peak.maxHeight.Z >= pTree2.peak.maxHeight.Z ? pTree1 : pTree2;
+			CTree lowerTree = pTree1.peak.maxHeight.Z < pTree2.peak.maxHeight.Z ? pTree1 : pTree2;
+
 			higherTree.MergeWith(lowerTree);
 			DeleteTree(lowerTree);
 
@@ -431,15 +430,15 @@ namespace ForestReco
 		{
 			CDebug.WriteLine("Detect invalid trees", true);
 
-			for (int i = Trees.Count - 1; i >= 0; i--)
+			for(int i = Trees.Count - 1; i >= 0; i--)
 			{
 				CTree tree = Trees[i];
 
 				bool isValid = tree.Validate(pRestrictive, pFinal);
 
-				if (!isValid)
+				if(!isValid)
 				{
-					if (pCathegorize)
+					if(pCathegorize)
 					{
 						InvalidTrees.Add(tree);
 						Trees.RemoveAt(i);
@@ -452,10 +451,10 @@ namespace ForestReco
 		{
 			CDebug.WriteLine("===============", true);
 			CDebug.WriteLine("Detected trees");
-			foreach (CTree t in Trees)
+			foreach(CTree t in Trees)
 			{
 				CDebug.WriteLine(Trees.IndexOf(t).ToString("00") + ": " + t);
-				if (Trees.IndexOf(t) > MAX_DEBUG_COUNT)
+				if(Trees.IndexOf(t) > MAX_DEBUG_COUNT)
 				{
 					CDebug.WriteLine("too much to debug...total = " + Trees.Count);
 					return;
@@ -466,7 +465,7 @@ namespace ForestReco
 
 		public static void CheckAllTrees()
 		{
-			foreach (CTree t in Trees)
+			foreach(CTree t in Trees)
 			{
 				t.CheckTree();
 			}
@@ -474,9 +473,9 @@ namespace ForestReco
 
 		public static void DebugTree(int pIndex)
 		{
-			foreach (CTree tree in Trees)
+			foreach(CTree tree in Trees)
 			{
-				if (tree.treeIndex == pIndex)
+				if(tree.treeIndex == pIndex)
 				{
 					CDebug.WriteLine("DebugTree " + tree);
 					return;
@@ -492,7 +491,7 @@ namespace ForestReco
 		public static float GetAverageTreeHeight()
 		{
 			float sum = 0;
-			foreach (CTree tree in Trees)
+			foreach(CTree tree in Trees)
 			{
 				sum += tree.GetTreeHeight();
 			}
@@ -502,9 +501,9 @@ namespace ForestReco
 		public static float GetMinTreeHeight()
 		{
 			float min = 666;
-			foreach (CTree tree in Trees)
+			foreach(CTree tree in Trees)
 			{
-				if (tree.GetTreeHeight() < min)
+				if(tree.GetTreeHeight() < min)
 				{
 					min = tree.GetTreeHeight();
 				}
@@ -515,9 +514,9 @@ namespace ForestReco
 		public static float GetMaxTreeHeight()
 		{
 			float max = 0;
-			foreach (CTree tree in Trees)
+			foreach(CTree tree in Trees)
 			{
-				if (tree.GetTreeHeight() > max)
+				if(tree.GetTreeHeight() > max)
 				{
 					max = tree.GetTreeHeight();
 				}

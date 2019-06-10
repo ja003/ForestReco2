@@ -14,14 +14,14 @@ namespace ForestReco
 		public Vector3 Min_orig; //values from input forest file
 		public Vector3 Max_orig;
 
-		public Vector3 BotLeftCorner => new Vector3(Min.X, 0, Min.Z);
-		public Vector3 TopRightCorner => new Vector3(Max.X, 0, Max.Z);
-		public Vector3 TopLeftCorner => new Vector3(Min.X, 0, Max.Z);
+		public Vector3 BotLeftCorner => new Vector3(Min.X, Min.Y, 0);
+		public Vector3 TopRightCorner => new Vector3(Max.X, Max.Y, 0);
+		public Vector3 TopLeftCorner => new Vector3(Min.X, Max.Y, 0);
 		public Vector3 Center => (BotLeftCorner + TopRightCorner) / 2;
-		public float MinHeight => Min.Y;
-		public float MaxHeight => Max.Y;
-		public float Width => TopRightCorner.X - BotLeftCorner.X;
-		public float Height => TopRightCorner.Z - BotLeftCorner.Z;
+		public float MinHeight => Min.Z;
+		public float MaxHeight => Max.Z;
+		public float Width => TopRightCorner.X - BotLeftCorner.X; //of array
+		public float Height => TopRightCorner.Y - BotLeftCorner.Y; //of array
 
 		public CHeaderInfo(string[] lines)
 		{
@@ -45,20 +45,20 @@ namespace ForestReco
 			Min = Min_orig - Offset;
 			Max_orig = ParseLineVector3(pMaxLine);
 			Max = Max_orig - Offset;
-			//transfer to format Y = height
-			float tmpY = Min.Y;
-			Min.Y = Min.Z;
-			Min.Z = tmpY;
-			tmpY = Max.Y;
-			Max.Y = Max.Z;
-			Max.Z = tmpY;
+			//transfer to format Y = height //DONT
+			//float tmpY = Min.Y;
+			//Min.Y = Min.Z;
+			//Min.Z = tmpY;
+			//tmpY = Max.Y;
+			//Max.Y = Max.Z;
+			//Max.Z = tmpY;
 
 			if (Min == Vector3.Zero && Max == Vector3.Zero)
 			{
 				CDebug.WriteLine("Invalid header. Creating default header.");
 				const int defaultArraySize = 15;
-				Min = new Vector3(-defaultArraySize, 0, -defaultArraySize);
-				Max = new Vector3(defaultArraySize, 0, defaultArraySize);
+				Min = new Vector3(-defaultArraySize, -defaultArraySize, 0);
+				Max = new Vector3(defaultArraySize, defaultArraySize, 0);
 				Offset = Vector3.Zero;
 			}
 		}

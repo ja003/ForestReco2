@@ -35,10 +35,12 @@ namespace ForestReco
 			float yFloat = (float)(y - headerOffset.Y);
 			float zFloat = (float)(z - headerOffset.Z);
 
-			//swap Y-Z. Y = height in this project
-			float tmp = yFloat;
-			yFloat = zFloat;
-			zFloat = tmp;
+			//swap canceled
+
+			////swap Y-Z. Y = height in this project
+			//float tmp = yFloat;
+			//yFloat = zFloat;
+			//zFloat = tmp;
 
 			if (_class != (int)EClass.Undefined && _class != (int)EClass.Ground && _class != (int)EClass.Vege)
 			{

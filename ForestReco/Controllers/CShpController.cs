@@ -92,14 +92,14 @@ namespace ForestReco
 		/// </summary>
 		private static Feature GetTreePosition(CTree pTree)
 		{
-			Vector3 globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
-			IPoint myPoint = factory.CreatePoint(new Coordinate(globalTreepos.X, globalTreepos.Z));
+			CVector3D globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
+			IPoint myPoint = factory.CreatePoint(new Coordinate(globalTreepos.X, globalTreepos.Y));
 
 			AttributesTable attributesTable = new AttributesTable();
 			attributesTable.Add(ATTR_ID, pTree.treeIndex);
 
 			attributesTable.Add(ATTR_X, globalTreepos.X.ToString(NUM_FORMAT));
-			attributesTable.Add(ATTR_Y, globalTreepos.Z.ToString(NUM_FORMAT));
+			attributesTable.Add(ATTR_Y, globalTreepos.Y.ToString(NUM_FORMAT));
 
 			float treeHeight = pTree.GetTreeHeight();
 			attributesTable.Add(ATTR_HEIGHT, treeHeight.ToString(NUM_FORMAT));
@@ -132,8 +132,8 @@ namespace ForestReco
 			List<Coordinate> pointsCoords = new List<Coordinate>();
 			foreach(Vector3 p in furthestPoints)
 			{
-				Vector3 globalP = CUtils.GetGlobalPosition(p);
-				pointsCoords.Add(new Coordinate(globalP.X, globalP.Z));
+				CVector3D globalP = CUtils.GetGlobalPosition(p);
+				pointsCoords.Add(new Coordinate(globalP.X, globalP.Y));
 			}
 			pointsCoords.Add(pointsCoords[0]); //to close polygon
 
@@ -144,9 +144,9 @@ namespace ForestReco
 			attributesTable.Add(ATTR_ID, pTree.treeIndex);
 
 			//position
-			Vector3 globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
+			CVector3D globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
 			attributesTable.Add(ATTR_X, globalTreepos.X.ToString(NUM_FORMAT));
-			attributesTable.Add(ATTR_Y, globalTreepos.Z.ToString(NUM_FORMAT));
+			attributesTable.Add(ATTR_Y, globalTreepos.Y.ToString(NUM_FORMAT));
 
 			//area
 			attributesTable.Add(ATTR_AREA, pTree.GetArea());

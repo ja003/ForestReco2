@@ -35,10 +35,10 @@ namespace ForestReco
 				if (assignedTree != null)
 				{
 					offsetHeight = assignedTree.GetTreeHeight() + 1;
-					CObjExporter.AddLineToObj(ref obj, position + Vector3.UnitY * offsetHeight,
+					CObjExporter.AddLineToObj(ref obj, position + Vector3.UnitZ * offsetHeight,
 						assignedTree.peak.Center, lineWidthMultiply);
 				}
-				CObjExporter.AddLineToObj(ref obj, position + Vector3.UnitY * offsetHeight, position, lineWidthMultiply);
+				CObjExporter.AddLineToObj(ref obj, position + Vector3.UnitZ * offsetHeight, position, lineWidthMultiply);
 
 				return obj;
 			}

@@ -110,6 +110,8 @@
     <Compile Include="DataStructures\CTreePoint.cs" />
     <Compile Include="DataStructures\CGroundArray.cs" />
     <Compile Include="DataStructures\CGroundField.cs" />
+    <Compile Include="DataStructures\CVector2D.cs" />
+    <Compile Include="DataStructures\CVector3D.cs" />
     <Compile Include="DataStructures\SSplitRange.cs" />
     <Compile Include="DataStructures\STreeSimilarity.cs" />
     <Compile Include="Enums\EClass.cs" />

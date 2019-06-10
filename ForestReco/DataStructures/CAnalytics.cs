@@ -129,6 +129,11 @@ namespace ForestReco
 
 		}
 
+		public static void Init()
+		{
+			errors.Clear();
+		}
+
 		private static int GetSecondMergedCount()
 		{
 			return afterFirstMergedTrees - detectedTrees;

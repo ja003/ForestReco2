@@ -12,7 +12,7 @@ namespace ForestReco
 		private const string NUM_FORMAT = "0.00";
 		private static string DBH_EQUATION;
 		private static string AGB_EQUATION;
-		
+
 		/// <summary>
 		/// Save equations for later evaluation.
 		/// Equations are expected to be checked and valid.
@@ -22,7 +22,7 @@ namespace ForestReco
 			DBH_EQUATION = pDBH;
 			AGB_EQUATION = pAGB;
 		}
-		
+
 		/// <summary>
 		/// Tries to evaluate the equation.
 		/// If valid => return emty string.
@@ -74,6 +74,6 @@ namespace ForestReco
 			biomassExp.Parameters[PARAM_DBH] = new Expression(pDBH.ToString(NUM_FORMAT));
 			double result = (double)biomassExp.Evaluate();
 			return result;
-		}		
+		}
 	}
 }

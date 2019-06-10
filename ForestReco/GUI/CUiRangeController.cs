@@ -66,7 +66,6 @@ namespace ForestReco
 			SetRangeX();
 
 			//Y
-			//note: in project Y = elevation, but in lidar it is Z 
 			form.trackBarRangeYmin.SetRange((int)min.Y * 10, (int)max.Y * 10);
 			form.trackBarRangeYmax.SetRange((int)min.Y * 10, (int)max.Y * 10);
 

@@ -188,7 +188,7 @@ namespace ForestReco
 				CDebug.Error($"point {pPoint} is too far from center {center}");
 			}
 
-			float height = pPoint.Y;
+			float height = pPoint.Z;
 
 			goundPoints.Add(pPoint);
 			if (SumGround != null) { SumGround += height; }
@@ -200,9 +200,9 @@ namespace ForestReco
 		public bool IsPointOutOfField(Vector3 pPoint)
 		{
 			float distX = Math.Abs(pPoint.X - center.X);
-			float distZ = Math.Abs(pPoint.Z - center.Z);
+			float distY = Math.Abs(pPoint.Y - center.Y);
 			return distX > CParameterSetter.groundArrayStep / 2 ||
-							distZ > CParameterSetter.groundArrayStep / 2;
+							distY > CParameterSetter.groundArrayStep / 2;
 		}
 
 		public void AddVegePoint(Vector3 pPoint)
@@ -213,7 +213,7 @@ namespace ForestReco
 			}
 			vegePoints.Add(pPoint);
 
-			float height = pPoint.Y;
+			float height = pPoint.Z;
 			if (height > MaxVege || MaxVege == null) { MaxVege = height; }
 			if (height < MinVege || MinVege == null) { MinVege = height; }
 		}
@@ -223,21 +223,21 @@ namespace ForestReco
 			preProcessPoints.Add(pPoint);
 			if (MaxPreProcessVege != null)
 			{
-				if (pPoint.Y > MaxPreProcessVege)
+				if (pPoint.Z > MaxPreProcessVege)
 				{
-					MaxPreProcessVege = pPoint.Y;
+					MaxPreProcessVege = pPoint.Z;
 				}
 			}
 			else
 			{
-				MaxPreProcessVege = pPoint.Y;
+				MaxPreProcessVege = pPoint.Z;
 			}
 		}
 
 
 		public void SortPreProcessPoints()
 		{
-			preProcessPoints.Sort((a, b) => a.Y.CompareTo(b.Y));
+			preProcessPoints.Sort((a, b) => a.Z.CompareTo(b.Z));
 
 		}
 		
@@ -251,7 +251,7 @@ namespace ForestReco
 		{
 			for (int i = preProcessPoints.Count - 1; i >= 0; i--)
 			{
-				float height = preProcessPoints[i].Y;
+				float height = preProcessPoints[i].Z;
 
 				int badHeighDiffCount = 0;
 				const int minBadHeightDiffCount = 4;
@@ -262,7 +262,7 @@ namespace ForestReco
 				foreach (CGroundField neighbour in GetNeighbours())
 				{
 					float? neighbourHeight = neighbour.validPoints.Count > 0 ?
-						neighbour.validPoints.Last().Y : neighbour.MaxPreProcessVege;
+						neighbour.validPoints.Last().Z : neighbour.MaxPreProcessVege;
 					if (height - neighbourHeight > MAX_NEIGHBOUR_HEIGHT_DIFF)
 					{
 						badHeighDiffCount++;
@@ -435,17 +435,17 @@ namespace ForestReco
 			float x = pPoint.X - center.X;
 			x += step / 2;
 			x = x / step;
-			float z = center.Z - pPoint.Z;
-			z += step / 2;
-			z = z / step;
+			float y = center.Y - pPoint.Y;
+			y += step / 2;
+			y = y / step;
 
-			if (x < 0 || x > 1 || z < 0 || z > 1)
+			if (x < 0 || x > 1 || y < 0 || y > 1)
 			{
-				CDebug.Error("field " + this + " interpolation is incorrect! x = " + x + " z = " + z);
+				CDebug.Error("field " + this + " interpolation is incorrect! x = " + x + " z = " + y);
 			}
 
 			//pPoint space coords are X and Z, Y = height
-			float hi = a00 + a10 * x + a01 * z + a11 * x * z;
+			float hi = a00 + a10 * x + a01 * y + a11 * x * y;
 			return hi;
 		}
 
@@ -545,7 +545,7 @@ namespace ForestReco
 			if (MaxGroundFilled == null) { return; }
 
 			Vector3 filledPoint = center;
-			filledPoint.Y = (float)MaxGroundFilled;
+			filledPoint.Z = (float)MaxGroundFilled;
 			AddGroundPoint(filledPoint);
 		}
 

@@ -104,7 +104,7 @@ namespace ForestReco
 
 					int rVal = colorVaInt;
 					//highlight buffer zone
-					bool isAtBufferZone = CTreeMath.IsTreeAtBufferZone(groundElement.center);
+					bool isAtBufferZone = CTreeMath.IsAtBufferZone(groundElement.center);
 					if(isAtBufferZone)
 						rVal = Math.Min(rVal + 30, 255);
 
@@ -203,7 +203,7 @@ namespace ForestReco
 			allTrees.AddRange(CTreeManager.Trees);
 			allTrees.AddRange(CTreeManager.InvalidTrees);
 
-			foreach (CTree tree in allTrees)
+			foreach(CTree tree in allTrees)
 			{
 				try
 				{
@@ -279,7 +279,7 @@ namespace ForestReco
 					{
 						DrawTreeOnBitmap(pBitmap, tree, x, y);
 
-						bool isAtBufferZone = CTreeMath.IsTreeAtBufferZone(tree);
+						bool isAtBufferZone = CTreeMath.IsAtBufferZone(tree);
 						if(exportMain && !isAtBufferZone)
 						{
 							//Tuple<int, int> posInMain = CGroundArray.GetPositionInArray(

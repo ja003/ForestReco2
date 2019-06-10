@@ -1,9 +1,9 @@
-﻿using System;
+﻿using ObjParser;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using ObjParser;
 
 namespace ForestReco
 {
@@ -26,10 +26,10 @@ namespace ForestReco
 			treePointExtent = pTreePointExtent;
 			isValid = true;
 
-			if (pLoadFromFile)
+			if(pLoadFromFile)
 			{
 				string[] lines = GetFileLines(pFileName);
-				if (lines.Length == 0)
+				if(lines.Length == 0)
 				{
 					isValid = false;
 					return;
@@ -53,19 +53,19 @@ namespace ForestReco
 			string refTreePath = GetRefTreeFilePath(pFileName, pFileName + ".obj");
 
 			bool useReducedReftreeModels = CParameterSetter.GetBoolSettings(ESettings.useReducedReftreeModels);
-			if (useReducedReftreeModels || !File.Exists(refTreePath))
+			if(useReducedReftreeModels || !File.Exists(refTreePath))
 			{
 				Obj.Name += "_reduced";
 
 				string reducedObjFileName = pFileName + "_reduced.obj";
 
-				if (!useReducedReftreeModels)
+				if(!useReducedReftreeModels)
 				{
 					CDebug.WriteLine("Reftree " + refTreePath + " OBJ does not exist.");
 					CDebug.WriteLine("Try reduced file: " + reducedObjFileName);
 				}
 				refTreePath = GetRefTreeFilePath(pFileName, reducedObjFileName);
-				if (!File.Exists(refTreePath))
+				if(!File.Exists(refTreePath))
 				{
 					CDebug.Error("No ref tree OBJ found!");
 					return;
@@ -84,9 +84,9 @@ namespace ForestReco
 			branches = new List<CBranch>();
 			List<CTreePoint> _treepointsOnBranch = new List<CTreePoint>();
 
-			foreach (string line in pSerializedLines)
+			foreach(string line in pSerializedLines)
 			{
-				switch (line)
+				switch(line)
 				{
 					case "treeIndex":
 						currentMode = DeserialiseMode.TreeIndex;
@@ -110,7 +110,7 @@ namespace ForestReco
 						continue;
 				}
 
-				switch (currentMode)
+				switch(currentMode)
 				{
 					case DeserialiseMode.TreeIndex:
 						treeIndex = int.Parse(line);
@@ -123,10 +123,10 @@ namespace ForestReco
 						stem = new CBranch(this, 0, 0);
 						break;
 					case DeserialiseMode.Branches:
-						if (line.Contains("branch "))
+						if(line.Contains("branch "))
 						{
 							int branchIndex = branches.Count;
-							if (branchIndex > 0)
+							if(branchIndex > 0)
 							{
 								branches.Last().SetTreePoints(_treepointsOnBranch);
 							}
@@ -174,7 +174,7 @@ namespace ForestReco
 			string filePath = GetRefTreeFilePath(pFileName, pFileName + ".reftree");
 			CDebug.WriteLine("\nDeserialize. filePath = " + filePath);
 
-			if (!File.Exists(filePath))
+			if(!File.Exists(filePath))
 			{
 				//not error. reftree files doesnt have to be generated yet
 				CDebug.Warning(".reftree file does not exist.");
@@ -198,10 +198,14 @@ namespace ForestReco
 			lines.Add("peak");
 			lines.Add(peak.Serialize());
 			lines.Add("branches");
-			foreach (CBranch b in branches)
+			foreach(CBranch b in branches)
 			{
 				lines.Add("branch " + branches.IndexOf(b));
 				lines.AddRange(b.Serialize());
+				if(base.maxBB.X > -10)
+				{
+					CDebug.WriteLine("");
+				}
 			}
 			lines.Add("stem");
 			lines.AddRange(stem.Serialize());
@@ -225,17 +229,17 @@ namespace ForestReco
 		/// </summary>
 		public override float GetTreeHeight()
 		{
-			float heightPoints = maxBB.Y - minBB.Y;
+			float heightPoints = maxBB.Z - minBB.Z;
 			//float heightObj = Obj.Size.YMax - Obj.Size.YMin;
 			return heightPoints;
 		}
-		
+
 		protected override void OnProcess()
 		{
 			string filePath = GetRefTreeFilePath(fileName, fileName + ".reftree");
 			CDebug.WriteLine("\nfilePath = " + filePath);
 
-			if (File.Exists(filePath))
+			if(File.Exists(filePath))
 			{
 				CDebug.Error(".reftree file already exists");
 				return;
@@ -245,9 +249,9 @@ namespace ForestReco
 			CDebug.WriteLine("Serialization");
 			List<string> serializedTree = Serialize();
 
-			using (StreamWriter file = new StreamWriter(filePath, false))
+			using(StreamWriter file = new StreamWriter(filePath, false))
 			{
-				foreach (string line in serializedTree)
+				foreach(string line in serializedTree)
 				{
 					file.WriteLine(line);
 				}
@@ -301,58 +305,58 @@ namespace ForestReco
 
 			List<string> lines = new List<string>();
 
-			if (refTreeFirst)
+			if(refTreeFirst)
 			{
-				if (refTreeFront)
+				if(refTreeFront)
 				{
-					if (refTreeJehlici)
+					if(refTreeJehlici)
 					{
 						string[] firstFrontJehliciLines = GetReftreeLines(firstFrontJehliciPath);
 						lines.AddRange(firstFrontJehliciLines);
 					}
-					else if (refTreeKmeny)
+					else if(refTreeKmeny)
 					{
 						string[] firstFrontKmenyLines = GetReftreeLines(firstFrontKmenyPath);
 						lines.AddRange(firstFrontKmenyLines);
 					}
 				}
-				if (refTreeBack)
+				if(refTreeBack)
 				{
-					if (refTreeJehlici)
+					if(refTreeJehlici)
 					{
 						string[] firstBackJehliciLines = GetReftreeLines(firstBackJehliciPath);
 						lines.AddRange(firstBackJehliciLines);
 					}
-					if (refTreeKmeny)
+					if(refTreeKmeny)
 					{
 						string[] firstBackKmenyLines = GetReftreeLines(firstBackKmenyPath);
 						lines.AddRange(firstBackKmenyLines);
 					}
 				}
 			}
-			if (refTreeLast)
+			if(refTreeLast)
 			{
-				if (refTreeFront)
+				if(refTreeFront)
 				{
-					if (refTreeJehlici)
+					if(refTreeJehlici)
 					{
 						string[] lastFrontJehliciLines = GetReftreeLines(lastFrontJehliciPath);
 						lines.AddRange(lastFrontJehliciLines);
 					}
-					if (refTreeKmeny)
+					if(refTreeKmeny)
 					{
 						string[] lastFrontKmenyLines = GetReftreeLines(lastFrontKmenyPath);
 						lines.AddRange(lastFrontKmenyLines);
 					}
 				}
-				if (refTreeBack)
+				if(refTreeBack)
 				{
-					if (refTreeJehlici)
+					if(refTreeJehlici)
 					{
 						string[] lastBackJehliciLines = GetReftreeLines(lastBackJehliciPath);
 						lines.AddRange(lastBackJehliciLines);
 					}
-					if (refTreeKmeny)
+					if(refTreeKmeny)
 					{
 						string[] lastBackKmenyLines = GetReftreeLines(lastBackKmenyPath);
 						lines.AddRange(lastBackKmenyLines);
@@ -366,7 +370,7 @@ namespace ForestReco
 
 		private static string[] GetReftreeLines(string refTreeXyzPath)
 		{
-			if (!File.Exists(refTreeXyzPath))
+			if(!File.Exists(refTreeXyzPath))
 			{
 				//not errror. all files doesnt have to be specified
 				CDebug.Warning("Reftree " + refTreeXyzPath + " XYZ does not exist.");
@@ -384,25 +388,25 @@ namespace ForestReco
 			CDebug.WriteLine("AddPointsFromLines " + pParsedLines.Count);
 			int pointsToAddCount = pParsedLines.Count;
 
-			pParsedLines.Sort((a, b) => b.Item2.Y.CompareTo(a.Item2.Y));
+			pParsedLines.Sort((a, b) => b.Item2.Z.CompareTo(a.Item2.Z));
 			//lines are sorted. first point is peak for sure
 			Init(pParsedLines[0].Item2, treeIndex, treePointExtent);
 
 			DateTime lineStartTime = DateTime.Now;
 
-			for (int i = 1; i < Math.Min(pParsedLines.Count, pointsToAddCount); i++)
+			for(int i = 1; i < Math.Min(pParsedLines.Count, pointsToAddCount); i++)
 			{
 				Tuple<EClass, Vector3> parsedLine = pParsedLines[i];
 				Vector3 point = parsedLine.Item2;
 
 				//all points belong to 1 tree. force add it
 				AddPoint(point);
-				
+
 				CDebug.Progress(i, pParsedLines.Count, 100000, ref lineStartTime, addStartTime, "added point:");
 			}
 			CDebug.Duration("All points added", addStartTime);
 		}
-		
+
 		public override string ToString()
 		{
 			return $"[{treeIndex}] : {GetTreeHeight()}m. {Obj.Name}";

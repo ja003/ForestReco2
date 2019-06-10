@@ -8,12 +8,12 @@ namespace ForestReco
 {
 	public static class CUtils
 	{
-		public static bool PointBelongsToTree(Vector3 pPoint, Vector3 pTreetop)
-		{
-			Vector3 botPoint = new Vector3(pTreetop.X, pPoint.Y, pTreetop.Z);
-			float angleBetweenPointAndTreetop = AngleBetweenThreePoints(botPoint, pTreetop, pPoint);
-			return angleBetweenPointAndTreetop < 45;
-		}
+		//public static bool PointBelongsToTree(Vector3 pPoint, Vector3 pTreetop)
+		//{
+		//	Vector3 botPoint = new Vector3(pTreetop.X, pTreetop.Z, pPoint.Z);
+		//	float angleBetweenPointAndTreetop = AngleBetweenThreePoints(botPoint, pTreetop, pPoint);
+		//	return angleBetweenPointAndTreetop < 45;
+		//}
 
 		public static float GetAngle(Vector2 a, Vector2 b)
 		{
@@ -25,7 +25,7 @@ namespace ForestReco
 
 		public static float GetAngleToTree(CTree pTree, Vector3 pPoint)
 		{
-			return AngleBetweenThreePoints(pTree.peak.Center - Vector3.UnitY * 100, pTree.peak.Center, pPoint);
+			return AngleBetweenThreePoints(pTree.peak.Center - Vector3.UnitZ * 100, pTree.peak.Center, pPoint);
 		}
 
 		//https://stackoverflow.com/questions/19729831/angle-between-3-points-in-3d-space
@@ -65,11 +65,6 @@ namespace ForestReco
 			return (float)(angle * (180.0 / Math.PI));
 		}
 
-		public static float Get2DDistance(Vector3 a, CTreePoint b)
-		{
-			return Vector2.Distance(new Vector2(a.X, a.Z), new Vector2(b.X, b.Z));
-		}
-
 		internal static void TransformArrayIndexToBitmapIndex(ref Tuple<int, int> pArrayIndex,
 			CHeaderInfo pArrayHeader, float pStepSize, Bitmap pMap)
 		{
@@ -85,7 +80,7 @@ namespace ForestReco
 			}
 
 			int bitmapXindex = (int)((pMap.Width - 1) * xPercent);
-			int bitmapYindex = (int)((pMap.Height - 1)* yPercent);
+			int bitmapYindex = (int)((pMap.Height - 1) * yPercent);
 
 			//array is oriented from bot to top, bitmap top to bot
 			bitmapYindex = pMap.Height - bitmapYindex - 1;
@@ -101,12 +96,17 @@ namespace ForestReco
 
 		public static float Get2DDistance(CTreePoint a, CTreePoint b)
 		{
-			return Vector2.Distance(new Vector2(a.X, a.Z), new Vector2(b.X, b.Z));
+			return Vector2.Distance(new Vector2(a.X, a.Y), new Vector2(b.X, b.Y));
 		}
 
 		public static float Get2DDistance(Vector3 a, Vector3 b)
 		{
-			return Vector2.Distance(new Vector2(a.X, a.Z), new Vector2(b.X, b.Z));
+			return Vector2.Distance(new Vector2(a.X, a.Y), new Vector2(b.X, b.Y));
+		}
+
+		public static float Get2DDistance(Vector3 a, CTreePoint b)
+		{
+			return Vector2.Distance(new Vector2(a.X, a.Y), new Vector2(b.X, b.Y));
 		}
 
 		public static float GetOverlapRatio(CBoundingBoxObject pOfObject, CBoundingBoxObject pWithObject)
@@ -168,12 +168,12 @@ namespace ForestReco
 		/// </summary>
 		public static float GetArea(Vector3 p1, Vector3 p2, Vector3 p3)
 		{
-			float _1 = p1.X * p2.Z;
-			float _2 = p2.X * p3.Z;
-			float _3 = p3.X * p1.Z;
-			float _4 = p1.Z * p2.X;
-			float _5 = p2.Z * p3.X;
-			float _6 = p3.Z * p1.X;
+			float _1 = p1.X * p2.Y;
+			float _2 = p2.X * p3.Y;
+			float _3 = p3.X * p1.Y;
+			float _4 = p1.Y * p2.X;
+			float _5 = p2.Y * p3.X;
+			float _6 = p3.Y * p1.X;
 			float sum = _1 + _2 + _3 - _4 - _5 - _6;
 			return Math.Abs(sum) / 2;
 		}
@@ -252,7 +252,7 @@ namespace ForestReco
 		{
 			return Vector3.Distance(pPoint, new Vector3(675.94f, 128.04f, 1140.9f)) < pTolerance;
 		}
-		
+
 		public static float LimitToRange(this float value, float inclusiveMinimum, float inclusiveMaximum)
 		{
 			if(value < inclusiveMinimum)
@@ -280,7 +280,7 @@ namespace ForestReco
 			Vector3 pBorderBotLeft, Vector3 pBorderTopRight)
 		{
 			float xDiff = GetDistanceFromBorderX(pPoint, pBorderBotLeft, pBorderTopRight);
-			float zDiff = GetDistanceFromBorderZ(pPoint, pBorderBotLeft, pBorderTopRight);
+			float zDiff = GetDistanceFromBorderY(pPoint, pBorderBotLeft, pBorderTopRight);
 
 			return Math.Min(xDiff, zDiff);
 		}
@@ -294,26 +294,39 @@ namespace ForestReco
 			return xDiff;
 		}
 
-		public static float GetDistanceFromBorderZ(Vector3 pPoint,
+		public static float GetDistanceFromBorderY(Vector3 pPoint,
 			Vector3 pBorderBotLeft, Vector3 pBorderTopRight)
 		{
-			float zDiff = Math.Abs(pPoint.Z - pBorderBotLeft.Z);
-			zDiff = Math.Min(zDiff, Math.Abs(pPoint.Z - pBorderTopRight.Z));
+			float yDiff = Math.Abs(pPoint.Y - pBorderBotLeft.Y);
+			yDiff = Math.Min(yDiff, Math.Abs(pPoint.Y - pBorderTopRight.Y));
 
-			return zDiff;
+			return yDiff;
 		}
 
-		public static Vector3 GetGlobalPosition(Vector3 pLocalPos)
+		/// <summary>
+		/// Moves the local position (used in project) by main header offset
+		/// back to original global coordinate system
+		/// </summary>
+		public static CVector3D GetGlobalPosition(Vector3 pLocalPos)
 		{
-			return pLocalPos + CProjectData.mainHeader.Offset.GetSwappedYZ();
+			//without CVector3D cast there is a loss of precision due to float overflow
+			return pLocalPos + (CVector3D)CProjectData.mainHeader.Offset; //.GetSwappedYZ();
 		}
 
-		public static Vector3 GetSwappedYZ(this Vector3 pVec)
+		public static Vector3 SwapYZ(ref Vector3 clonePoint)
 		{
-			float tmp = pVec.Z;
-			pVec.Z = pVec.Y;
-			pVec.Y = tmp;
-			return pVec;
+			float tmp = clonePoint.Y;
+			clonePoint.Y = clonePoint.Z;
+			clonePoint.Z = tmp;
+			return clonePoint;
 		}
+
+		//public static Vector3 GetSwappedYZ(this Vector3 pVec)
+		//{
+		//	float tmp = pVec.Z;
+		//	pVec.Z = pVec.Y;
+		//	pVec.Y = tmp;
+		//	return pVec;
+		//}
 	}
 }

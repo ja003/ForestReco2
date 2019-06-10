@@ -27,7 +27,7 @@ namespace ForestReco
 		private static void SetMainHeader(string pPreprocessedFilePath)
 		{
 			//FileInfo fi = new FileInfo(pPreprocessedFilePath);
-			string infoFilePath =  CPreprocessController.currentTmpFolder + "\\" + CUtils.GetFileName(pPreprocessedFilePath) + "_i.txt";
+			string infoFilePath = CPreprocessController.currentTmpFolder + "\\" + CUtils.GetFileName(pPreprocessedFilePath) + "_i.txt";
 
 			string[] headerLines = CPreprocessController.GetHeaderLines(pPreprocessedFilePath, infoFilePath);
 			CProjectData.mainHeader = new CHeaderInfo(headerLines);
@@ -58,7 +58,7 @@ namespace ForestReco
 			DateTime start = DateTime.Now;
 
 			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
-			
+
 			string classifyFilePath = CPreprocessController.GetClassifiedFilePath();
 
 			/////// lassplit //////////
@@ -82,7 +82,6 @@ namespace ForestReco
 			return splitFilePath;
 		}
 
-
 		public static string[] GetFileLines(string pFile, int pLines)
 		{
 			//string fullFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
@@ -105,7 +104,6 @@ namespace ForestReco
 
 			return lines;
 		}
-
 
 		/// <summary>
 		/// Reads parsed lines and loads class and point list.
@@ -161,10 +159,11 @@ namespace ForestReco
 			}
 
 			if(!classesCorect)
-			{ CDebug.WriteLine("classes not correct. using default class"); }
+			{
+				CDebug.WriteLine("classes not correct. using default class");
+			}
 			CDebug.Count("parsedLines", parsedLines.Count);
 
-			//parsedLines.Sort((y, x) => x.Item2.Y.CompareTo(y.Item2.Y)); //sort descending by height
 			return parsedLines;
 		}
 
@@ -370,7 +369,7 @@ namespace ForestReco
 		/// </summary>
 		private static void ProcessVegePoints()
 		{
-			CProjectData.vegePoints.Sort((y, x) => x.Y.CompareTo(y.Y)); //sort descending by height
+			CProjectData.vegePoints.Sort((b, a) => a.Z.CompareTo(b.Z)); //sort descending by height
 
 			const int debugFrequency = 10000;
 

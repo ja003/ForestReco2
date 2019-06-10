@@ -113,6 +113,7 @@ namespace ForestReco
 		private CheckBox checkBoxExportLas;
 		private CheckBox checkBoxDBH;
 		private CheckBox checkBoxAGB;
+		private Button btnClearTmpFolder;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -369,6 +370,10 @@ namespace ForestReco
 			this.checkBoxExportBitmap = new System.Windows.Forms.CheckBox();
 			this.checkBoxPreprocess = new System.Windows.Forms.CheckBox();
 			this.checkBoxDeleteTmp = new System.Windows.Forms.CheckBox();
+			this.checkBoxExportShape = new System.Windows.Forms.CheckBox();
+			this.checkBoxExportLas = new System.Windows.Forms.CheckBox();
+			this.checkBoxDBH = new System.Windows.Forms.CheckBox();
+			this.checkBoxAGB = new System.Windows.Forms.CheckBox();
 			this.btnOpenResult = new System.Windows.Forms.Button();
 			this.textBoxEstimatedSize = new System.Windows.Forms.TextBox();
 			this.labelEstimatedTotalSize = new System.Windows.Forms.Label();
@@ -414,10 +419,7 @@ namespace ForestReco
 			this.label8 = new System.Windows.Forms.Label();
 			this.richTextAGB = new System.Windows.Forms.RichTextBox();
 			this.checkedListBoxShape = new System.Windows.Forms.CheckedListBox();
-			this.checkBoxExportShape = new System.Windows.Forms.CheckBox();
-			this.checkBoxExportLas = new System.Windows.Forms.CheckBox();
-			this.checkBoxDBH = new System.Windows.Forms.CheckBox();
-			this.checkBoxAGB = new System.Windows.Forms.CheckBox();
+			this.btnClearTmpFolder = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -907,6 +909,53 @@ namespace ForestReco
 			this.checkBoxDeleteTmp.UseVisualStyleBackColor = true;
 			this.checkBoxDeleteTmp.CheckedChanged += new System.EventHandler(this.checkBoxDeleteTmp_CheckedChanged);
 			// 
+			// checkBoxExportShape
+			// 
+			this.checkBoxExportShape.AutoSize = true;
+			this.checkBoxExportShape.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.checkBoxExportShape.Location = new System.Drawing.Point(232, 463);
+			this.checkBoxExportShape.Name = "checkBoxExportShape";
+			this.checkBoxExportShape.Size = new System.Drawing.Size(129, 21);
+			this.checkBoxExportShape.TabIndex = 99;
+			this.checkBoxExportShape.Text = "EXPORT SHP";
+			this.myToolTip.SetToolTip(this.checkBoxExportShape, "hh");
+			this.checkBoxExportShape.UseVisualStyleBackColor = true;
+			this.checkBoxExportShape.CheckedChanged += new System.EventHandler(this.checkBoxExportShape_CheckedChanged);
+			// 
+			// checkBoxExportLas
+			// 
+			this.checkBoxExportLas.AutoSize = true;
+			this.checkBoxExportLas.Location = new System.Drawing.Point(232, 612);
+			this.checkBoxExportLas.Name = "checkBoxExportLas";
+			this.checkBoxExportLas.Size = new System.Drawing.Size(91, 21);
+			this.checkBoxExportLas.TabIndex = 101;
+			this.checkBoxExportLas.Text = "export las";
+			this.myToolTip.SetToolTip(this.checkBoxExportLas, "hh");
+			this.checkBoxExportLas.UseVisualStyleBackColor = true;
+			this.checkBoxExportLas.CheckedChanged += new System.EventHandler(this.checkBoxExportLas_CheckedChanged);
+			// 
+			// checkBoxDBH
+			// 
+			this.checkBoxDBH.AutoSize = true;
+			this.checkBoxDBH.Location = new System.Drawing.Point(884, 16);
+			this.checkBoxDBH.Name = "checkBoxDBH";
+			this.checkBoxDBH.Size = new System.Drawing.Size(18, 17);
+			this.checkBoxDBH.TabIndex = 102;
+			this.myToolTip.SetToolTip(this.checkBoxDBH, "hh");
+			this.checkBoxDBH.UseVisualStyleBackColor = true;
+			this.checkBoxDBH.CheckedChanged += new System.EventHandler(this.checkBoxDBH_CheckedChanged);
+			// 
+			// checkBoxAGB
+			// 
+			this.checkBoxAGB.AutoSize = true;
+			this.checkBoxAGB.Location = new System.Drawing.Point(884, 54);
+			this.checkBoxAGB.Name = "checkBoxAGB";
+			this.checkBoxAGB.Size = new System.Drawing.Size(18, 17);
+			this.checkBoxAGB.TabIndex = 103;
+			this.myToolTip.SetToolTip(this.checkBoxAGB, "hh");
+			this.checkBoxAGB.UseVisualStyleBackColor = true;
+			this.checkBoxAGB.CheckedChanged += new System.EventHandler(this.checkBoxAGB_CheckedChanged);
+			// 
 			// btnOpenResult
 			// 
 			this.btnOpenResult.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(161)))), ((int)(((byte)(212)))));
@@ -1358,57 +1407,21 @@ namespace ForestReco
 			this.checkedListBoxShape.TabIndex = 100;
 			this.checkedListBoxShape.SelectedIndexChanged += new System.EventHandler(this.checkedListBoxShape_SelectedIndexChanged);
 			// 
-			// checkBoxExportShape
+			// btnClearTmpFolder
 			// 
-			this.checkBoxExportShape.AutoSize = true;
-			this.checkBoxExportShape.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.checkBoxExportShape.Location = new System.Drawing.Point(232, 463);
-			this.checkBoxExportShape.Name = "checkBoxExportShape";
-			this.checkBoxExportShape.Size = new System.Drawing.Size(129, 21);
-			this.checkBoxExportShape.TabIndex = 99;
-			this.checkBoxExportShape.Text = "EXPORT SHP";
-			this.myToolTip.SetToolTip(this.checkBoxExportShape, "hh");
-			this.checkBoxExportShape.UseVisualStyleBackColor = true;
-			this.checkBoxExportShape.CheckedChanged += new System.EventHandler(this.checkBoxExportShape_CheckedChanged);
-			// 
-			// checkBoxExportLas
-			// 
-			this.checkBoxExportLas.AutoSize = true;
-			this.checkBoxExportLas.Location = new System.Drawing.Point(232, 612);
-			this.checkBoxExportLas.Name = "checkBoxExportLas";
-			this.checkBoxExportLas.Size = new System.Drawing.Size(91, 21);
-			this.checkBoxExportLas.TabIndex = 101;
-			this.checkBoxExportLas.Text = "export las";
-			this.myToolTip.SetToolTip(this.checkBoxExportLas, "hh");
-			this.checkBoxExportLas.UseVisualStyleBackColor = true;
-			this.checkBoxExportLas.CheckedChanged += new System.EventHandler(this.checkBoxExportLas_CheckedChanged);
-			// 
-			// checkBoxDBH
-			// 
-			this.checkBoxDBH.AutoSize = true;
-			this.checkBoxDBH.Location = new System.Drawing.Point(884, 16);
-			this.checkBoxDBH.Name = "checkBoxDBH";
-			this.checkBoxDBH.Size = new System.Drawing.Size(18, 17);
-			this.checkBoxDBH.TabIndex = 102;
-			this.myToolTip.SetToolTip(this.checkBoxDBH, "hh");
-			this.checkBoxDBH.UseVisualStyleBackColor = true;
-			this.checkBoxDBH.CheckedChanged += new System.EventHandler(this.checkBoxDBH_CheckedChanged);
-			// 
-			// checkBoxAGB
-			// 
-			this.checkBoxAGB.AutoSize = true;
-			this.checkBoxAGB.Location = new System.Drawing.Point(884, 54);
-			this.checkBoxAGB.Name = "checkBoxAGB";
-			this.checkBoxAGB.Size = new System.Drawing.Size(18, 17);
-			this.checkBoxAGB.TabIndex = 103;
-			this.myToolTip.SetToolTip(this.checkBoxAGB, "hh");
-			this.checkBoxAGB.UseVisualStyleBackColor = true;
-			this.checkBoxAGB.CheckedChanged += new System.EventHandler(this.checkBoxAGB_CheckedChanged);
+			this.btnClearTmpFolder.Location = new System.Drawing.Point(410, 529);
+			this.btnClearTmpFolder.Name = "btnClearTmpFolder";
+			this.btnClearTmpFolder.Size = new System.Drawing.Size(126, 32);
+			this.btnClearTmpFolder.TabIndex = 104;
+			this.btnClearTmpFolder.Text = "clear tmp folder";
+			this.btnClearTmpFolder.UseVisualStyleBackColor = true;
+			this.btnClearTmpFolder.Click += new System.EventHandler(this.btnClearTmpFolder_Click);
 			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
 			this.ClientSize = new System.Drawing.Size(1182, 633);
+			this.Controls.Add(this.btnClearTmpFolder);
 			this.Controls.Add(this.checkBoxAGB);
 			this.Controls.Add(this.checkBoxDBH);
 			this.Controls.Add(this.checkBoxExportLas);
@@ -1523,6 +1536,13 @@ namespace ForestReco
 
 
 		#endregion
+
+		protected override void OnFormClosed(FormClosedEventArgs e)
+		{
+			base.OnFormClosed(e);
+			//without this the console is not closed and process remains alive in task manager
+			Environment.Exit(0);
+		}
 
 		#region path selection
 		private void textOutputFolder_TextChanged(object sender, EventArgs e)
@@ -1955,6 +1975,7 @@ namespace ForestReco
 		private void comboBoxSplitMode_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			rangeController.comboBoxSplitMode_SelectedIndexChanged(comboBoxSplitMode.SelectedItem.ToString());
+			RefreshEstimatedSize();
 		}
 
 		private void btnShapefile_Click(object sender, EventArgs e)
@@ -2090,6 +2111,19 @@ namespace ForestReco
 		{
 			CParameterSetter.SetParameter(ESettings.calculateAGB, checkBoxAGB.Checked);
 			richTextAGB.Enabled = checkBoxAGB.Checked;
+		}
+
+		/// <summary>
+		/// Deleted all files and folders in tmp folder and creates the folder again.
+		/// </summary>
+		private void btnClearTmpFolder_Click(object sender, EventArgs e)
+		{
+			string tmpFolderPath = CParameterSetter.GetStringSettings(ESettings.tmpFilesFolderPath);
+			if(Directory.Exists(tmpFolderPath))
+			{
+				Directory.Delete(tmpFolderPath, true);
+				Directory.CreateDirectory(tmpFolderPath);
+			}
 		}
 	}
 }

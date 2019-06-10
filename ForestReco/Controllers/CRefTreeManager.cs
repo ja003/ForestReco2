@@ -1,9 +1,8 @@
-﻿using System;
+﻿using ObjParser;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
-using ObjParser;
 
 namespace ForestReco
 {
@@ -25,13 +24,13 @@ namespace ForestReco
 			string folderPath = CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath);
 			string[] subfolders = Directory.GetDirectories(folderPath);
 
-			for (int i = 0; i < subfolders.Length; i++)
+			for(int i = 0; i < subfolders.Length; i++)
 			{
 				string subfolderPath = subfolders[i];
 				string[] pathSplit = subfolderPath.Split('\\');
 				string subfolderName = pathSplit[pathSplit.Length - 1];
 				//skip folder named "ignore"
-				if(subfolderName.Contains("ignore")){ continue;}
+				if(subfolderName.Contains("ignore")) { continue; }
 				names.Add(subfolderName);
 			}
 
@@ -43,7 +42,7 @@ namespace ForestReco
 		/// </summary>
 		public static void AssignRefTrees()
 		{
-			if (Trees.Count == 0)
+			if(Trees.Count == 0)
 			{
 				CDebug.Error("no reftrees loaded");
 				return;
@@ -61,11 +60,16 @@ namespace ForestReco
 
 			int counter = 0;
 			float similaritySum = 0;
-			foreach (CTree t in CTreeManager.Trees)
+			foreach(CTree t in CTreeManager.Trees)
 			{
+				if(CProjectData.backgroundWorker.CancellationPending)
+				{
+					break;
+				}
+
 				Tuple<CRefTree, STreeSimilarity> suitableRefTree = GetMostSuitableRefTree(t);
 				CRefTree mostSuitableRefTree = suitableRefTree.Item1;
-				if (mostSuitableRefTree == null)
+				if(mostSuitableRefTree == null)
 				{
 					CDebug.Error("no reftrees assigned!");
 					continue;
@@ -107,14 +111,14 @@ namespace ForestReco
 			DateTime lastDebugTime = DateTime.Now;
 
 			CDebug.WriteLine("Load reftrees: ");
-			foreach (string fileName in pFileNames)
+			foreach(string fileName in pFileNames)
 			{
 				CDebug.WriteLine(" - " + fileName);
 			}
 
-			for (int i = 0; i < pFileNames.Count; i++)
+			for(int i = 0; i < pFileNames.Count; i++)
 			{
-				if (CProjectData.backgroundWorker.CancellationPending) { return; }
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
 
 				string fileName = pFileNames[i];
 				CDebug.Progress(i, pFileNames.Count, 1, ref lastDebugTime, loadTreesStartTime, "load reftree");
@@ -125,7 +129,7 @@ namespace ForestReco
 
 				refTree.RefTreeTypeName = fileName; //GetTypeName(fileName);
 
-				if (!refTree.isValid)
+				if(!refTree.isValid)
 				{
 					//this reftree is not valid. case for reftrees in 'ignore' folder
 					CDebug.Warning($"Skipping reftree {fileName}");
@@ -144,17 +148,17 @@ namespace ForestReco
 
 			DebugReftrees();
 		}
-		
+
 		private static void DebugReftrees()
 		{
 			CDebug.WriteLine("Loaded reftrees: ");
-			foreach (CRefTree refTree in Trees)
+			foreach(CRefTree refTree in Trees)
 			{
 				CDebug.WriteLine(refTree.ToString());
 			}
 		}
 
-		static int debugTree = 185;
+		private static int debugTree = 185;
 
 		public static bool debugSimilarites = true; //todo: nějak omezit?
 		public static bool forceAlgorithm = false;
@@ -163,7 +167,7 @@ namespace ForestReco
 
 		private static Tuple<CRefTree, STreeSimilarity> GetMostSuitableRefTree(CTree pTree)
 		{
-			if (Trees.Count == 0)
+			if(Trees.Count == 0)
 			{
 				CDebug.Error("no reftrees defined!");
 				return null;
@@ -172,7 +176,7 @@ namespace ForestReco
 			CRefTree mostSuitableTree = Trees[0];
 			STreeSimilarity treeSimilarity = new STreeSimilarity();
 			STreeSimilarity bestSimilarity = new STreeSimilarity();
-			if (Trees.Count == 1 && !forceAlgorithm)
+			if(Trees.Count == 1 && !forceAlgorithm)
 			{
 				return new Tuple<CRefTree, STreeSimilarity>(mostSuitableTree, treeSimilarity);
 			}
@@ -180,7 +184,7 @@ namespace ForestReco
 
 			bool randomReftree = CParameterSetter.GetBoolSettings(ESettings.assignRefTreesRandom)
 				&& pTree.treeIndex != debugTree;
-			if (forceRandom || randomReftree)
+			if(forceRandom || randomReftree)
 			{
 				//int random = new Random().Next(0, Trees.Count);
 				int rnd = random.Next(0, Trees.Count);
@@ -188,25 +192,29 @@ namespace ForestReco
 				//if (debugSimilarites) { CDebug.WriteLine($"random = {random}"); }
 				return new Tuple<CRefTree, STreeSimilarity>(Trees[rnd], treeSimilarity);
 			}
-			if (debugSimilarites) { CDebug.WriteLine("\n" + pTree.treeIndex + " similarities = "); }
+			if(debugSimilarites) { CDebug.WriteLine("\n" + pTree.treeIndex + " similarities = "); }
 
 
-			foreach (CRefTree refTree in Trees)
+			foreach(CRefTree refTree in Trees)
 			{
+				if(CProjectData.backgroundWorker.CancellationPending)
+				{
+					break;
+				}
+
 				treeSimilarity = CTreeMath.GetSimilarityWith(refTree, pTree);
 				//float similarity = treeSimilarity.similarity;
-				if (debugSimilarites) { CDebug.WriteLine($"{refTree.fileName} similarity = {treeSimilarity.similarity}"); }
+				if(debugSimilarites) { CDebug.WriteLine($"{refTree.fileName} similarity = {treeSimilarity.similarity}"); }
 
-				if (treeSimilarity.similarity > bestSimilarity.similarity)
+				if(treeSimilarity.similarity > bestSimilarity.similarity)
 				{
 					mostSuitableTree = refTree;
 					bestSimilarity = treeSimilarity;
 				}
-				if (bestSimilarity.similarity > 0.9f && !forceAlgorithm) { break; }
-				if (CProjectData.backgroundWorker.CancellationPending) { break; }
+				if(bestSimilarity.similarity > 0.9f && !forceAlgorithm) { break; }
 			}
 
-			if (debugSimilarites)
+			if(debugSimilarites)
 			{
 				CDebug.WriteLine("Most suitable reftree = " + mostSuitableTree.Obj.Name + ". similarity = " + bestSimilarity.similarity);
 				CDebug.WriteLine($"tree height = {pTree.GetTreeHeight()}");
@@ -232,13 +240,16 @@ namespace ForestReco
 
 			//align position to tree
 			pRefTree.Obj.Position = pTargetTree.peak.Center;
-			pRefTree.Obj.Position.Y -= pRefTree.GetTreeHeight() * heightRatio;
+			pRefTree.Obj.Position.Z -= pRefTree.GetTreeHeight() * heightRatio;
 
 			//move obj so it is at 0,0,0
 			pRefTree.Obj.Position -= arrayCenter;
-			pRefTree.Obj.Position -= new Vector3(0, minHeight, 2 * pRefTree.Obj.Position.Z);
+			pRefTree.Obj.Position -= Vector3.UnitZ * minHeight;
 
 			pRefTree.Obj.Rotation = new Vector3(0, -pAngleOffset, 0);
+
+			//in OBJ format Y = height
+			CUtils.SwapYZ(ref pRefTree.Obj.Position);
 		}
 	}
 }
