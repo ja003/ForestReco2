@@ -88,22 +88,40 @@ namespace ForestReco
 
 		private static void CheckExport()
 		{
-			bool export3D = CParameterSetter.GetBoolSettings(ESettings.export3d);
-			bool exportBitmap = CParameterSetter.GetBoolSettings(ESettings.exportBitmap);
-			if(!export3D && !exportBitmap)
-			{
-				problems.Add($"No reason to process when export3D and exportBitmap are false. Result will be empty.");
-				return;
-			}
-			//if we export at least a bitmap, it is ok
-			if(exportBitmap) { return; }
+			bool willExportAny3D = CParameterSetter.GetBoolSettings(ESettings.export3d);
 
-			bool exportTreeStructures = CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures);
-			bool exportReftrees = CParameterSetter.GetBoolSettings(ESettings.exportRefTrees);
-			bool exportTreeBoxes = CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes);
-			if(!exportTreeStructures && !exportReftrees && !exportTreeBoxes)
+			if(willExportAny3D)
 			{
-				problems.Add($"No reason to process when exportReftrees, exportTreeStructures and exportTreeBoxes are false. Result will be empty.");
+				bool exportTreeStructures = CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures);
+				bool exportReftrees = CParameterSetter.GetBoolSettings(ESettings.exportRefTrees);
+				bool exportTreeBoxes = CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes);
+				willExportAny3D = exportTreeStructures || exportReftrees || exportTreeBoxes;
+			}
+
+			bool willExportSomeportBitmap = CParameterSetter.GetBoolSettings(ESettings.exportBitmap);
+
+			if(willExportSomeportBitmap)
+			{
+				bool exportBMHeightmap = CParameterSetter.GetBoolSettings(ESettings.ExportBMHeightmap);
+				bool exportBMTreeBorders = CParameterSetter.GetBoolSettings(ESettings.ExportBMTreeBorders);
+				bool exportBMTreePositions = CParameterSetter.GetBoolSettings(ESettings.ExportBMTreePositions);
+				willExportSomeportBitmap = exportBMHeightmap || exportBMTreeBorders || exportBMTreePositions;
+			}
+
+			bool willExportAnyShp = CParameterSetter.GetBoolSettings(ESettings.exportShape);
+			if(willExportAnyShp)
+			{
+				bool exportShapeTreeAreas = CParameterSetter.GetBoolSettings(ESettings.exportShapeTreeAreas);
+				bool exportShapeTreePositions = CParameterSetter.GetBoolSettings(ESettings.exportShapeTreePositions);
+				willExportAnyShp = exportShapeTreeAreas || exportShapeTreePositions;
+			}
+			bool willExportAnyLas = CParameterSetter.GetBoolSettings(ESettings.exportLas);
+
+
+			if(!willExportAny3D && !willExportSomeportBitmap && !willExportAnyShp && !willExportAnyLas)
+			{
+				problems.Add($"No reason to process when no 3D-obj, bitmap, SHP-file or LAS-file will be exported.");
+				return;
 			}
 		}
 

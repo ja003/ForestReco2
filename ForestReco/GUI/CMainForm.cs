@@ -102,12 +102,12 @@ namespace ForestReco
 		private TextBox textTileSize;
 		private Label label6;
 		private CheckedListBox checkedListBoxBitmaps;
-        private CheckBox checkBoxPreprocess;
-        private CheckBox checkBoxDeleteTmp;
-        private RichTextBox richTextDBH;
-        private Label label7;
-        private Label label8;
-        private RichTextBox richTextAGB;
+		private CheckBox checkBoxPreprocess;
+		private CheckBox checkBoxDeleteTmp;
+		private RichTextBox richTextDBH;
+		private Label label7;
+		private Label label8;
+		private RichTextBox richTextAGB;
 		private CheckedListBox checkedListBoxShape;
 		private CheckBox checkBoxExportShape;
 		private CheckBox checkBoxExportLas;
@@ -174,11 +174,11 @@ namespace ForestReco
 			textAvgTreeHeight.Text = CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh) + " m";
 			trackBarAvgTreeHeight.Value = CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh);
 
-            richTextDBH.Text = CParameterSetter.GetStringSettings(ESettings.dbh);
-            richTextAGB.Text = CParameterSetter.GetStringSettings(ESettings.agb);
+			richTextDBH.Text = CParameterSetter.GetStringSettings(ESettings.dbh);
+			richTextAGB.Text = CParameterSetter.GetStringSettings(ESettings.agb);
 
-            //bools
-            checkBoxExport3d.Checked =
+			//bools
+			checkBoxExport3d.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.export3d);
 			checkBoxExort3d_CheckedChanged(this, EventArgs.Empty); //force refresh
 
@@ -222,12 +222,12 @@ namespace ForestReco
 			checkBoxUseCheckTree.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile);
 			checkBoxUseCheckTree_CheckedChanged(this, EventArgs.Empty); //force refresh
-            checkBoxDeleteTmp.Checked =
-                CParameterSetter.GetBoolSettings(ESettings.deleteTmp);
-            checkBoxPreprocess.Checked =
-               CParameterSetter.GetBoolSettings(ESettings.preprocess);
+			checkBoxDeleteTmp.Checked =
+				CParameterSetter.GetBoolSettings(ESettings.deleteTmp);
+			checkBoxPreprocess.Checked =
+			   CParameterSetter.GetBoolSettings(ESettings.preprocess);
 
-            checkBoxExportCheckTrees.Checked =
+			checkBoxExportCheckTrees.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.exportCheckTrees);
 			checkBoxExportTreeBoxes.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes);
@@ -1346,6 +1346,7 @@ namespace ForestReco
 			// 
 			// checkedListBoxBitmaps
 			// 
+			this.checkedListBoxBitmaps.CheckOnClick = true;
 			this.checkedListBoxBitmaps.FormattingEnabled = true;
 			this.checkedListBoxBitmaps.Items.AddRange(new object[] {
             "heightmap",
@@ -1396,6 +1397,7 @@ namespace ForestReco
 			// 
 			// checkedListBoxShape
 			// 
+			this.checkedListBoxShape.CheckOnClick = true;
 			this.checkedListBoxShape.FormattingEnabled = true;
 			this.checkedListBoxShape.Items.AddRange(new object[] {
             "tree positions",
@@ -1591,7 +1593,7 @@ namespace ForestReco
 				return;
 
 			if(CSequenceController.IsSequence())
-			    return; 
+				return;
 
 			CProjectData.sourceFileHeader = new CHeaderInfo(lines);
 			RefreshEstimatedSize();
@@ -2061,26 +2063,26 @@ namespace ForestReco
 				checkedListBoxBitmaps.GetItemCheckState(2) == CheckState.Checked);
 		}
 
-        private void checkBoxPreprocess_CheckedChanged(object sender, EventArgs e)
-        {
-            CParameterSetter.SetParameter(ESettings.preprocess, checkBoxPreprocess.Checked);
-        }
+		private void checkBoxPreprocess_CheckedChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.preprocess, checkBoxPreprocess.Checked);
+		}
 
-        private void checkBoxDeleteTmp_CheckedChanged(object sender, EventArgs e)
-        {
-            CParameterSetter.SetParameter(ESettings.deleteTmp, checkBoxDeleteTmp.Checked);
+		private void checkBoxDeleteTmp_CheckedChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.deleteTmp, checkBoxDeleteTmp.Checked);
 
-        }
+		}
 
-        private void richTextDBH_TextChanged(object sender, EventArgs e)
-        {
-            CParameterSetter.SetParameter(ESettings.dbh, richTextDBH.Text);
-        }
+		private void richTextDBH_TextChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.dbh, richTextDBH.Text);
+		}
 
-        private void richTextAGB_TextChanged(object sender, EventArgs e)
-        {
-            CParameterSetter.SetParameter(ESettings.agb, richTextAGB.Text);
-        }
+		private void richTextAGB_TextChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.agb, richTextAGB.Text);
+		}
 
 		private void checkBoxExportShape_CheckedChanged(object sender, EventArgs e)
 		{
@@ -2090,10 +2092,13 @@ namespace ForestReco
 
 		private void checkedListBoxShape_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			CParameterSetter.SetParameter(ESettings.exportShapeTreePositions,
-				checkedListBoxShape.GetItemCheckState(0) == CheckState.Checked);
-			CParameterSetter.SetParameter(ESettings.exportShapeTreeAreas,
-				checkedListBoxShape.GetItemCheckState(1) == CheckState.Checked);
+			CheckState treePosState = checkedListBoxShape.GetItemCheckState(0);
+			CDebug.WriteLine($"treePosState = {treePosState}");
+			CParameterSetter.SetParameter(ESettings.exportShapeTreePositions, treePosState == CheckState.Checked);
+
+			CheckState treeAreasState = checkedListBoxShape.GetItemCheckState(1);
+			CDebug.WriteLine($"treeAreasState = {treeAreasState}");
+			CParameterSetter.SetParameter(ESettings.exportShapeTreeAreas, treeAreasState == CheckState.Checked);
 		}
 
 		private void checkBoxExportLas_CheckedChanged(object sender, EventArgs e)

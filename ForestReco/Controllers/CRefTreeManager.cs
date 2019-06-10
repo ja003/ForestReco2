@@ -160,7 +160,7 @@ namespace ForestReco
 
 		private static int debugTree = 185;
 
-		public static bool debugSimilarites = true; //todo: nějak omezit?
+		public static bool debugSimilarites = false; //todo: nějak omezit?
 		public static bool forceAlgorithm = false;
 
 		private static readonly Random random = new Random();
