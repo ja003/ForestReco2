@@ -16,6 +16,17 @@ namespace ForestReco
 		public Obj Obj;
 		public string fileName;
 		public string RefTreeTypeName;
+		private string version;
+		private const string CURRENT_REFTREE_VERSION = "1.0";
+
+		private const string KEY_TREE_INDEX = "treeIndex";
+		private const string KEY_VERSION = "version";
+		private const string KEY_TREE_POINT_EXTENT = "treePointExtent";
+		private const string KEY_PEAK = "peak";
+		private const string KEY_BRANCHES = "branches";
+		private const string KEY_STEM = "stem";
+		private const string KEY_BOUNDING_BOX = "boundingBox";
+		private const string KEY_BRANCH = "branch ";
 
 		public CRefTree() { }
 
@@ -84,34 +95,52 @@ namespace ForestReco
 			branches = new List<CBranch>();
 			List<CTreePoint> _treepointsOnBranch = new List<CTreePoint>();
 
+			//if first line is not version then it is the old version and
+			//the file needs to be regenerated
+			if(pSerializedLines.Length == 0 || pSerializedLines[0] != KEY_VERSION)
+			{
+				return;
+			}
+
 			foreach(string line in pSerializedLines)
 			{
 				switch(line)
 				{
-					case "treeIndex":
+					case KEY_VERSION:
+						currentMode = DeserialiseMode.Version;
+						continue;
+					case KEY_TREE_INDEX:
 						currentMode = DeserialiseMode.TreeIndex;
 						continue;
-					case "treePointExtent":
+					case KEY_TREE_POINT_EXTENT:
 						currentMode = DeserialiseMode.TreePointExtent;
 						continue;
-					case "peak":
+					case KEY_PEAK:
 						currentMode = DeserialiseMode.Peak;
 						continue;
-					case "branches":
+					case KEY_BRANCHES:
 						currentMode = DeserialiseMode.Branches;
 						continue;
-					case "stem":
+					case KEY_STEM:
 						currentMode = DeserialiseMode.Stem;
 						branches.Last().SetTreePoints(_treepointsOnBranch);
 						_treepointsOnBranch = new List<CTreePoint>();
 						continue;
-					case "boundingBox":
+					case KEY_BOUNDING_BOX:
 						currentMode = DeserialiseMode.BoundingBox;
 						continue;
 				}
 
 				switch(currentMode)
 				{
+					case DeserialiseMode.Version:
+						version = line;
+						if(!IsCurrentVersion())
+						{
+							CDebug.Warning($"reftree version {version} is not up to date {CURRENT_REFTREE_VERSION}. Generating new file.");
+							return;
+						}
+						break;
 					case DeserialiseMode.TreeIndex:
 						treeIndex = int.Parse(line);
 						break;
@@ -123,7 +152,7 @@ namespace ForestReco
 						stem = new CBranch(this, 0, 0);
 						break;
 					case DeserialiseMode.Branches:
-						if(line.Contains("branch "))
+						if(line.Contains(KEY_BRANCH))
 						{
 							int branchIndex = branches.Count;
 							if(branchIndex > 0)
@@ -158,9 +187,15 @@ namespace ForestReco
 			LoadObj(pFileName);
 		}
 
+		public bool IsCurrentVersion()
+		{
+			return version == CURRENT_REFTREE_VERSION;
+		}
+
 		private enum DeserialiseMode
 		{
 			None,
+			Version,
 			TreeIndex,
 			Peak,
 			Branches,
@@ -191,26 +226,32 @@ namespace ForestReco
 		public new List<string> Serialize()
 		{
 			List<string> lines = new List<string>();
-			lines.Add("treeIndex");
+			lines.Add(KEY_VERSION);
+			lines.Add(CURRENT_REFTREE_VERSION);
+
+			lines.Add(KEY_TREE_INDEX);
 			lines.Add(treeIndex.ToString());
-			lines.Add("treePointExtent");
+
+			lines.Add(KEY_TREE_POINT_EXTENT);
 			lines.Add(treePointExtent.ToString());
-			lines.Add("peak");
+
+			lines.Add(KEY_PEAK);
 			lines.Add(peak.Serialize());
-			lines.Add("branches");
+
+			lines.Add(KEY_BRANCHES);
 			foreach(CBranch b in branches)
 			{
-				lines.Add("branch " + branches.IndexOf(b));
+				lines.Add(KEY_BRANCH + branches.IndexOf(b));
 				lines.AddRange(b.Serialize());
 				if(base.maxBB.X > -10)
 				{
 					CDebug.WriteLine("");
 				}
 			}
-			lines.Add("stem");
+			lines.Add(KEY_STEM);
 			lines.AddRange(stem.Serialize());
 
-			lines.Add("boundingBox");
+			lines.Add(KEY_BOUNDING_BOX);
 			lines.Add(base.Serialize());
 
 			return lines;
@@ -241,13 +282,20 @@ namespace ForestReco
 
 			if(File.Exists(filePath))
 			{
-				CDebug.Error(".reftree file already exists");
-				return;
+				if(!IsCurrentVersion())
+				{
+					File.Delete(filePath);
+					CDebug.Warning($"deleting old .reftree file ({filePath})");
+				}
+				else
+					CDebug.Error(".reftree file already exists ({filePath})");
+				//return;
 			}
 
 			DateTime processStartTime = DateTime.Now;
 			CDebug.WriteLine("Serialization");
 			List<string> serializedTree = Serialize();
+			version = CURRENT_REFTREE_VERSION;
 
 			using(StreamWriter file = new StreamWriter(filePath, false))
 			{

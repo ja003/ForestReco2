@@ -124,8 +124,10 @@ namespace ForestReco
 				CDebug.Progress(i, pFileNames.Count, 1, ref lastDebugTime, loadTreesStartTime, "load reftree");
 
 				CRefTree deserializedRefTree = CRefTree.Deserialize(fileName);
-				CRefTree refTree = deserializedRefTree ??
-										 new CRefTree(fileName, i, TREE_POINT_EXTENT, true);
+				bool isDeserializedTreeValid = deserializedRefTree != null && 
+					deserializedRefTree.IsCurrentVersion();
+				CRefTree refTree = isDeserializedTreeValid ? 
+					deserializedRefTree : new CRefTree(fileName, i, TREE_POINT_EXTENT, true);
 
 				refTree.RefTreeTypeName = fileName; //GetTypeName(fileName);
 
