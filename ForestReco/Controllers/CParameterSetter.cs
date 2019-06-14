@@ -24,7 +24,7 @@ namespace ForestReco
 				//use app path as tmp folder if no folder is specified
 				if(!Directory.Exists(savedVal))
 				{
-					string newTmpFolder = Application.StartupPath + "\\tmp";
+					string newTmpFolder = savedVal.Length > 0 ? savedVal: Application.StartupPath + "\\tmp";
 					Directory.CreateDirectory(newTmpFolder);
 					SetParameter(ESettings.tmpFilesFolderPath, newTmpFolder);
 					savedVal = newTmpFolder;

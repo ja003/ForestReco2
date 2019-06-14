@@ -244,6 +244,8 @@ namespace ForestReco
 
 			SetStartBtnEnabled(true);
 
+			CDebug.Init(this);
+
 			#region tooltip
 			CTooltipManager.AssignTooltip(myToolTip, btnSellectForest, ESettings.forestFilePath);
 			CTooltipManager.AssignTooltip(myToolTip, btnSequence, ETooltip.sequenceFile);
@@ -1824,6 +1826,7 @@ namespace ForestReco
 		{
 			btnStart.Enabled = pValue;
 			btnAbort.Enabled = !pValue;
+			btnClearTmpFolder.Enabled = pValue; 
 		}
 
 		private void btnOpenResult_Click(object sender, EventArgs e)
@@ -2126,7 +2129,19 @@ namespace ForestReco
 			string tmpFolderPath = CParameterSetter.GetStringSettings(ESettings.tmpFilesFolderPath);
 			if(Directory.Exists(tmpFolderPath))
 			{
-				Directory.Delete(tmpFolderPath, true);
+				try
+				{
+					textProgress.Text = "Tmp files cleared";
+					Directory.Delete(tmpFolderPath, true);
+					Directory.CreateDirectory(tmpFolderPath);
+				}
+				catch(Exception)
+				{
+
+				}
+			}
+			else if(tmpFolderPath.Length > 0)
+			{
 				Directory.CreateDirectory(tmpFolderPath);
 			}
 		}

@@ -6,21 +6,25 @@ namespace ForestReco
 	public static class CDebug
 	{
 		private static int stepCallCount;
+		private static CMainForm form;
 
-        private static int countedStepsCount; //cache value
+		private static int countedStepsCount; //cache value
 
-        public static void Init()
+		public static void Init(CMainForm pForm)
+		{
+			form = pForm;
+		}
+
+		public static void ReInit()
 		{
 			stepCallCount = 0;
-            countedStepsCount = GetCountedStepsCount();
-
-        }
+			countedStepsCount = GetCountedStepsCount();
+		}
 
 		public static void Count(string pText, int pCount, int pOutOf = -1)
 		{
 			WriteLine(pText + ": " + pCount + (pOutOf > 0 ? " out of " + pOutOf : ""));
 		}
-
 
 		public static void WriteLine(string pText, bool pBreakLineBefore = false, bool pBreakLineAfter = false)
 		{
@@ -31,8 +35,6 @@ namespace ForestReco
 		{
 			WriteLine(pAction + ": " + pText, true);
 		}
-
-
 
 		internal static void Warning(string pText)
 		{
@@ -139,16 +141,10 @@ namespace ForestReco
 				message += p + Environment.NewLine;
 			}
 			WriteLine(message);
-			try
-			{
-				CProjectData.backgroundWorker.ReportProgress(0, new string[] { message });
-			}
-			//should not happen 
-			//TODO: happens after process is run once (or aborted) - backgroundWorker cant ReportProgress
-			catch(Exception e)
-			{
-				Error(e.Message, false);
-			}
+
+			//todo: maybe its not neccessary to handle progress messages 
+			//through ReportProgress but rather like this...but works for now
+			form.textProgress.Text = message;
 		}
 
 		private static string GetStepText(EProgramStep pStep)
@@ -170,24 +166,24 @@ namespace ForestReco
 		}
 
 
-        /// <summary>
-        /// Preprocess steps are not counted.
-        /// </summary>
+		/// <summary>
+		/// Preprocess steps are not counted.
+		/// </summary>
 		private static int GetCountedStepsCount()
 		{
-            int count = 0;
-            foreach(EProgramStep type in Enum.GetValues(typeof(EProgramStep)))
-            {
-                if(IsCountableStep(type))
-                    count++;
-            }
-            return count;
-            //return Enum.GetNames(typeof(EProgramStep)).Length - 3;
+			int count = 0;
+			foreach(EProgramStep type in Enum.GetValues(typeof(EProgramStep)))
+			{
+				if(IsCountableStep(type))
+					count++;
+			}
+			return count;
+			//return Enum.GetNames(typeof(EProgramStep)).Length - 3;
 		}
 
-        /// <summary>
-        /// Steps from preprocessing are not counted
-        /// </summary>
+		/// <summary>
+		/// Steps from preprocessing are not counted
+		/// </summary>
 		private static bool IsCountableStep(EProgramStep pStep)
 		{
 			//todo: tmp hack for preprocessing steps
@@ -300,6 +296,6 @@ namespace ForestReco
 		Pre_LasHeight,
 		Pre_LasGround,
 		Pre_LasToTxt,
-        Pre_Noise
-    }
+		Pre_Noise
+	}
 }

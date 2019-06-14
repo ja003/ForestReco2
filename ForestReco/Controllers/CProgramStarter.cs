@@ -105,7 +105,7 @@ namespace ForestReco
 			currentTileIndex = pTileIndex;
 			CProjectData.ReInit(pTileIndex); //has to reinit after each tile is processed
 			CTreeManager.Reinit();
-			CDebug.Init();
+			CDebug.ReInit();
 
 			string[] lines = CProgramLoader.GetFileLines(pTilePath);
 

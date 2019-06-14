@@ -73,8 +73,15 @@ namespace ForestReco
 				{
 					WorkingDirectory = lasToolsFolder,
 					FileName = "CMD.exe",
-					Arguments = command
+					Arguments = command,
+					CreateNoWindow = true,
+					WindowStyle = ProcessWindowStyle.Hidden,
+					UseShellExecute = false
 				};
+
+				//ProcessStartInfo processStartInfo = new ProcessStartInfo(
+				//	lasToolsFolder + "lasinfo.exe", "D:\\Resources\\ForestReco\\podklady\\data-velka\\try\\ANE_1000_part04\\ANE_1000_part04_merged.laz -o D:\\Resources\\ForestReco\\podklady\\data-small\\tmpFiles\\ANE_1000_part04_merged_tmp\\ANE_1000_part04_merged_i.txt");
+
 
 				Process currentProcess = Process.Start(processStartInfo);
 				currentProcess.WaitForExit();
