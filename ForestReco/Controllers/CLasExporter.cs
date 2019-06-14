@@ -23,6 +23,7 @@ namespace ForestReco
 		private const string GROUND_COLOR = "255 0 255"; //pink
 
 		private const string NUM_FORMAT = "0.00";
+		private const int DEBUG_FREQUENCY = 100;
 
 		public static void Init()
 		{
@@ -37,9 +38,15 @@ namespace ForestReco
 			string output = "";
 			string res;
 
+			DateTime start = DateTime.Now;
+			DateTime lastDebug = DateTime.Now;
+
 			//ground points
-			foreach(Vector3 p in CProjectData.groundPoints)
+			for(int i = 0; i < CProjectData.groundPoints.Count; i++)
 			{
+				CDebug.Progress(i, CProjectData.groundPoints.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (ground points)");
+
+				Vector3 p = CProjectData.groundPoints[i];
 				CVector3D globalP = CUtils.GetGlobalPosition(p);
 				res = GetPointLine(globalP, 2, (byte)0, GROUND_COLOR) + newLine;
 				output += res;
@@ -47,19 +54,32 @@ namespace ForestReco
 			}
 
 			//tree points
-			foreach(CTree t in CTreeManager.Trees)
+			for(int i = 0; i < CTreeManager.Trees.Count; i++)
 			{
+				CDebug.Progress(i, CTreeManager.Trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (trees)");
+
+				CTree t = CTreeManager.Trees[i];
+				//todo: report progress
 				res = GetTreeLines(t); //already ends with "newLine"
 				output += res;
 				mainOutput += res;
 			}
 
 			//invalid tree points
-			foreach(CTree t in CTreeManager.InvalidTrees)
+			for(int i = 0; i < CTreeManager.InvalidTrees.Count; i++)
 			{
+				CDebug.Progress(i, CTreeManager.InvalidTrees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (invalid trees)");
+
+				CTree t = CTreeManager.InvalidTrees[i];
 				res = GetTreeLines(t);
 				output += res;
 				//mainOutput += res; //dont add invalid trees to main file
+			}
+
+			if(output.Length == 0)
+			{
+				CDebug.Warning($"CLasExporter: no output created on tile {CProgramStarter.currentTileIndex}");
+				return;
 			}
 
 			WriteToFile(output, tileTxtFilePath);
@@ -73,6 +93,12 @@ namespace ForestReco
 		{
 			if(!export)
 				return;
+
+			if(mainOutput.Length == 0)
+			{
+				CDebug.Warning($"CLasExporter: no mainoutput created");
+				return;
+			}
 
 			WriteToFile(mainOutput, mainTxtFilePath);
 

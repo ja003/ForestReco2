@@ -163,10 +163,18 @@ namespace ForestReco
 			CAnalytics.totalDuration = CAnalytics.GetDuration(startTime);
 			CDebug.Duration("total time", startTime);
 
+			//todo: write step
+			CDebug.Step(EProgramStep.Analytics);
 			CAnalytics.Write(true);
 
+			//todo: write step
+			CDebug.Step(EProgramStep.Dart);
 			CDartTxt.ExportTile();
+			//todo: write step
+			CDebug.Step(EProgramStep.Shp);
 			CShpController.ExportCurrent();
+			//todo: write step
+			CDebug.Step(EProgramStep.Las);
 			CLasExporter.ExportTile();
 
 			return EProcessResult.Done;

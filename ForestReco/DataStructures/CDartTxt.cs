@@ -16,6 +16,7 @@ namespace ForestReco
 		private static string newLine => Environment.NewLine;
 
 		private static string HEADER_LINE = "complete transformation	"; //TODO: is it neccessary?
+		private const int DEBUG_FREQUENCY = 100;
 
 		public static void Init()
 		{
@@ -27,12 +28,17 @@ namespace ForestReco
 		/// </summary>
 		public static void ExportMain()
 		{
-
 			List<string[]> filesLines = new List<string[]>();
 
 			foreach(FileInfo fi in exportedFiles)
 			{
 				filesLines.Add(File.ReadAllLines(fi.FullName));
+			}
+
+			if(filesLines.Count == 0)
+			{
+				CDebug.Warning($"CDartTxt: no main output created");
+				return;
 			}
 
 			using(StreamWriter writer = File.CreateText($"{CProjectData.outputFolder}\\dart_main.txt"))
@@ -54,14 +60,24 @@ namespace ForestReco
 
 		public static void ExportTile()
 		{
+			if(CTreeManager.Trees.Count == 0)
+			{
+				CDebug.Warning($"CDartTxt: no output created on tile {CProgramStarter.currentTileIndex}");
+				return;
+			}
+			DateTime start = DateTime.Now;
+			DateTime lastDebug = DateTime.Now;
+
 			string output = HEADER_LINE + newLine;
 
-			foreach(CTree tree in CTreeManager.Trees)
+			for(int i = 0; i < CTreeManager.Trees.Count; i++)
 			{
+				CDebug.Progress(i, CTreeManager.Trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export dart (trees)");
+				CTree tree = CTreeManager.Trees[i];
 				string line = GetLine(tree);
 				if(line != null)
 					output += line + newLine;
-			}
+			}			
 
 			//CDebug.WriteLine(output);
 			WriteToFile(output);

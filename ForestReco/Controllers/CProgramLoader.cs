@@ -430,6 +430,10 @@ namespace ForestReco
 				CProjectData.AddPoint(parsedLine);
 			}
 
+			//to try 0 points loaded errors
+			//CProjectData.vegePoints.Clear();
+			//CProjectData.groundPoints.Clear();
+
 			//no points loaded is not an exception.
 			//in some tile there does not have to be any point
 			//if(CProjectData.vegePoints.Count == 0)

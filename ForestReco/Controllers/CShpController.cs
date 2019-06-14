@@ -3,6 +3,7 @@ using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using ProjNet.CoordinateSystems;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -26,6 +27,7 @@ namespace ForestReco
 		private const string NUM_FORMAT = "0.00";
 		private static List<IFeature> treePositionsAll;
 		private static List<IFeature> treeAreasAll;
+		private const int DEBUG_FREQUENCY = 100;
 
 		private static GeometryFactory factory = new GeometryFactory();
 
@@ -63,11 +65,16 @@ namespace ForestReco
 			if(!exportShape)
 				return;
 
+			DateTime start = DateTime.Now;
+			DateTime lastDebug = DateTime.Now;
+
 			List<IFeature> treePositions = new List<IFeature>();
 			List<IFeature> treeBorders = new List<IFeature>();
 
-			foreach(CTree tree in CTreeManager.Trees)
+			for(int i = 0; i < CTreeManager.Trees.Count; i++)
 			{
+				CDebug.Progress(i, CTreeManager.Trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export shp (trees)");
+				CTree tree = CTreeManager.Trees[i];
 				//tree positions
 				Feature f = GetTreePosition(tree);
 				treePositions.Add(f);

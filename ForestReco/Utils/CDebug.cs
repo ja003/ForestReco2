@@ -124,9 +124,29 @@ namespace ForestReco
 
 		private static string GetTileProgress(EProgramStep pStep)
 		{
-			if(!IsCountableStep(pStep))
-				return "";
-			string progress = $"{CProgramStarter.currentTileIndex + 1} / {CProgramStarter.tilesCount}";
+			//if(!IsCountableStep(pStep))
+			//	return "";
+			bool isPreprocess = IsPreprocessStep(pStep);
+
+			string progress;
+			if(isPreprocess)
+			{
+				if(IsCountablePreprocessStep(pStep))
+				{
+					progress = 
+						$"{CPreprocessController.currentTileIndex + 1} / {CPreprocessController.tilesCount}";
+				}
+				else
+					progress = "---";
+			}
+			else
+			{
+				if(IsCountableStep(pStep))
+					progress = $"{CProgramStarter.currentTileIndex + 1} / {CProgramStarter.tilesCount}";
+				else 
+					progress = "---";
+			}
+
 			string nl = Environment.NewLine;
 			string sep = "==========";
 			return $"{sep}{nl}TILE: {progress} {nl}{sep}{nl}";
@@ -181,13 +201,28 @@ namespace ForestReco
 			//return Enum.GetNames(typeof(EProgramStep)).Length - 3;
 		}
 
+		private static bool IsPreprocessStep(EProgramStep pStep)
+		{
+			return pStep.ToString().Contains("Pre_");
+		}
+
+		private static bool IsCountablePreprocessStep(EProgramStep pStep)
+		{
+			return IsPreprocessStep(pStep) &&
+				pStep != EProgramStep.Pre_Tile &&
+				pStep != EProgramStep.Pre_DeleteTmp &&
+				pStep != EProgramStep.Pre_Split &&
+				pStep != EProgramStep.Pre_LasToTxt &&
+				pStep != EProgramStep.Pre_LasReverseTile;			
+		}
+
 		/// <summary>
 		/// Steps from preprocessing are not counted
 		/// </summary>
 		private static bool IsCountableStep(EProgramStep pStep)
 		{
 			//todo: tmp hack for preprocessing steps
-			if(pStep.ToString().Contains("Pre_"))
+			if(IsPreprocessStep(pStep))
 				return false;
 
 			switch(pStep)
@@ -252,10 +287,55 @@ namespace ForestReco
 					break;
 				case EProgramStep.Bitmap:
 					text = "generating bitmaps";
+
 					break;
+				case EProgramStep.Analytics:
+					text = "exporting analytics";
+					break;
+				case EProgramStep.Dart:
+					text = "exporting dart";
+					break;
+				case EProgramStep.Shp:
+					text = "exporting shp";
+					break;				
+				case EProgramStep.Las:
+					text = "exporting las";
+					break;
+
+
 				case EProgramStep.Done:
 					text = "DONE";
 					break;
+
+
+				case EProgramStep.Pre_Tile:
+					text = PREPROCESS + "creating tiles";
+					break;
+				case EProgramStep.Pre_Noise:
+					text = PREPROCESS + "removing noise";
+					break;
+				case EProgramStep.Pre_LasGround:
+					text = PREPROCESS + "detecting ground";
+					break;
+				case EProgramStep.Pre_LasHeight:
+					text = PREPROCESS + "calculating heights";
+					break;
+				case EProgramStep.Pre_LasClassify:
+					text = PREPROCESS + "classifying points";
+					break;
+				case EProgramStep.Pre_LasReverseTile:
+					text = PREPROCESS + "applying reverse tiling";
+					break;
+				case EProgramStep.Pre_DeleteTmp:
+					text = PREPROCESS + "deleting temporary files";
+					break;
+				case EProgramStep.Pre_Split:
+					text = PREPROCESS + "splitting file";
+					break;
+				case EProgramStep.Pre_LasToTxt:
+					text = PREPROCESS + "converting from laz to txt";
+					break;
+
 
 				default:
 					text = $"{pStep} - comment not specified";
@@ -264,38 +344,7 @@ namespace ForestReco
 
 			return text;
 		}
-	}
 
-	public enum EProgramStep
-	{
-		LoadLines = 1,
-		LoadReftrees = 2, //not part of tile processing
-		ParseLines = 3,
-		ProcessGroundPoints = 4,
-		PreprocessVegePoints = 5,
-		ProcessVegePoints = 6,
-		ValidateTrees1 = 7,
-		MergeTrees1 = 8,
-		ValidateTrees2 = 9,
-		MergeTrees2 = 10,
-		ValidateTrees3 = 11,
-		AssignReftrees = 12,
-		LoadCheckTrees = 13,
-		AssignCheckTrees = 14,
-		Export = 15,
-		Bitmap = 16,
-		Done = 17,
-
-		Cancelled,
-		Exception,
-		Pre_Split,
-		Pre_LasClassify,
-		Pre_Tile,
-		Pre_DeleteTmp,
-		Pre_LasReverseTile,
-		Pre_LasHeight,
-		Pre_LasGround,
-		Pre_LasToTxt,
-		Pre_Noise
+		private const string PREPROCESS = "Preprocess: ";
 	}
 }

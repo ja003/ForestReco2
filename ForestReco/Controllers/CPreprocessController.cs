@@ -112,6 +112,9 @@ namespace ForestReco
 			return outputFilePath;
 		}
 
+		public static int currentTileIndex = 0;
+		public static int tilesCount = 0;
+
 		/// <summary>
 		/// Returns path to the classified forest file.
 		/// If it is not created it runs:
@@ -145,8 +148,10 @@ namespace ForestReco
 				PREPROCESS_TILE_SIZE, CProjectData.bufferSize);
 
 			List<string> classifyFilePaths = new List<string>();
+			tilesCount = tiledFiles.Length;
 			for(int i = 0; i < tiledFiles.Length; i++)
 			{
+				currentTileIndex = i;
 				CDebug.Progress(i, tiledFiles.Length, 1, ref start, getClassifiedFilePathStart, "GetClassifiedFilePath", true);
 
 				FileInfo fi = tiledFiles[i];
