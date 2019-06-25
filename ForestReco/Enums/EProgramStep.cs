@@ -24,11 +24,12 @@ namespace ForestReco
 		AssignCheckTrees = 14,
 		Export = 15,
 		Bitmap = 16,
-		Done = 17,
-		Analytics = 18,
-		Dart = 19,
-		Shp = 20,
-		Las = 21,
+		Dart = 17,
+		Shp = 18,
+		Las = 19,
+		Analytics = 20,
+
+		Done,
 
 		Cancelled,
 		Exception,

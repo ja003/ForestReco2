@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
+using System.Text;
 
 namespace ForestReco
 {
@@ -18,7 +19,7 @@ namespace ForestReco
 
 		private static bool export => CParameterSetter.GetBoolSettings(ESettings.exportLas);
 
-		private static string mainOutput;
+		private static StringBuilder mainOutput;
 		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i";
 		private const string GROUND_COLOR = "255 0 255"; //pink
 
@@ -27,15 +28,16 @@ namespace ForestReco
 
 		public static void Init()
 		{
-			mainOutput = "";
+			mainOutput = new StringBuilder();
 		}
 
 		public static void ExportTile()
 		{
 			if(!export)
 				return;
+			DateTime exportStart = DateTime.Now;
 
-			string output = "";
+			StringBuilder output = new StringBuilder();
 			string res;
 
 			DateTime start = DateTime.Now;
@@ -44,35 +46,40 @@ namespace ForestReco
 			//ground points
 			for(int i = 0; i < CProjectData.groundPoints.Count; i++)
 			{
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
+
 				CDebug.Progress(i, CProjectData.groundPoints.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (ground points)");
 
 				Vector3 p = CProjectData.groundPoints[i];
 				CVector3D globalP = CUtils.GetGlobalPosition(p);
 				res = GetPointLine(globalP, 2, (byte)0, GROUND_COLOR) + newLine;
-				output += res;
-				mainOutput += res;
+				output.Append(res);
 			}
+			mainOutput.Append(output);
 
 			//tree points
 			for(int i = 0; i < CTreeManager.Trees.Count; i++)
 			{
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
+
 				CDebug.Progress(i, CTreeManager.Trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (trees)");
 
 				CTree t = CTreeManager.Trees[i];
-				//todo: report progress
 				res = GetTreeLines(t); //already ends with "newLine"
-				output += res;
-				mainOutput += res;
+				output.Append(res);
 			}
+			mainOutput.Append(output);
 
 			//invalid tree points
 			for(int i = 0; i < CTreeManager.InvalidTrees.Count; i++)
 			{
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
+
 				CDebug.Progress(i, CTreeManager.InvalidTrees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (invalid trees)");
 
 				CTree t = CTreeManager.InvalidTrees[i];
 				res = GetTreeLines(t);
-				output += res;
+				output.Append(res);
 				//mainOutput += res; //dont add invalid trees to main file
 			}
 
@@ -82,11 +89,13 @@ namespace ForestReco
 				return;
 			}
 
-			WriteToFile(output, tileTxtFilePath);
+			WriteToFile(output.ToString(), tileTxtFilePath);
 
 			//format: x, y, z, class, user comment (id), R, G, B
 			string cmd = $"{txt2lasCmd} {tileTxtFilePath}";
 			CCmdController.RunLasToolsCmd(cmd, tileLasFilePath);
+
+			CAnalytics.lasExportDuration = CAnalytics.GetDuration(exportStart);
 		}
 
 		public static void ExportMain()
@@ -100,7 +109,7 @@ namespace ForestReco
 				return;
 			}
 
-			WriteToFile(mainOutput, mainTxtFilePath);
+			WriteToFile(mainOutput.ToString(), mainTxtFilePath);
 
 			//format: x, y, z, class, user comment (id), R, G, B
 			string cmd = $"{txt2lasCmd} {mainTxtFilePath}";

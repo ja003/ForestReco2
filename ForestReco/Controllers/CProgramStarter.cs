@@ -59,9 +59,16 @@ namespace ForestReco
 				List<string> tiledFiles = CProgramLoader.GetTiledPreprocessedFilePaths();
 
 				tilesCount = tiledFiles.Count;
-				foreach(string tiledFilePath in tiledFiles)
+				int startTile = CParameterSetter.GetIntSettings(ESettings.startIndex);
+				if(startTile < 0 || startTile >= tiledFiles.Count)
 				{
-					EProcessResult tileProcess = ProcessTile(tiledFilePath, tiledFiles.IndexOf(tiledFilePath));
+					throw new Exception($"Parameter startTile = {startTile}, tiledFiles.Count = {tiledFiles.Count}");
+				}
+
+				for(int i = startTile; i < tiledFiles.Count; i++)
+				{
+					string tiledFilePath = tiledFiles[i];
+					EProcessResult tileProcess = ProcessTile(tiledFilePath, i);
 					if(CProjectData.backgroundWorker.CancellationPending)
 						break;
 				}
@@ -163,19 +170,17 @@ namespace ForestReco
 			CAnalytics.totalDuration = CAnalytics.GetDuration(startTime);
 			CDebug.Duration("total time", startTime);
 
-			//todo: write step
-			CDebug.Step(EProgramStep.Analytics);
-			CAnalytics.Write(true);
-
-			//todo: write step
 			CDebug.Step(EProgramStep.Dart);
 			CDartTxt.ExportTile();
-			//todo: write step
+
 			CDebug.Step(EProgramStep.Shp);
 			CShpController.ExportCurrent();
-			//todo: write step
+
 			CDebug.Step(EProgramStep.Las);
 			CLasExporter.ExportTile();
+
+			CDebug.Step(EProgramStep.Analytics);
+			CAnalytics.Write(true);
 
 			return EProcessResult.Done;
 		}

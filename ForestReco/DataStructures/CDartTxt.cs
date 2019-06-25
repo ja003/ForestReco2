@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Text;
 
 namespace ForestReco
 {
@@ -68,7 +69,7 @@ namespace ForestReco
 			DateTime start = DateTime.Now;
 			DateTime lastDebug = DateTime.Now;
 
-			string output = HEADER_LINE + newLine;
+			StringBuilder output = new StringBuilder(HEADER_LINE + newLine);
 
 			for(int i = 0; i < CTreeManager.Trees.Count; i++)
 			{
@@ -76,11 +77,11 @@ namespace ForestReco
 				CTree tree = CTreeManager.Trees[i];
 				string line = GetLine(tree);
 				if(line != null)
-					output += line + newLine;
+					output.Append(line + newLine);
 			}			
 
 			//CDebug.WriteLine(output);
-			WriteToFile(output);
+			WriteToFile(output.ToString());
 		}
 
 		/// <summary>

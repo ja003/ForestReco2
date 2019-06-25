@@ -114,6 +114,8 @@ namespace ForestReco
 		private CheckBox checkBoxDBH;
 		private CheckBox checkBoxAGB;
 		private Button btnClearTmpFolder;
+		private Label label9;
+		public TextBox textStartTile;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -176,6 +178,8 @@ namespace ForestReco
 
 			richTextDBH.Text = CParameterSetter.GetStringSettings(ESettings.dbh);
 			richTextAGB.Text = CParameterSetter.GetStringSettings(ESettings.agb);
+
+			textStartTile.Text = CParameterSetter.GetIntSettings(ESettings.startIndex).ToString();
 
 			//bools
 			checkBoxExport3d.Checked =
@@ -422,6 +426,8 @@ namespace ForestReco
 			this.richTextAGB = new System.Windows.Forms.RichTextBox();
 			this.checkedListBoxShape = new System.Windows.Forms.CheckedListBox();
 			this.btnClearTmpFolder = new System.Windows.Forms.Button();
+			this.label9 = new System.Windows.Forms.Label();
+			this.textStartTile = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -446,6 +452,8 @@ namespace ForestReco
 			// 
 			// textForestFilePath
 			// 
+			this.textForestFilePath.BackColor = System.Drawing.SystemColors.Window;
+			this.textForestFilePath.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.textForestFilePath.Location = new System.Drawing.Point(147, 50);
 			this.textForestFilePath.Name = "textForestFilePath";
 			this.textForestFilePath.Size = new System.Drawing.Size(616, 22);
@@ -1421,10 +1429,31 @@ namespace ForestReco
 			this.btnClearTmpFolder.UseVisualStyleBackColor = true;
 			this.btnClearTmpFolder.Click += new System.EventHandler(this.btnClearTmpFolder_Click);
 			// 
+			// label9
+			// 
+			this.label9.AutoSize = true;
+			this.label9.Location = new System.Drawing.Point(1028, 176);
+			this.label9.Name = "label9";
+			this.label9.Size = new System.Drawing.Size(74, 17);
+			this.label9.TabIndex = 105;
+			this.label9.Text = "start at tile";
+			// 
+			// textStartTile
+			// 
+			this.textStartTile.Location = new System.Drawing.Point(1108, 173);
+			this.textStartTile.Name = "textStartTile";
+			this.textStartTile.Size = new System.Drawing.Size(56, 22);
+			this.textStartTile.TabIndex = 106;
+			this.textStartTile.Text = "0";
+			this.textStartTile.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			this.textStartTile.TextChanged += new System.EventHandler(this.textStartTile_TextChanged);
+			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
 			this.ClientSize = new System.Drawing.Size(1182, 633);
+			this.Controls.Add(this.textStartTile);
+			this.Controls.Add(this.label9);
 			this.Controls.Add(this.btnClearTmpFolder);
 			this.Controls.Add(this.checkBoxAGB);
 			this.Controls.Add(this.checkBoxDBH);
@@ -2144,6 +2173,14 @@ namespace ForestReco
 			{
 				Directory.CreateDirectory(tmpFolderPath);
 			}
+		}
+
+		private void textStartTile_TextChanged(object sender, EventArgs e)
+		{
+			int val = 0;
+			int.TryParse(textStartTile.Text, out val);
+			textStartTile.Text = val.ToString();
+			CParameterSetter.SetParameter(ESettings.startIndex, val);
 		}
 	}
 }

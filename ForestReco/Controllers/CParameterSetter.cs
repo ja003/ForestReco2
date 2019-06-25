@@ -237,5 +237,6 @@ namespace ForestReco
 		exportLas,
 		calculateDBH,
 		calculateAGB,
+		startIndex,
 	}
 }

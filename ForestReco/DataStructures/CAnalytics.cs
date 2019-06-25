@@ -48,6 +48,9 @@ namespace ForestReco
 		public static double reftreeAssignDuration;
 
 		public static double bitmapExportDuration;
+		public static double lasExportDuration;
+
+
 		public static double totalDuration;
 
 		private static string newLine => Environment.NewLine;
@@ -93,6 +96,7 @@ namespace ForestReco
 			output += $"second merge = {secondMergeDuration} " + newLine;
 			output += $"reftree assignment = {reftreeAssignDuration} " + newLine;
 			output += $"bitmap export = {bitmapExportDuration} " + newLine;
+			output += $"las export = {lasExportDuration} " + newLine;			
 			output += $"-------------------" + newLine;
 			output += $"total = {totalDuration} " + newLine;
 
