@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ObjParser;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
-using ObjParser;
 
 namespace ForestReco
 {
@@ -28,8 +28,8 @@ namespace ForestReco
 		{
 			SetPartitionStepSize();
 
-			partitionXRange = CProjectData.array.arrayXRange / partitionStepSize + 1; //has to be +1
-			partitionYRange = CProjectData.array.arrayYRange / partitionStepSize + 1;
+			partitionXRange = CProjectData.groundArray.arrayXRange / partitionStepSize + 1; //has to be +1
+			partitionYRange = CProjectData.groundArray.arrayYRange / partitionStepSize + 1;
 
 			objPartition = new List<Obj>[partitionXRange, partitionYRange];
 			Console.WriteLine($"objPartition: {partitionXRange} x {partitionYRange}");
@@ -42,52 +42,119 @@ namespace ForestReco
 			}
 		}
 
-		public static void AddArray()
+		public static void AddGroundArray()
 		{
-			for(int x = 0; x < CProjectData.array.arrayXRange; x += partitionStepSize)
+			for(int x = 0; x < CProjectData.groundArray.arrayXRange; x += partitionStepSize)
 			{
-				for(int y = 0; y < CProjectData.array.arrayYRange; y += partitionStepSize)
+				for(int y = 0; y < CProjectData.groundArray.arrayYRange; y += partitionStepSize)
 				{
 					Obj groundArrayPartObj = CGroundFieldExporter.ExportToObj("array_[" + x + "," + y + "]",
 						EExportStrategy.ZeroAroundDefined, true,
 						new Tuple<int, int>(x, y), new Tuple<int, int>(x + partitionStepSize, y + partitionStepSize));
 
-					//int partitionIndexX = x / partitionStepSize;
-					//int partitionIndexY = y / partitionStepSize;
 					AddObj(x, y, groundArrayPartObj);
 
 					if(CParameterSetter.GetBoolSettings(ESettings.exportPoints))
 					{
-						List<Vector3> vegePoints = new List<Vector3>();
 						List<Vector3> groundPoints = new List<Vector3>();
-						List<Vector3> fakePoints = new List<Vector3>();
 						for(int _x = x; _x < x + partitionStepSize; _x++)
 						{
 							for(int _y = y; _y < y + partitionStepSize; _y++)
 							{
-								CGroundField element = CProjectData.array.GetElement(_x, _y);
+								CGroundField element = CProjectData.groundArray.GetField(_x, _y);
 								if(element != null)
 								{
-									vegePoints.AddRange(element.vegePoints);
-									groundPoints.AddRange(element.goundPoints);
-									fakePoints.AddRange(element.fakePoints);
+									groundPoints.AddRange(element.points);
 								}
 							}
 						}
-						Obj vegePointsObj = new Obj("vegePoints");
 						Obj groundPointsObj = new Obj("groundPoints");
-						Obj fakePointsObj = new Obj("fakePoints");
-						CObjExporter.AddPointsToObj(ref vegePointsObj, vegePoints);
 						CObjExporter.AddPointsToObj(ref groundPointsObj, groundPoints);
-						CObjExporter.AddPointsToObj(ref fakePointsObj, fakePoints);
 
-						AddObj(x, y, vegePointsObj);
 						AddObj(x, y, groundPointsObj);
-						AddObj(x, y, fakePointsObj);
 					}
 				}
 			}
 		}
+
+		public static void AddVegeArray()
+		{
+			//nothing else here to export
+			if(!CParameterSetter.GetBoolSettings(ESettings.exportPoints))
+				return;
+
+			for(int x = 0; x < CProjectData.groundArray.arrayXRange; x += partitionStepSize)
+			{
+				for(int y = 0; y < CProjectData.groundArray.arrayYRange; y += partitionStepSize)
+				{
+
+					List<Vector3> vegePoints = new List<Vector3>();
+					for(int _x = x; _x < x + partitionStepSize; _x++)
+					{
+						for(int _y = y; _y < y + partitionStepSize; _y++)
+						{
+							CVegeField element = CProjectData.vegeArray.GetField(_x, _y);
+							if(element != null)
+							{
+								vegePoints.AddRange(element.points);
+							}
+						}
+					}
+					Obj vegePointsObj = new Obj("vegePoints");
+					CObjExporter.AddPointsToObj(ref vegePointsObj, vegePoints);
+					vegePointsObj.UseMtl = CMaterialManager.GetVegePointsMaterial().Name;
+
+					AddObj(x, y, vegePointsObj);
+				}
+			}
+		}
+
+		//public static void AddArray()
+		//{
+		//	for(int x = 0; x < CProjectData.groundArray.arrayXRange; x += partitionStepSize)
+		//	{
+		//		for(int y = 0; y < CProjectData.groundArray.arrayYRange; y += partitionStepSize)
+		//		{
+		//			Obj groundArrayPartObj = CGroundFieldExporter.ExportToObj("array_[" + x + "," + y + "]",
+		//				EExportStrategy.ZeroAroundDefined, true,
+		//				new Tuple<int, int>(x, y), new Tuple<int, int>(x + partitionStepSize, y + partitionStepSize));
+
+		//			//int partitionIndexX = x / partitionStepSize;
+		//			//int partitionIndexY = y / partitionStepSize;
+		//			AddObj(x, y, groundArrayPartObj);
+
+		//			if(CParameterSetter.GetBoolSettings(ESettings.exportPoints))
+		//			{
+		//				List<Vector3> vegePoints = new List<Vector3>();
+		//				List<Vector3> groundPoints = new List<Vector3>();
+		//				List<Vector3> fakePoints = new List<Vector3>();
+		//				for(int _x = x; _x < x + partitionStepSize; _x++)
+		//				{
+		//					for(int _y = y; _y < y + partitionStepSize; _y++)
+		//					{
+		//						CGroundField element = CProjectData.groundArray.GetElement(_x, _y);
+		//						if(element != null)
+		//						{
+		//							vegePoints.AddRange(element.vegePoints);
+		//							groundPoints.AddRange(element.goundPoints);
+		//							fakePoints.AddRange(element.fakePoints);
+		//						}
+		//					}
+		//				}
+		//				Obj vegePointsObj = new Obj("vegePoints");
+		//				Obj groundPointsObj = new Obj("groundPoints");
+		//				Obj fakePointsObj = new Obj("fakePoints");
+		//				CObjExporter.AddPointsToObj(ref vegePointsObj, vegePoints);
+		//				CObjExporter.AddPointsToObj(ref groundPointsObj, groundPoints);
+		//				CObjExporter.AddPointsToObj(ref fakePointsObj, fakePoints);
+
+		//				AddObj(x, y, vegePointsObj);
+		//				AddObj(x, y, groundPointsObj);
+		//				AddObj(x, y, fakePointsObj);
+		//			}
+		//		}
+		//	}
+		//}
 
 		public static void AddTrees(bool pValid)//, bool pFake)
 		{
@@ -98,16 +165,18 @@ namespace ForestReco
 
 			if(!exportBoxes && !exportTreeStrucure) { return; }
 
-			foreach(CGroundField f in CProjectData.array.fields)
+			//foreach(CTreeField f in CProjectData.treeNormalArray.fields)
+			//{
+			//	foreach(CTree tree in f.GetDetectedTrees())
+			//	{
+			//		treesToExport.Add(new Tuple<Tuple<int, int>, CTree>(f.indexInField, tree));
+			//	}
+			//}
+			foreach(CTree tree in pValid ? CTreeManager.Trees : CTreeManager.InvalidTrees)
 			{
-				foreach(CTree t in f.DetectedTrees)
-				{
-					if(t.isValid == pValid)
-					{
-						treesToExport.Add(new Tuple<Tuple<int, int>, CTree>(f.indexInField, t));
-					}
-				}
+				treesToExport.Add(new Tuple<Tuple<int, int>, CTree>(tree.peakNormalField.indexInField, tree));
 			}
+
 			treesToExport.Sort((x, y) => x.Item2.treeIndex.CompareTo(y.Item2.treeIndex));
 			foreach(Tuple<Tuple<int, int>, CTree> exportTree in treesToExport)
 			{
@@ -120,48 +189,29 @@ namespace ForestReco
 
 		public static void AddRefTrees()
 		{
-			foreach(CGroundField f in CProjectData.array.fields)
+			List<CTree> trees = new List<CTree>();
+			foreach(CTreeField f in CProjectData.treeNormalArray.fields)
 			{
-				foreach(CTree t in f.DetectedTrees)
+				foreach(CTree tree in f.DetectedTrees)
 				{
-					if(t.isValid)
+					if(!tree.isValid)
+						continue;
+					if(!trees.Contains(tree))
+						trees.Add(tree);					
+				}
+			}
+			foreach(CTree tree in trees)
+			{
+				if(tree.assignedRefTreeObj == null)
+				{
+					//not error if reftrees were not loaded
+					if(CReftreeManager.Trees.Count > 0)
 					{
-						if(t.assignedRefTreeObj == null)
-						{
-							//not error if reftrees were not loaded
-							if(CReftreeManager.Trees.Count > 0)
-							{
-								CDebug.Error($"{t} has no reftree assigned");
-							}
-							return;
-						}
-						AddObj(f.indexInField, t.assignedRefTreeObj);
+						CDebug.Error($"{tree} has no reftree assigned");
 					}
+					return;
 				}
-			}
-		}
-
-		public static void AddCheckTrees(bool pAllCheckTrees)
-		{
-			foreach(CGroundField f in CProjectData.array.fields)
-			{
-				foreach(CCheckTree tree in f.CheckTrees)
-				{
-					Obj treeObj = tree.GetObj();
-					if(tree.assignedTree != null) { treeObj.UseMtl = CMaterialManager.GetCheckTreeMaterial().Name; }
-					else if(tree.isInvalid) { treeObj.UseMtl = CMaterialManager.GetInvalidMaterial().Name; }
-					else { treeObj.UseMtl = CMaterialManager.GetAlarmMaterial().Name; }
-					AddObj(f.indexInField, treeObj);
-
-				}
-			}
-
-			if(pAllCheckTrees)
-			{
-				foreach(CCheckTree tree in CCheckTreeManager.Trees)
-				{
-					AddToPartition(tree.GetObj(), new Tuple<int, int>(0, 0));
-				}
+				AddObj(CProjectData.treeNormalArray.GetIndexInArray(tree.peak.Center), tree.assignedRefTreeObj);
 			}
 		}
 
@@ -227,7 +277,7 @@ namespace ForestReco
 					//export only if partition contains some objects (doesn't have to)
 					if(objsInPartition.Count > 0)
 					{
-						CObjExporter.ExportObjs(objsInPartition, 
+						CObjExporter.ExportObjs(objsInPartition,
 							$"{CProjectData.saveFileName}_{pIndexPrefix}[{x},{y}]{pFileSuffix}", CProjectData.outputTileSubfolder);
 					}
 

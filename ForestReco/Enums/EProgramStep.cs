@@ -8,8 +8,8 @@ namespace ForestReco
 {
 	public enum EProgramStep
 	{
-		LoadLines = 1,
-		LoadReftrees = 2, //not part of tile processing
+		LoadReftrees = 1, //not part of tile processing
+		LoadLines = 2,
 		ParseLines = 3,
 		ProcessGroundPoints = 4,
 		PreprocessVegePoints = 5,
@@ -20,14 +20,15 @@ namespace ForestReco
 		MergeTrees2 = 10,
 		ValidateTrees3 = 11,
 		AssignReftrees = 12,
-		LoadCheckTrees = 13,
-		AssignCheckTrees = 14,
-		Export = 15,
+		//LoadCheckTrees = 13, //removed
+		//AssignCheckTrees = 14,
+		Export3D = 15,
 		Bitmap = 16,
 		Dart = 17,
 		Shp = 18,
 		Las = 19,
 		Analytics = 20,
+		ExportMainFiles = 21,
 
 		Done,
 

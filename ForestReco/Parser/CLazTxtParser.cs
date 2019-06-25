@@ -7,13 +7,20 @@ namespace ForestReco
 {
 	public static class CLazTxtParser
 	{
-		public static Vector3 ParseHeaderVector3(string pXstring, string pYstring, string pZstring)
+		public static CVector3D ParseHeaderVector3(string pXstring, string pYstring, string pZstring)
 		{
-			float x = float.Parse(pXstring);
-			float y = float.Parse(pYstring);
-			float z = float.Parse(pZstring);
-			return new Vector3(x, y, z);
+			double x = double.Parse(pXstring);
+			double y = double.Parse(pYstring);
+			double z = double.Parse(pZstring);
+			return new CVector3D(x, y, z);
 		}
+		//public static Vector3 ParseHeaderVector3(string pXstring, string pYstring, string pZstring)
+		//{
+		//	float x = float.Parse(pXstring);
+		//	float y = float.Parse(pYstring);
+		//	float z = float.Parse(pZstring);
+		//	return new Vector3(x, y, z);
+		//}
 
 		public static Tuple<EClass, Vector3> ParseLine(string pLine, bool pUseHeader)
 		{

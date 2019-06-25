@@ -14,7 +14,7 @@ namespace ForestReco
 		public static Obj ExportToObj(string pArrayName, EExportStrategy pStrategy, bool pUseSmoothHeight, 
 			Tuple<int, int> pStartIndex, Tuple<int, int> pEndIndex)
 		{
-			CGroundArray pArray = CProjectData.array;
+			CGroundArray pArray = CProjectData.groundArray;
 			Obj obj = new Obj(pArrayName);
 			float minHeight = CProjectData.GetMinHeight();
 
@@ -34,7 +34,7 @@ namespace ForestReco
 				for (int y = yStart; y < yEnd; y++)
 				{
 					Vertex v = new Vertex();
-					CGroundField el = pArray.GetElement(x, y);
+					CGroundField el = pArray.GetField(x, y);
 					float? height = el.GetHeight(pUseSmoothHeight);
 
 					height = GetHeight(pStrategy, y, el, height);
@@ -50,7 +50,7 @@ namespace ForestReco
 						}
 
 						v.LoadFromStringArray(new[]{"v", pArray.GetFieldXCoord(x).ToString(),
-								height.ToString(), pArray.GetFieldZCoord(y).ToString()});
+								height.ToString(), pArray.GetFieldYCoord(y).ToString()});
 						obj.AddVertex(v);
 						//record the index of vertex associated with this field position
 						el.VertexIndex = obj.VertexList.Count; //first index = 1 (not 0)!
@@ -71,13 +71,13 @@ namespace ForestReco
 					//| /|	3:[0,1]	2:[1,1]
 					//|/ |  1:[0,0] 4:[1,0]
 					//we create 2 faces: (1,2,3) and (1,2,4) 
-					int ind1 = pArray.GetElement(x, y).VertexIndex;
+					int ind1 = pArray.GetField(x, y).VertexIndex;
 					if (ind1 != -1)
 					{
-						int ind2 = pArray.GetElement(x + 1, y + 1).VertexIndex;
+						int ind2 = pArray.GetField(x + 1, y + 1).VertexIndex;
 						if (ind2 != -1)
 						{
-							int ind3 = pArray.GetElement(x, y + 1).VertexIndex;
+							int ind3 = pArray.GetField(x, y + 1).VertexIndex;
 							if (ind3 != -1)
 							{
 								Face f = new Face();
@@ -89,7 +89,7 @@ namespace ForestReco
 								obj.FaceList.Add(f);
 								faceCount++;
 							}
-							int ind4 = pArray.GetElement(x + 1, y).VertexIndex;
+							int ind4 = pArray.GetField(x + 1, y).VertexIndex;
 							if (ind4 != -1)
 							{
 								Face f = new Face();

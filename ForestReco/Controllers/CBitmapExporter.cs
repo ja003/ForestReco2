@@ -15,7 +15,7 @@ namespace ForestReco
 		private static bool exportBorders =>
 			CParameterSetter.GetBoolSettings(ESettings.ExportBMTreeBorders);
 
-		public static bool FILTER_MAIN_MAP = false; //slows export
+		public static bool FILTER_MAIN_MAP = true; //slows export
 		private static bool exportMain = true;
 
 		public const int TILE_WIDTH = 400; //todo: set from GUI?
@@ -60,7 +60,7 @@ namespace ForestReco
 			if(!exportMain || !CParameterSetter.GetBoolSettings(ESettings.exportBitmap))
 				return;
 
-			mainMap.SetPixel(0, 0, treeColor);
+			//mainMap.SetPixel(0, 0, treeColor);
 
 			//main bitmap has a lot of missing fields - apply filter
 			//todo: make radius dependent on bitmap width?
@@ -83,7 +83,7 @@ namespace ForestReco
 
 			DateTime bitmapStart = DateTime.Now;
 
-			CGroundArray array = CProjectData.detailArray;
+			CVegeArray array = CProjectData.vegeArray;
 			Bitmap bitmap = new Bitmap(array.arrayXRange, array.arrayYRange);
 
 			int maxValue = 0;
@@ -92,8 +92,8 @@ namespace ForestReco
 				for(int y = 0; y < array.arrayYRange; y++)
 				{
 
-					CGroundField groundElement = array.GetElement(x, y);
-					int? colorVal = groundElement.GetColorValue(); //from detailed array
+					CVegeField element = array.GetField(x, y);
+					int? colorVal = element.GetColorValue(); //from detailed array
 
 					if(colorVal == null)
 						continue;
@@ -104,7 +104,7 @@ namespace ForestReco
 
 					int rVal = colorVaInt;
 					//highlight buffer zone
-					bool isAtBufferZone = CTreeMath.IsAtBufferZone(groundElement.center);
+					bool isAtBufferZone = CTreeMath.IsAtBufferZone(element.center);
 					if(isAtBufferZone)
 						rVal = Math.Min(rVal + 30, 255);
 
@@ -116,7 +116,7 @@ namespace ForestReco
 
 					if(exportMain && !isAtBufferZone)
 					{
-						Tuple<int, int> posInMain = GetIndexInMainBitmap(groundElement.center);
+						Tuple<int, int> posInMain = GetIndexInMainBitmap(element.center);
 
 						if(posInMain == null)
 							continue;
@@ -127,10 +127,10 @@ namespace ForestReco
 					}
 				}
 			}
+			
+			//StretchColorRange(ref bitmap, maxValue);
 
-			StretchColorRange(ref bitmap, maxValue);
-
-			FilterBitmap(ref bitmap, GetKernelSize(array.stepSize, .2f), EFilter.Max);
+			//FilterBitmap(ref bitmap, GetKernelSize(array.stepSize, .2f), EFilter.Max);
 
 			if(exportHeightmap)
 				ExportBitmap(bitmap, "heightmap", pTileIndex);
@@ -151,7 +151,6 @@ namespace ForestReco
 				if(useCheckTree)
 				{
 					Bitmap bitmapChecktree = new Bitmap(bitmapTreePos);
-					AddChecktreesToBitmap(array, bitmapChecktree);
 					ExportBitmap(bitmapChecktree, "tree_check", pTileIndex);
 					CDebug.Progress(bitmapsCount - 1, bitmapsCount, 1, ref bitmapStart, bitmapStart, "bitmap: ");
 				}
@@ -177,9 +176,10 @@ namespace ForestReco
 		/// </summary>
 		private static Tuple<int, int> GetIndexInMainBitmap(Vector3 pPoint)
 		{
-			Tuple<int, int> posInMain = CGroundArray.GetPositionInArray(
+			Tuple<int, int> posInMain = CGroundArray.GetIndexInArray(
 										pPoint, CProjectData.mainHeader.TopLeftCorner, mainMapStepSize);
 
+			//todo: error posInMain is OOB
 			CUtils.TransformArrayIndexToBitmapIndex(ref posInMain,
 				CProjectData.mainHeader, mainMapStepSize, mainMap);
 
@@ -197,7 +197,7 @@ namespace ForestReco
 			return pX < 0 || pX >= pBitmap.Width || pY < 0 || pY >= pBitmap.Height;
 		}
 
-		private static void AddTreesToBitmap(CGroundArray pArray, Bitmap pBitmap, bool pTreePostition, bool pTreeBorder)
+		private static void AddTreesToBitmap(CVegeArray pArray, Bitmap pBitmap, bool pTreePostition, bool pTreeBorder)
 		{
 			List<CTree> allTrees = new List<CTree>();
 			allTrees.AddRange(CTreeManager.Trees);
@@ -207,7 +207,7 @@ namespace ForestReco
 			{
 				try
 				{
-					CGroundField fieldWithTree = pArray.GetElementContainingPoint(tree.peak.Center);
+					CVegeField fieldWithTree = pArray.GetElementContainingPoint(tree.peak.Center);
 					if(fieldWithTree == null)
 					{
 						CDebug.Error($"tree {tree.treeIndex} field = null");
@@ -237,8 +237,8 @@ namespace ForestReco
 							Vector3 furthestPoint = furthestPoints[i];
 							Vector3 nextFurthestPoint = furthestPoints[(i + 1) % furthestPoints.Count];
 
-							CGroundField fieldWithFP1 = pArray.GetElementContainingPoint(furthestPoint);
-							CGroundField fieldWithFP2 = pArray.GetElementContainingPoint(nextFurthestPoint);
+							CVegeField fieldWithFP1 = pArray.GetElementContainingPoint(furthestPoint);
+							CVegeField fieldWithFP2 = pArray.GetElementContainingPoint(nextFurthestPoint);
 							if(fieldWithFP1 == null || fieldWithFP2 == null)
 							{
 								CDebug.Error($"futhest points {furthestPoint} + {nextFurthestPoint} - no field assigned");
@@ -258,7 +258,7 @@ namespace ForestReco
 
 						foreach(CBranch branch in tree.Branches)
 						{
-							CGroundField fieldWithBranch = pArray.GetElementContainingPoint(branch.furthestPoint);
+							CVegeField fieldWithBranch = pArray.GetElementContainingPoint(branch.furthestPoint);
 							if(fieldWithBranch == null)
 							{
 								CDebug.Error($"branch {branch} is OOB");
@@ -296,8 +296,6 @@ namespace ForestReco
 							Color color = mainMap.GetPixel(x, y);
 							if(!IsTreeColoured(color))
 								DrawTreeOnBitmap(mainMap, tree, x, y);
-							else
-								CDebug.WriteLine("");
 						}
 					}
 				}
@@ -321,56 +319,6 @@ namespace ForestReco
 					_y = y;
 
 				g.FillRectangle(tree.isValid ? treeBrush : invalidTreeBrush, _x, _y, treeMarkerSize, treeMarkerSize);
-			}
-		}
-
-		private static void AddChecktreesToBitmap(CGroundArray pArray, Bitmap pBitmap)
-		{
-			Color checktreeOk = Color.Green;
-			Color checktreeFail = Color.Red;
-			Color checktreeInvalid = Color.Orange;
-
-			int treeMarkerSize = GetTreeBrushSize(false);
-
-			SolidBrush checktreeFailBrush = new SolidBrush(checktreeFail);
-			SolidBrush checktreeInvalidBrush = new SolidBrush(checktreeInvalid);
-			SolidBrush checktreeOkBrush = new SolidBrush(checktreeOk);
-
-			foreach(CCheckTree tree in CCheckTreeManager.Trees)
-			{
-				CGroundField fieldWithTree = pArray.GetElementContainingPoint(tree.position);
-				if(fieldWithTree == null)
-				{ continue; }
-
-				int x = fieldWithTree.indexInField.Item1;
-				int y = fieldWithTree.indexInField.Item2;
-
-				if(IsOOB(x, y, pBitmap))
-				{
-					CDebug.Error($"{x},{y} is OOB {pBitmap.Width}x{pBitmap.Height}");
-					continue;
-				}
-
-				if(checktreeOk.R > 255)
-					CDebug.Error("color.R = " + checktreeOk.R);
-				pBitmap.SetPixel(x, y, checktreeOk);
-				using(Graphics g = Graphics.FromImage(pBitmap))
-				{
-					//g.FillRectangle(treeBrush, x, y, treeMarkerSize, treeMarkerSize);
-					int _x = x - treeMarkerSize / 2;
-					if(_x < 0)
-					{ _x = x; }
-					int _y = y - treeMarkerSize / 2;
-					if(_y < 0)
-					{ _y = y; }
-					SolidBrush brush = checktreeInvalidBrush;
-					if(!tree.isInvalid)
-					{
-						brush = tree.assignedTree == null ? checktreeFailBrush : checktreeOkBrush;
-					}
-
-					g.FillRectangle(brush, _x, _y, treeMarkerSize, treeMarkerSize);
-				}
 			}
 		}
 

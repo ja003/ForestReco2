@@ -48,7 +48,7 @@ namespace ForestReco
 
 				LoadObj(pFileName);
 
-				List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, false, false);
+				List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, false);
 				AddPointsFromLines(parsedLines);
 				DateTime processStartTime = DateTime.Now;
 				CDebug.WriteLine("Process");
@@ -243,10 +243,6 @@ namespace ForestReco
 			{
 				lines.Add(KEY_BRANCH + branches.IndexOf(b));
 				lines.AddRange(b.Serialize());
-				if(base.maxBB.X > -10)
-				{
-					CDebug.WriteLine("");
-				}
 			}
 			lines.Add(KEY_STEM);
 			lines.AddRange(stem.Serialize());

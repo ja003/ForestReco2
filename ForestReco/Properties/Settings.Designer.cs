@@ -610,5 +610,17 @@ namespace ForestReco.Properties {
                 this["startIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int detectMethod {
+            get {
+                return ((int)(this["detectMethod"]));
+            }
+            set {
+                this["detectMethod"] = value;
+            }
+        }
     }
 }
