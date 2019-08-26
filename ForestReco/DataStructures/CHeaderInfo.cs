@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Numerics;
 
 namespace ForestReco
@@ -11,8 +10,8 @@ namespace ForestReco
 		public Vector3 Min; //used in project (Y = elevation), moved by offset
 		public Vector3 Max;
 
-		public Vector3 Min_orig; //values from input forest file
-		public Vector3 Max_orig;
+		public CVector3D Min_orig; //values from input forest file
+		public CVector3D Max_orig;
 
 		public Vector3 BotLeftCorner => new Vector3(Min.X, Min.Y, 0);
 		public Vector3 TopRightCorner => new Vector3(Max.X, Max.Y, 0);
@@ -29,22 +28,24 @@ namespace ForestReco
 			string pOffsetLine = GetLineContaining(lines, EHeaderAttribute.Offset);
 			string pMinLine = GetLineContaining(lines, EHeaderAttribute.Min);
 			string pMaxLine = GetLineContaining(lines, EHeaderAttribute.Max);
-            if(pScaleFactorLine.Length == 0)
-                throw new Exception($"Invalid header line pScaleFactorLine");
-            if(pOffsetLine.Length == 0)
-                throw new Exception($"Invalid header line pOffsetLine");
-            if(pMinLine.Length == 0)
-                throw new Exception($"Invalid header line pMinLine");
-            if(pMaxLine.Length == 0)
-                throw new Exception($"Invalid header line pMaxLine");
+			if(pScaleFactorLine.Length == 0)
+				throw new Exception($"Invalid header line pScaleFactorLine");
+			if(pOffsetLine.Length == 0)
+				throw new Exception($"Invalid header line pOffsetLine");
+			if(pMinLine.Length == 0)
+				throw new Exception($"Invalid header line pMinLine");
+			if(pMaxLine.Length == 0)
+				throw new Exception($"Invalid header line pMaxLine");
 
-            ScaleFactor = ParseLineVector3(pScaleFactorLine);
-			Offset = ParseLineVector3(pOffsetLine);
+			ScaleFactor = (Vector3)ParseLineVector3(pScaleFactorLine);
+			Offset = (Vector3)ParseLineVector3(pOffsetLine);
 			//Offset.Z = 0; //given Z offset will not be used
 			Min_orig = ParseLineVector3(pMinLine);
-			Min = Min_orig - Offset;
+			CVector3D minDouble = Min_orig - Offset;
+			Min = (Vector3)minDouble;
 			Max_orig = ParseLineVector3(pMaxLine);
-			Max = Max_orig - Offset;
+			CVector3D maxDouble = Max_orig - Offset;
+			Max = (Vector3)maxDouble;
 			//transfer to format Y = height //DONT
 			//float tmpY = Min.Y;
 			//Min.Y = Min.Z;
@@ -53,7 +54,7 @@ namespace ForestReco
 			//Max.Y = Max.Z;
 			//Max.Z = tmpY;
 
-			if (Min == Vector3.Zero && Max == Vector3.Zero)
+			if(Min == Vector3.Zero && Max == Vector3.Zero)
 			{
 				CDebug.WriteLine("Invalid header. Creating default header.");
 				const int defaultArraySize = 15;
@@ -86,7 +87,8 @@ namespace ForestReco
 			return "";
 		}
 
-		private string GetHeaderAttributeKeyString(EHeaderAttribute pKey){
+		private string GetHeaderAttributeKeyString(EHeaderAttribute pKey)
+		{
 			switch(pKey)
 			{
 				case EHeaderAttribute.Scale:
@@ -110,9 +112,9 @@ namespace ForestReco
 		}
 
 
-		private Vector3 ParseLineVector3(string pLine)
+		private CVector3D ParseLineVector3(string pLine)
 		{
-			if (string.IsNullOrEmpty(pLine)) { return Vector3.Zero;}
+			if(string.IsNullOrEmpty(pLine)) { return CVector3D.Zero; }
 
 			string[] split = pLine.Split(null);
 			int length = split.Length;

@@ -88,6 +88,7 @@ namespace ForestReco
 				return EProcessResult.Cancelled;
 			}
 
+			CDebug.Step(EProgramStep.ExportMainFiles);
 			CDartTxt.ExportMain();
 			CLasExporter.ExportMain();
 			CShpController.ExportMain();
@@ -117,7 +118,7 @@ namespace ForestReco
 			string[] lines = CProgramLoader.GetFileLines(pTilePath);
 
 			if(CProjectData.backgroundWorker.CancellationPending)
-			{ return EProcessResult.Cancelled; }
+				return EProcessResult.Cancelled; 
 
 			bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);
 			if(linesOk && CHeaderInfo.HasHeader(lines[0]))
@@ -132,25 +133,20 @@ namespace ForestReco
 			}
 
 			if(CProjectData.backgroundWorker.CancellationPending)
-			{ return EProcessResult.Cancelled; }
+				return EProcessResult.Cancelled; 
 
-			List<Tuple<EClass, Vector3>> parsedLines =
-				CProgramLoader.ParseLines(lines, CProjectData.mainHeader != null, true);
+			CProjectData.InitArrays();
+
+			List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, true);
 
 			CProgramLoader.ProcessParsedLines(parsedLines);
 
-			if(CProjectData.backgroundWorker.CancellationPending)
-			{ return EProcessResult.Cancelled; }
-
-
-			//has to be called after array initialization
-			CCheckTreeManager.Init(); //todo: has to be inited for every tile...not good: fix
 			if(CProjectData.backgroundWorker.CancellationPending)
 				return EProcessResult.Cancelled;
 
 			CTreeManager.DebugTrees();
 
-			CDebug.Step(EProgramStep.Export);
+			CDebug.Step(EProgramStep.Export3D);
 			CObjPartition.ExportPartition("", "tile" + pTileIndex);
 
 			if(CProjectData.backgroundWorker.CancellationPending)

@@ -57,5 +57,10 @@ namespace ForestReco
 			}
 			return clonePeak;
 		}
+
+		public bool CenterEquals(Vector3 pPoint)
+		{
+			return Vector3.Distance(Center, pPoint) < 0.01f;
+		}
 	}
 }

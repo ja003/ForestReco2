@@ -116,6 +116,8 @@ namespace ForestReco
 		private Button btnClearTmpFolder;
 		private Label label9;
 		public TextBox textStartTile;
+		private ComboBox comboBoxDetectMethod;
+		private Label label10;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -180,6 +182,9 @@ namespace ForestReco
 			richTextAGB.Text = CParameterSetter.GetStringSettings(ESettings.agb);
 
 			textStartTile.Text = CParameterSetter.GetIntSettings(ESettings.startIndex).ToString();
+
+			comboBoxDetectMethod.SelectedIndex = CParameterSetter.GetIntSettings(ESettings.detectMethod);
+
 
 			//bools
 			checkBoxExport3d.Checked =
@@ -428,6 +433,8 @@ namespace ForestReco
 			this.btnClearTmpFolder = new System.Windows.Forms.Button();
 			this.label9 = new System.Windows.Forms.Label();
 			this.textStartTile = new System.Windows.Forms.TextBox();
+			this.comboBoxDetectMethod = new System.Windows.Forms.ComboBox();
+			this.label10 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -580,6 +587,8 @@ namespace ForestReco
 			// 
 			// textCheckTreePath
 			// 
+			this.textCheckTreePath.BackColor = System.Drawing.Color.Silver;
+			this.textCheckTreePath.Enabled = false;
 			this.textCheckTreePath.Location = new System.Drawing.Point(147, 197);
 			this.textCheckTreePath.Name = "textCheckTreePath";
 			this.textCheckTreePath.Size = new System.Drawing.Size(723, 22);
@@ -588,12 +597,14 @@ namespace ForestReco
 			// 
 			// btnSelectCheckTree
 			// 
+			this.btnSelectCheckTree.BackColor = System.Drawing.Color.Silver;
+			this.btnSelectCheckTree.Enabled = false;
 			this.btnSelectCheckTree.Location = new System.Drawing.Point(12, 193);
 			this.btnSelectCheckTree.Name = "btnSelectCheckTree";
 			this.btnSelectCheckTree.Size = new System.Drawing.Size(121, 31);
 			this.btnSelectCheckTree.TabIndex = 20;
 			this.btnSelectCheckTree.Text = "checktree file";
-			this.btnSelectCheckTree.UseVisualStyleBackColor = true;
+			this.btnSelectCheckTree.UseVisualStyleBackColor = false;
 			this.btnSelectCheckTree.Click += new System.EventHandler(this.btnSelectCheckTree_Click);
 			// 
 			// trackBarGroundArrayStep
@@ -788,13 +799,15 @@ namespace ForestReco
 			// checkBoxUseCheckTree
 			// 
 			this.checkBoxUseCheckTree.AutoSize = true;
+			this.checkBoxUseCheckTree.BackColor = System.Drawing.Color.Silver;
+			this.checkBoxUseCheckTree.Enabled = false;
 			this.checkBoxUseCheckTree.Location = new System.Drawing.Point(16, 432);
 			this.checkBoxUseCheckTree.Name = "checkBoxUseCheckTree";
 			this.checkBoxUseCheckTree.Size = new System.Drawing.Size(141, 21);
 			this.checkBoxUseCheckTree.TabIndex = 42;
 			this.checkBoxUseCheckTree.Text = "use checktree file";
 			this.myToolTip.SetToolTip(this.checkBoxUseCheckTree, "hh");
-			this.checkBoxUseCheckTree.UseVisualStyleBackColor = true;
+			this.checkBoxUseCheckTree.UseVisualStyleBackColor = false;
 			this.checkBoxUseCheckTree.CheckedChanged += new System.EventHandler(this.checkBoxUseCheckTree_CheckedChanged);
 			// 
 			// checkBoxExportCheckTrees
@@ -824,13 +837,15 @@ namespace ForestReco
 			// checkBoxFilterPoints
 			// 
 			this.checkBoxFilterPoints.AutoSize = true;
+			this.checkBoxFilterPoints.BackColor = System.Drawing.Color.Silver;
+			this.checkBoxFilterPoints.Enabled = false;
 			this.checkBoxFilterPoints.Location = new System.Drawing.Point(16, 332);
 			this.checkBoxFilterPoints.Name = "checkBoxFilterPoints";
 			this.checkBoxFilterPoints.Size = new System.Drawing.Size(99, 21);
 			this.checkBoxFilterPoints.TabIndex = 45;
 			this.checkBoxFilterPoints.Text = "filter points";
 			this.myToolTip.SetToolTip(this.checkBoxFilterPoints, "hh");
-			this.checkBoxFilterPoints.UseVisualStyleBackColor = true;
+			this.checkBoxFilterPoints.UseVisualStyleBackColor = false;
 			this.checkBoxFilterPoints.CheckedChanged += new System.EventHandler(this.checkBoxFilterPoints_CheckedChanged);
 			// 
 			// checkBoxExportPoints
@@ -1448,10 +1463,34 @@ namespace ForestReco
 			this.textStartTile.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.textStartTile.TextChanged += new System.EventHandler(this.textStartTile_TextChanged);
 			// 
+			// comboBoxDetectMethod
+			// 
+			this.comboBoxDetectMethod.FormattingEnabled = true;
+			this.comboBoxDetectMethod.Items.AddRange(new object[] {
+            "None",
+            "Add factor",
+            "2D detection"});
+			this.comboBoxDetectMethod.Location = new System.Drawing.Point(762, 579);
+			this.comboBoxDetectMethod.Name = "comboBoxDetectMethod";
+			this.comboBoxDetectMethod.Size = new System.Drawing.Size(121, 24);
+			this.comboBoxDetectMethod.TabIndex = 107;
+			this.comboBoxDetectMethod.SelectedIndexChanged += new System.EventHandler(this.comboBoxDetectMethod_SelectedIndexChanged);
+			// 
+			// label10
+			// 
+			this.label10.AutoSize = true;
+			this.label10.Location = new System.Drawing.Point(637, 582);
+			this.label10.Name = "label10";
+			this.label10.Size = new System.Drawing.Size(117, 17);
+			this.label10.TabIndex = 108;
+			this.label10.Text = "detection method";
+			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
 			this.ClientSize = new System.Drawing.Size(1182, 633);
+			this.Controls.Add(this.label10);
+			this.Controls.Add(this.comboBoxDetectMethod);
 			this.Controls.Add(this.textStartTile);
 			this.Controls.Add(this.label9);
 			this.Controls.Add(this.btnClearTmpFolder);
@@ -1961,7 +2000,22 @@ namespace ForestReco
 
 		private void buttonTest1_Click(object sender, EventArgs e)
 		{
-			//CBiomassController.test();
+			CBiomassController.Init(
+				CParameterSetter.GetStringSettings(ESettings.dbh),
+				CParameterSetter.GetStringSettings(ESettings.agb));
+
+			int height = 5;
+			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
+			height = 10;
+			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
+			height = 15;
+			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
+			height = 20;
+			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
+			height = 25;
+			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
+			height = 30;
+			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
 		}
 
 		#region range
@@ -2181,6 +2235,11 @@ namespace ForestReco
 			int.TryParse(textStartTile.Text, out val);
 			textStartTile.Text = val.ToString();
 			CParameterSetter.SetParameter(ESettings.startIndex, val);
+		}
+
+		private void comboBoxDetectMethod_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.detectMethod, comboBoxDetectMethod.SelectedIndex);
 		}
 	}
 }

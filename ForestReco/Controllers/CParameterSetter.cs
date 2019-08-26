@@ -11,6 +11,7 @@ namespace ForestReco
 		public static float treeExtent => GetFloatSettings(ESettings.treeExtent);
 		public static float treeExtentMultiply => GetFloatSettings(ESettings.treeExtentMultiply);
 		public static float groundArrayStep => GetFloatSettings(ESettings.groundArrayStep);
+		public static float vegeArrayStep = 0.1f; //todo: set/calculate?
 
 		/// <summary>
 		/// Returns saved "tmp files" folder path with added "\\" 
@@ -195,6 +196,7 @@ namespace ForestReco
 		partitionStep,
 		tileSize,
 		avgTreeHeigh,
+		detectMethod,
 
 		//floats
 		groundArrayStep,

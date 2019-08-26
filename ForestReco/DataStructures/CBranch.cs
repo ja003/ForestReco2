@@ -498,22 +498,32 @@ namespace ForestReco
 					"[" + TreePoints.Count.ToString("00") + "] |";
 		}
 
+		/// <summary>
+		/// Is point closer than the "furthestPoint" of this or one
+		/// of neighbouring branches
+		/// </summary>
 		public bool IsPointInExtent(Vector3 pPoint)
 		{
 			float pointDistToPeak = CUtils.Get2DDistance(pPoint, tree.peak);
 			bool thisBranchInExtent = furthestPointDistance > pointDistToPeak;
 			if(thisBranchInExtent) { return true; }
 
-			bool leftBranchInExtent = GetNeigbourBranch(-1).furthestPointDistance > pointDistToPeak;
+			CBranch branch1 = GetNeigbourBranch(-1);
+			float dist1 = branch1.furthestPointDistance;
+			bool leftBranchInExtent = dist1 > pointDistToPeak;
 			if(leftBranchInExtent) { return true; }
 
-			bool rightBranchInExtent = GetNeigbourBranch(1).furthestPointDistance > pointDistToPeak;
+			CBranch branch2 = GetNeigbourBranch(1);
+			float dist2 = branch2.furthestPointDistance;
+			bool rightBranchInExtent = dist2 > pointDistToPeak;
 			return rightBranchInExtent;
 		}
 
 		public float GetDefinedFactor()
 		{
-			if(TreePoints.Count == 0)
+			List<CTreePoint> topTreePoints = TreePoints;
+
+			if(topTreePoints.Count == 0)
 			{
 				return 0;
 			}

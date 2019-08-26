@@ -88,6 +88,13 @@ namespace ForestReco
 			pArrayIndex = new Tuple<int, int>(bitmapXindex, bitmapYindex);
 		}
 
+		static Vector3 DEBUG_POINT = new Vector3(549.951f, 518.764f, 26.436f);
+
+		internal static bool IsDebugPoint(Vector3 pPoint)
+		{
+			return Vector3.Distance(pPoint, DEBUG_POINT) < 0.01f;
+		}
+
 		internal static bool IsInBitmap(Tuple<int, int> pIndex, Bitmap pBitmap)
 		{
 			return pIndex.Item1 >= 0 && pIndex.Item1 < pBitmap.Width &&
@@ -121,6 +128,16 @@ namespace ForestReco
 			}
 			float ratio = overlapVolume / ofObjectVolume;
 			return ratio;
+		}
+
+		public static float Get2DDistance(CField pField1, CField pField2)
+		{
+			if(pField1 == null || pField2 == null)
+			{
+				CDebug.Error("Field is null");
+				return 0;
+			}
+			return Get2DDistance(pField1.center, pField2.center);
 		}
 
 		/// <summary>

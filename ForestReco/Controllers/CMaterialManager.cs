@@ -25,6 +25,7 @@ namespace ForestReco
 			AddMaterial("alarm", 1, 0, 0, EMaterial.Alarm);
 			AddMaterial("fake", 1, 0, 1, EMaterial.Fake);
 			AddMaterial("checkTree", 0, 0, 1, EMaterial.CheckTree);
+			AddMaterial("white", 1, 1, 1, EMaterial.VegePoint);
 
 			AddTreeMaterial("red", 1, 0, 0);
 			AddTreeMaterial("orange", 1, .5f, 0);
@@ -78,7 +79,7 @@ namespace ForestReco
 		{
 			int selectedIndex = pTree.treeIndex;
 
-			List<CTree> neighbourTrees = CProjectData.array.GetTreesInDistanceFrom(pTree.Center, 5);		
+			List<CTree> neighbourTrees = CProjectData.treeNormalArray.GetTreesInDistanceFrom(pTree.Center, 5);		
 			List<Material> assignedMaterials = new List<Material>();
 			foreach (CTree tree in neighbourTrees)
 			{
@@ -113,7 +114,12 @@ namespace ForestReco
 
 			return materials.MaterialList[treeIndexes[matIndex]];
 		}
-		
+
+		public static Material GetVegePointsMaterial()
+		{
+			return materials.MaterialList[materialSet[EMaterial.VegePoint][0]];
+		}
+
 		public static Material GetInvalidMaterial()
 		{
 			return materials.MaterialList[materialSet[EMaterial.Invalid][0]];
@@ -143,6 +149,7 @@ namespace ForestReco
 		CheckTree,
 		Invalid,
 		Fake,
-		Alarm
+		Alarm,
+		VegePoint
 	}
 }

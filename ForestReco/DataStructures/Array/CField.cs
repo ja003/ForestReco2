@@ -4,39 +4,28 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-
-// ReSharper disable PossibleInvalidOperationException - resharper doesnt recognise IsDefined functionality
-#pragma warning disable 659
 
 namespace ForestReco
 {
-	public class CGroundField
+	public class CField
 	{
-		public CGroundField Left;
-		public CGroundField Right;
-		public CGroundField Top;
-		public CGroundField Bot;
-		private List<CGroundField> neighbours;
+		public CField Left;
+		public CField Right;
+		public CField Top;
+		public CField Bot;
+		private List<CField> neighbours;
+		public bool Detail { get; private set; }
 
-		public List<Vector3> goundPoints = new List<Vector3>();
-		public List<Vector3> vegePoints = new List<Vector3>();
+		private float stepSize;
 
+		public List<Vector3> points = new List<Vector3>();
 
-		public List<Vector3> fakePoints = new List<Vector3>();
-		public List<Vector3> validPoints = new List<Vector3>();
+		public float? SmoothHeight;
+		public float? MaxFilledHeight;
 
-		public List<Vector3> preProcessPoints = new List<Vector3>();
-
-		public float? MaxPreProcessVege;
-
-		public float? MinGround;
-		public float? MaxGround;
-		public float? SumGround;
-
-		public float? MinVege;
-		public float? MaxVege;
-
+		public float? MinZ; //height = Z
+		public float? MaxZ;
+		public float? SumZ;
 
 		public int VertexIndex = -1;
 
@@ -46,21 +35,21 @@ namespace ForestReco
 
 		//--------------------------------------------------------------
 
-		public CGroundField(Tuple<int, int> pIndexInField, Vector3 pCenter)
+		public CField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail)
 		{
 			indexInField = pIndexInField;
 			center = pCenter;
+			stepSize = pStepSize;
+			Detail = pDetail;
 		}
 
-		public List<CTree> DetectedTrees = new List<CTree>();
-		public List<CCheckTree> CheckTrees = new List<CCheckTree>();
 
 		//NEIGHBOUR
 
 		public bool IsAnyNeighbourDefined()
 		{
-			List<CGroundField> _neighbours = GetNeighbours();
-			foreach (CGroundField n in _neighbours)
+			List<CField> _neighbours = GetNeighbours();
+			foreach (CField n in _neighbours)
 			{
 				if (n.IsDefined()) { return true; }
 			}
@@ -69,15 +58,15 @@ namespace ForestReco
 
 		public bool AreAllNeighboursDefined()
 		{
-			List<CGroundField> _neighbours = GetNeighbours();
-			foreach (CGroundField n in _neighbours)
+			List<CField> _neighbours = GetNeighbours();
+			foreach (CField n in _neighbours)
 			{
 				if (!n.IsDefined()) { return false; }
 			}
 			return true;
 		}
 
-		private CGroundField GetNeighbour(EDirection pNeighbour)
+		public CField GetNeighbour(EDirection pNeighbour)
 		{
 			switch (pNeighbour)
 			{
@@ -90,9 +79,41 @@ namespace ForestReco
 				case EDirection.RightTop: return Right?.Top;
 				case EDirection.RightBot: return Right?.Bot;
 				case EDirection.LeftBot: return Left?.Bot;
-
 			}
 			return null;
+		}
+
+		public List<CField> GetPerpendicularNeighbours(EDirection pToDirection)
+		{
+			List<CField> neigh = new List<CField>();
+			CField n1 = null;
+			CField n2 = null;
+			switch(pToDirection)
+			{
+				case EDirection.Top:
+				case EDirection.Bot:
+					n1 = GetNeighbour(EDirection.Left);
+					n2 = GetNeighbour(EDirection.Right);
+					break;
+				case EDirection.RightTop:
+				case EDirection.LeftBot:
+					n1 = GetNeighbour(EDirection.LeftTop);
+					n2 = GetNeighbour(EDirection.RightBot);
+					break;
+				case EDirection.Right:
+				case EDirection.Left:
+					n1 = GetNeighbour(EDirection.Top);
+					n2 = GetNeighbour(EDirection.Bot);
+					break;
+				case EDirection.RightBot:
+				case EDirection.LeftTop:
+					n1 = GetNeighbour(EDirection.RightTop);
+					n2 = GetNeighbour(EDirection.LeftBot);
+					break;
+			}
+			if(n1 != null) neigh.Add(n1);
+			if(n2 != null) neigh.Add(n2);
+			return neigh;
 		}
 
 		/// <summary>
@@ -122,15 +143,15 @@ namespace ForestReco
 		/// </summary>
 		/// <param name="pIncludeThis"></param>
 		/// <returns></returns>
-		public List<CGroundField> GetNeighbours(bool pIncludeThis = false)
+		public List<CField> GetNeighbours(bool pIncludeThis = false)
 		{
 			if (neighbours != null)
 			{
 				if (pIncludeThis)
 				{
-					List<CGroundField> neighbourCopy = new List<CGroundField>();
+					List<CField> neighbourCopy = new List<CField>();
 					neighbourCopy.Add(this);
-					foreach (CGroundField n in neighbours)
+					foreach (CField n in neighbours)
 					{
 						neighbourCopy.Add(n);
 					}
@@ -139,7 +160,7 @@ namespace ForestReco
 				return neighbours;
 			}
 
-			neighbours = new List<CGroundField>();
+			neighbours = new List<CField>();
 			if (pIncludeThis)
 			{
 				neighbours.Add(this);
@@ -148,40 +169,52 @@ namespace ForestReco
 			var directions = Enum.GetValues(typeof(EDirection));
 			foreach (EDirection d in directions)
 			{
-				CGroundField neighour = GetNeighbour(d);
+				CField neighour = GetNeighbour(d);
 				if (neighour != null) { neighbours.Add(neighour); }
 			}
 
 			return neighbours;
 		}
 
-		//PUBLIC
-
-		public int? GetColorValue()
+		/// <summary>
+		/// Finds the closest neighbour in given direction which doesnt contain any of the given points
+		/// </summary>
+		public CField GetClosestNeighbourWithout(List<Vector3> pPoints, EDirection pDirection)
 		{
-			float? vegeHeight = MaxVege;
-			float? groundHeight = CProjectData.array.GetElementContainingPoint(center).GetHeight();
-			float height = 0;
-			if (vegeHeight != null && groundHeight != null)
+			CField current = GetNeighbour(pDirection);
+			while(current != null && current.Contains(pPoints, false))
 			{
-				height = (float)vegeHeight - (float)groundHeight;
+				current = current.GetNeighbour(pDirection);
 			}
-			//Color color = new Color();
-			float max = CTreeManager.AVERAGE_MAX_TREE_HEIGHT;
-			float value = height / max;
-			value *= 255;
-			if (value < 0 || value > 255)
-			{
-				//not error - comparing just to AVERAGE_MAX_TREE_HEIGHT, not MAX
-				value = Math.Max(0, value);
-				value = Math.Min(255, value);
-			}
-
-			int intVal = (int)value;
-			return intVal;
+			return current;
 		}
 
-		public void AddGroundPoint(Vector3 pPoint)
+		/// <summary>
+		/// If given points are in this field.
+		/// </summary>
+		/// <param name="pAll">True = all of them, false = at least one</param>
+		/// <returns></returns>
+		private bool Contains(List<Vector3> pPoints, bool pAll)
+		{
+			foreach(Vector3 point in pPoints)
+			{
+				if(pAll && IsPointOutOfField(point))
+					return false;
+				else if(!pAll && !IsPointOutOfField(point))
+					return true;
+			}
+			return pAll;
+		}
+
+		//PUBLIC
+
+		public virtual int? GetColorValue()
+		{
+			return 0;
+			
+		}
+
+		public void AddPoint(Vector3 pPoint)
 		{
 			if (IsPointOutOfField(pPoint))
 			{
@@ -190,115 +223,82 @@ namespace ForestReco
 
 			float height = pPoint.Z;
 
-			goundPoints.Add(pPoint);
-			if (SumGround != null) { SumGround += height; }
-			else { SumGround = height; }
-			if (height > MaxGround || MaxGround == null) { MaxGround = height; }
-			if (height < MinGround || MinGround == null) { MinGround = height; }
+			//todo test
+			points.Add(pPoint);
+
+			//null checks are neccessary!
+			if(SumZ != null) { SumZ += height; }
+			else { SumZ = height; }
+			if(height > MaxZ || MaxZ == null) { MaxZ = height; }
+			if(height < MinZ || MinZ == null) { MinZ = height; }
+		}
+
+		public static EDirection GetDirection(CField pFrom, CField pTo)
+		{
+			Vector3 dir = pTo.center - pFrom.center;
+			dir = Vector3.Normalize(dir);
+			if(dir.X > 0.5f)
+			{
+				if(dir.Y > 0.5f)
+					return EDirection.RightTop;
+				else if(dir.Y < -0.5f)
+					return EDirection.RightBot;
+				else 
+					return EDirection.Right;
+			}
+			else if(dir.X < -0.5f)
+			{
+				if(dir.Y > 0.5f)
+					return EDirection.LeftTop;
+				else if(dir.Y < -0.5f)
+					return EDirection.LeftBot;
+				else
+					return EDirection.Left;
+			}
+			else
+			{
+				if(dir.Y > 0.5f)
+					return EDirection.Top;
+				else if(dir.Y < -0.5f)
+					return EDirection.Bot;
+				else
+					return EDirection.None;
+			}
 		}
 
 		public bool IsPointOutOfField(Vector3 pPoint)
 		{
 			float distX = Math.Abs(pPoint.X - center.X);
 			float distY = Math.Abs(pPoint.Y - center.Y);
-			return distX > CParameterSetter.groundArrayStep / 2 ||
-							distY > CParameterSetter.groundArrayStep / 2;
+			return distX > stepSize / 2 + FLOAT_E || distY > stepSize / 2 + FLOAT_E;
 		}
 
-		public void AddVegePoint(Vector3 pPoint)
-		{
-			if (IsPointOutOfField(pPoint))
-			{
-				CDebug.Error($"point {pPoint} is too far from center {center}");
-			}
-			vegePoints.Add(pPoint);
-
-			float height = pPoint.Z;
-			if (height > MaxVege || MaxVege == null) { MaxVege = height; }
-			if (height < MinVege || MinVege == null) { MinVege = height; }
-		}
-
-		public void AddPreProcessVegePoint(Vector3 pPoint)
-		{
-			preProcessPoints.Add(pPoint);
-			if (MaxPreProcessVege != null)
-			{
-				if (pPoint.Z > MaxPreProcessVege)
-				{
-					MaxPreProcessVege = pPoint.Z;
-				}
-			}
-			else
-			{
-				MaxPreProcessVege = pPoint.Z;
-			}
-		}
-
-
-		public void SortPreProcessPoints()
-		{
-			preProcessPoints.Sort((a, b) => a.Z.CompareTo(b.Z));
-
-		}
-		
-		const float MIN_FAKE_POINT_HEIGHT_OFFSET = 4;
-
-		private const float MAX_NEIGHBOUR_HEIGHT_DIFF = 2;
-
-		/// <summary>
-		/// </summary>
-		public void FilterFakeVegePoints(float pMinHeight)
-		{
-			for (int i = preProcessPoints.Count - 1; i >= 0; i--)
-			{
-				float height = preProcessPoints[i].Z;
-
-				int badHeighDiffCount = 0;
-				const int minBadHeightDiffCount = 4;
-				float? groundHeight = GetHeight();
-				//is much higher than average => minBadHeightDiffCount gets smaller
-				bool isTooHigh = height - groundHeight > pMinHeight + MIN_FAKE_POINT_HEIGHT_OFFSET;
-
-				foreach (CGroundField neighbour in GetNeighbours())
-				{
-					float? neighbourHeight = neighbour.validPoints.Count > 0 ?
-						neighbour.validPoints.Last().Z : neighbour.MaxPreProcessVege;
-					if (height - neighbourHeight > MAX_NEIGHBOUR_HEIGHT_DIFF)
-					{
-						badHeighDiffCount++;
-						if (badHeighDiffCount > minBadHeightDiffCount)
-						{
-							break;
-						}
-					}
-				}
-
-
-				if (badHeighDiffCount > (isTooHigh ? minBadHeightDiffCount - 2 : minBadHeightDiffCount))
-				{
-					fakePoints.Add(preProcessPoints[i]);
-					continue;
-				}
-				for (int j = 0; j < i; j++)
-				{
-					validPoints.Add(preProcessPoints[j]);
-				}
-				break;
-			}
-		}
-
-		/// <summary>
-		/// Assigns vege points into CProjectData.vegePoints and fakePoints
-		/// </summary>
-		public void ApplyFilteredPoints()
-		{
-			CProjectData.vegePoints.AddRange(validPoints);
-			CProjectData.filteredPoints.AddRange(fakePoints);
-		}
-		
+		const float FLOAT_E = 0.0001f;
+				
 		public bool IsDefined()
 		{
-			return goundPoints.Count > 0;
+			return points.Count > 0;
+		}
+
+		float? maxFromNeighbourhood;
+		bool maxFromNeighbourhoodCalculated;
+
+		/// <summary>
+		/// Not used now
+		/// </summary>
+		public float? GetMaxHeightFromNeigbourhood()
+		{
+			if(maxFromNeighbourhoodCalculated)
+				return maxFromNeighbourhood;
+
+			maxFromNeighbourhoodCalculated = true;
+
+			foreach(CField field in GetNeighbours(true))
+			{
+				if(field.GetHeight() > maxFromNeighbourhood)
+					maxFromNeighbourhood = field.GetHeight();
+			}
+			return maxFromNeighbourhood;
 		}
 
 		public float? GetAverageHeightFromNeighbourhood(int pKernelSizeMultiplier)
@@ -314,12 +314,10 @@ namespace ForestReco
 				{
 					int xIndex = indexInField.Item1 + x;
 					int yIndex = indexInField.Item2 + y;
-					CGroundField el = CProjectData.array.GetElement(xIndex, yIndex);
+					CField el = CProjectData.groundArray.GetField(xIndex, yIndex);
 					if (el != null && el.IsDefined())
 					{
 						defined++;
-						// ReSharper disable once PossibleInvalidOperationException
-						//is checked
 						heightSum += (float)el.GetHeight();
 					}
 				}
@@ -337,12 +335,12 @@ namespace ForestReco
 		{
 			if (IsDefined()) { return GetHeight(); }
 
-			CGroundField closestFirst = null;
-			CGroundField closestSecond = null;
-			CGroundField closestLeft = GetClosestDefined(pDiagonal ? EDirection.LeftTop : EDirection.Left, pMaxSteps);
-			CGroundField closestRight = GetClosestDefined(pDiagonal ? EDirection.RightBot : EDirection.Right, pMaxSteps);
-			CGroundField closestTop = GetClosestDefined(pDiagonal ? EDirection.RightTop : EDirection.Top, pMaxSteps);
-			CGroundField closestBot = GetClosestDefined(pDiagonal ? EDirection.LeftBot : EDirection.Bot, pMaxSteps);
+			CField closestFirst = null;
+			CField closestSecond = null;
+			CField closestLeft = GetClosestDefined(pDiagonal ? EDirection.LeftTop : EDirection.Left, pMaxSteps);
+			CField closestRight = GetClosestDefined(pDiagonal ? EDirection.RightBot : EDirection.Right, pMaxSteps);
+			CField closestTop = GetClosestDefined(pDiagonal ? EDirection.RightTop : EDirection.Top, pMaxSteps);
+			CField closestBot = GetClosestDefined(pDiagonal ? EDirection.LeftBot : EDirection.Bot, pMaxSteps);
 
 			closestFirst = closestLeft;
 			closestSecond = closestRight;
@@ -354,8 +352,8 @@ namespace ForestReco
 			
 			if (closestFirst != null && closestSecond != null)
 			{
-				CGroundField smaller = closestFirst;
-				CGroundField higher = closestSecond;
+				CField smaller = closestFirst;
+				CField higher = closestSecond;
 				if (closestSecond.GetHeight() < closestFirst.GetHeight())
 				{
 					higher = closestFirst;
@@ -385,19 +383,14 @@ namespace ForestReco
 
 			return null;
 		}
-
-		public void SetHeight(float pHeight)
-		{
-			AddGroundPoint(new Vector3(center.X, pHeight, center.Z));
-		}
-		
+				
 		public float? GetHeight(bool pUseSmoothHeight = true)
 		{
 			if (pUseSmoothHeight && SmoothHeight != null)
 			{
 				return SmoothHeight;
 			}
-			return MaxGround;
+			return MaxZ;
 		}
 
 		/// <summary>
@@ -419,11 +412,11 @@ namespace ForestReco
 			//http://www.geocomputation.org/1999/082/gc_082.htm
 			//3.4 Bilinear interpolation
 
-			List<CGroundField> bilinearFields = GetBilinearFieldsFor(pPoint);
-			CGroundField h1 = bilinearFields[0];
-			CGroundField h2 = bilinearFields[1];
-			CGroundField h3 = bilinearFields[2];
-			CGroundField h4 = bilinearFields[3];
+			List<CField> bilinearFields = GetBilinearFieldsFor(pPoint);
+			CField h1 = bilinearFields[0];
+			CField h2 = bilinearFields[1];
+			CField h3 = bilinearFields[2];
+			CField h4 = bilinearFields[3];
 
 			float a00 = (float)h1.GetHeight();
 			float a10 = (float)h2.GetHeight() - (float)h1.GetHeight();
@@ -449,9 +442,9 @@ namespace ForestReco
 			return hi;
 		}
 
-		private List<CGroundField> GetBilinearFieldsFor(Vector3 pPoint)
+		private List<CField> GetBilinearFieldsFor(Vector3 pPoint)
 		{
-			List<CGroundField> fields = new List<CGroundField>();
+			List<CField> fields = new List<CField>();
 			if (pPoint.X > center.X)
 			{
 				if (pPoint.Z > center.Z)
@@ -489,13 +482,12 @@ namespace ForestReco
 			return fields;
 		}
 
-		public int GetDistanceTo(CGroundField pGroundField)
+		public int GetDistanceTo(CField pGroundField)
 		{
 			return Math.Abs(indexInField.Item1 - pGroundField.indexInField.Item1) +
 				   Math.Abs(indexInField.Item2 - pGroundField.indexInField.Item2);
 		}
 
-		public float? SmoothHeight;
 
 		/// <summary>
 		/// Sets SmoothHeight based on average from neighbourhood
@@ -518,7 +510,7 @@ namespace ForestReco
 				{
 					int xIndex = indexInField.Item1 + x - kernelSize / 2;
 					int yIndex = indexInField.Item2 + y - kernelSize / 2;
-					CGroundField el = CProjectData.array.GetElement(xIndex, yIndex);
+					CField el = CProjectData.groundArray.GetField(xIndex, yIndex);
 					float? elHeight = el?.GetHeight();
 
 					//if element is not defined, use height from the middle element
@@ -536,17 +528,15 @@ namespace ForestReco
 			SmoothHeight = heightSum;
 		}
 
-		public float? MaxGroundFilled;
 
 		public void ApplyFillMissingHeight()
 		{
 			if (IsDefined()) { return; }
-			//MaxGround = MaxGroundFilled;
-			if (MaxGroundFilled == null) { return; }
+			if (MaxFilledHeight == null) { return; }
 
 			Vector3 filledPoint = center;
-			filledPoint.Z = (float)MaxGroundFilled;
-			AddGroundPoint(filledPoint);
+			filledPoint.Z = (float)MaxFilledHeight;
+			AddPoint(filledPoint);
 		}
 
 
@@ -558,10 +548,10 @@ namespace ForestReco
 			switch (pMethod)
 			{
 				case EFillMethod.ClosestDefined:
-					MaxGroundFilled = GetAverageHeightFromClosestDefined(10 * maxSteps, false);
+					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false);
 					break;
 				case EFillMethod.FromNeighbourhood:
-					MaxGroundFilled = GetAverageHeightFromNeighbourhood(pKernelMultiplier);
+					MaxFilledHeight = GetAverageHeightFromNeighbourhood(pKernelMultiplier);
 					break;
 			}
 		}
@@ -572,10 +562,9 @@ namespace ForestReco
 			FromNeighbourhood
 		}
 
-
 		///PRIVATE
 
-		private CGroundField GetClosestDefined(EDirection pDirection, int pMaxSteps)
+		private CField GetClosestDefined(EDirection pDirection, int pMaxSteps)
 		{
 			if (IsDefined()) { return this; }
 			if (pMaxSteps == 0) { return null; }
@@ -588,21 +577,21 @@ namespace ForestReco
 		/// </summary>
 		private float? GetHeightExtrem(bool pMax)
 		{
-			return pMax ? MaxGround : MinGround;
+			return pMax ? MaxZ : MinZ;
 		}
 
 		private float? GetHeightAverage()
 		{
 			if (!IsDefined()) { return null; }
-			return SumGround / goundPoints.Count;
+			return SumZ / points.Count;
 		}
 
 		/// <summary>
 		/// Returnd point with given local position to this point
 		/// </summary>
-		private CGroundField GetPointWithOffset(int pIndexOffsetX, int pIndexOffsetY)
+		private CField GetFieldWithOffset(int pIndexOffsetX, int pIndexOffsetY)
 		{
-			CGroundField el = this;
+			CField el = this;
 			for (int x = 0; x < Math.Abs(pIndexOffsetX); x++)
 			{
 				el = pIndexOffsetX > 0 ? el.Right : el.Left;
@@ -639,10 +628,7 @@ namespace ForestReco
 
 		public override string ToString()
 		{
-			return ToStringIndex() + " Ground = " + GetHeight() + ". Center = " + center +
-				". Trees=" + DetectedTrees.Count + "/" + CheckTrees.Count +
-				"|" + fakePoints.Count + "/" + preProcessPoints.Count;
-			//return ToStringIndex() + " Tree = " + (Tree?.ToStringIndex() ?? "null");
+			return ToStringIndex() + " Ground = " + GetHeight() + ". Center = " + center;
 		}
 
 		public override bool Equals(object obj)
@@ -651,32 +637,13 @@ namespace ForestReco
 			if (obj == null || GetType() != obj.GetType())
 				return false;
 
-			CGroundField e = (CGroundField)obj;
+			CField e = (CField)obj;
 			return (indexInField.Item1 == e.indexInField.Item1) && (indexInField.Item2 == e.indexInField.Item2);
 		}
 
-		public bool AddCheckTree(CCheckTree pCheckTree)
+		public override int GetHashCode()
 		{
-			List<CCheckTree> neighbourCheckTrees = new List<CCheckTree>();
-			neighbourCheckTrees.AddRange(CheckTrees);
-			foreach (CGroundField neighbour in GetNeighbours())
-			{
-				neighbourCheckTrees.AddRange(neighbour.CheckTrees);
-			}
-
-			foreach (CCheckTree neighbourCheckTree in neighbourCheckTrees)
-			{
-				const float minCheckTreeDistance = 0.5f;
-				if (CUtils.Get2DDistance(pCheckTree.position, neighbourCheckTree.position) < minCheckTreeDistance)
-				{
-					CDebug.Warning($"checktree {pCheckTree} is duplicit with {neighbourCheckTree}");
-					return false;
-				}
-			}
-
-			CheckTrees.Add(pCheckTree);
-			pCheckTree.groundField = this;
-			return true;
+			return -584859404 + EqualityComparer<Tuple<int, int>>.Default.GetHashCode(indexInField);
 		}
 	}
 }

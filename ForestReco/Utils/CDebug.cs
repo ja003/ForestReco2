@@ -26,8 +26,16 @@ namespace ForestReco
 			WriteLine(pText + ": " + pCount + (pOutOf > 0 ? " out of " + pOutOf : ""));
 		}
 
+		public static void WriteLine()
+		{
+			WriteLine("");
+		}
+
 		public static void WriteLine(string pText, bool pBreakLineBefore = false, bool pBreakLineAfter = false)
 		{
+			//emty text is mostly used for debugging and console logging slows process
+			if(pText.Length == 0)
+				return;
 			Console.WriteLine((pBreakLineBefore ? "\n" : "") + pText + (pBreakLineAfter ? "\n" : ""));
 		}
 
@@ -175,7 +183,6 @@ namespace ForestReco
 			}
 
 			stepCallCount++;
-			//-2 for abort states
 			int maxSteps = countedStepsCount;
 			stepCallCount = Math.Min(stepCallCount, maxSteps); //bug: sometimes writes higher value
 			string progress = IsCountableStep(pStep) ?
@@ -276,14 +283,17 @@ namespace ForestReco
 				case EProgramStep.AssignReftrees:
 					text = "assigning reftrees";
 					break;
-				case EProgramStep.LoadCheckTrees:
-					text = "loading checktrees";
+				//case EProgramStep.LoadCheckTrees:
+				//	text = "loading checktrees";
+				//	break;
+				//case EProgramStep.AssignCheckTrees:
+				//	text = "assigning checktrees";
+				//	break;
+				case EProgramStep.Export3D:
+					text = "exporting 3d model";
 					break;
-				case EProgramStep.AssignCheckTrees:
-					text = "assigning checktrees";
-					break;
-				case EProgramStep.Export:
-					text = "exporting";
+				case EProgramStep.ExportMainFiles:
+					text = "exporting main files";
 					break;
 				case EProgramStep.Bitmap:
 					text = "generating bitmaps";

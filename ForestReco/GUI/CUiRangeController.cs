@@ -42,8 +42,8 @@ namespace ForestReco
 			//X
 			//range has to match file coordinates
 			//in project are used coordinates moved by offset
-			Vector3 min = CProjectData.sourceFileHeader.Min_orig;
-			Vector3 max = CProjectData.sourceFileHeader.Max_orig;
+			Vector3 min = (Vector3)CProjectData.sourceFileHeader.Min_orig;
+			Vector3 max = (Vector3)CProjectData.sourceFileHeader.Max_orig;
 			form.trackBarRangeXmin.SetRange((int)min.X * 10, (int)max.X * 10);
 			form.trackBarRangeXmax.SetRange((int)min.X * 10, (int)max.X * 10);
 

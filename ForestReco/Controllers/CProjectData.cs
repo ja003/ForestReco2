@@ -11,8 +11,8 @@ namespace ForestReco
 	public static class CProjectData
 	{
 		public static string saveFileName;
-		public static string outputFolder; //ends with \\
-		public static string outputTileSubfolder; //ends with \\
+		public static string outputFolder; //string ends with \\
+		public static string outputTileSubfolder; //string ends with \\
 
 		public static BackgroundWorker backgroundWorker;
 
@@ -21,8 +21,16 @@ namespace ForestReco
 		public static List<Vector3> vegePoints = new List<Vector3>();
 		public static List<Vector3> filteredPoints = new List<Vector3>();
 
-		public static CGroundArray array;
-		public static CGroundArray detailArray;
+		public static CGroundArray groundArray;
+		public static CVegeArray vegeArray;
+		public static CVegeArray preprocessDetailArray;
+		public static CVegeArray preprocessNormalArray;
+		
+		public static CTreeArray treeDetailArray;
+		public static CTreeArray treeNormalArray;
+
+
+		//public static CGroundArray detailArray;
 
 		public static CHeaderInfo sourceFileHeader; //header of source file (not split)
 		public static CHeaderInfo mainHeader; //header of file being processed (split applied)
@@ -38,6 +46,8 @@ namespace ForestReco
 		public static float highestHeight = int.MinValue;
 		public const int bufferSize = 10;
 
+		private const float DETAIL_STEP = 0.1f;
+
 		public static void Init()
 		{
 			saveFileName = CUtils.GetFileName(
@@ -47,7 +57,6 @@ namespace ForestReco
 			outputFolder = CObjExporter.CreateFolderIn(saveFileName, outputFolderSettings);
 
 
-
 			//string[] lines = CPreprocessController.GetHeaderLines(fullFilePath);
 			//sourceFileHeader = new CHeaderInfo(lines);
 
@@ -55,9 +64,12 @@ namespace ForestReco
 
 		public static void ReInit(int pTileIndex)
 		{
-			outputTileSubfolder = CObjExporter.CreateFolderIn($"tile_{pTileIndex}", outputFolder);
+			//dont create subfolder if we export only one tile
+			bool isOnlyTile = CProgramStarter.tilesCount == 1;
+			outputTileSubfolder = isOnlyTile ? outputFolder :
+				CObjExporter.CreateFolderIn($"tile_{pTileIndex}", outputFolder);
 
-			array = null;
+			groundArray = null;
 			//header = null;
 			currentTileHeader = null;
 
@@ -67,6 +79,20 @@ namespace ForestReco
 
 			lowestHeight = int.MaxValue;
 			highestHeight = int.MinValue;
+		}
+
+		public static void InitArrays()
+		{
+			groundArray = new CGroundArray(CParameterSetter.groundArrayStep, false);
+			vegeArray = new CVegeArray(DETAIL_STEP, true);
+			preprocessDetailArray = new CVegeArray(DETAIL_STEP, true);
+			preprocessNormalArray = new CVegeArray(CParameterSetter.groundArrayStep, false);
+
+			treeDetailArray = new CTreeArray(DETAIL_STEP, true);
+			treeNormalArray = new CTreeArray(CParameterSetter.groundArrayStep, false);
+
+
+			CObjPartition.Init();
 		}
 
 		public static Vector3 GetOffset()

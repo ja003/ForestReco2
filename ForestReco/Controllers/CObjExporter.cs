@@ -9,7 +9,7 @@ namespace ForestReco
 	public static class CObjExporter
 	{
 		private const string DEFAULT_FILENAME = "tree";
-		public const float POINT_OFFSET = 0.05f;
+		public const float POINT_OFFSET = 0.1f;
 
 		private static Vector3 arrayCenter => CProjectData.GetArrayCenter();
 
@@ -137,7 +137,7 @@ namespace ForestReco
 			//obj.FaceList.Add(new Face(new List<Vertex> { v6, v4, v3 }));
 		}
 
-		public static void AddLFaceToObj(ref Obj obj, Vector3 pPoint1, Vector3 pPoint2, Vector3 pPoint3)
+		public static void AddFaceToObj(ref Obj obj, Vector3 pPoint1, Vector3 pPoint2, Vector3 pPoint3)
 		{
 			MoveToCenter(ref pPoint1);
 			MoveToCenter(ref pPoint2);
@@ -228,11 +228,15 @@ namespace ForestReco
 			//string path = CParameterSetter.GetStringSettings(ESettings.outputFolderPath);
 			string path = pInFolder;
 
+			EDetectionMethod method = CTreeManager.GetDetectMethod();
+			string suffix = method == EDetectionMethod.AddFactor ? "_af" : "_2d";
+
 			int folderIndex = 0;
-			string chosenFolderName = path + "\\" + pFileName;
+			string fullFileName = pFileName + suffix;
+			string chosenFolderName = path + "\\" + fullFileName;
 			while (Directory.Exists(chosenFolderName))
 			{
-				chosenFolderName = path + "\\" + pFileName + "_" + folderIndex;
+				chosenFolderName = path + "\\" + fullFileName + "_" + folderIndex;
 				folderIndex++;
 			}
 			Directory.CreateDirectory(chosenFolderName);
