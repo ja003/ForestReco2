@@ -901,6 +901,7 @@ namespace ForestReco
 			return Math.Abs(angle) < CTreeManager.MAX_BRANCH_ANGLE;
 		}
 
+		// todo: not used anywhere, delete?
 		public bool BelongsToTree(Vector3 pPoint, bool pDebug = true)
 		{
 			if(IsNewPeak(pPoint))
@@ -913,9 +914,9 @@ namespace ForestReco
 			float distToBB = Get2DDistanceFromBBTo(pPoint);
 			//it must be close to peak of some tree or to its BB
 
-			float maxTreeExtent = GetTreeExtentFor(pPoint, 1);
+			float maxTreeRadius = GetTreeRadius();
 
-			if(dist2D > maxTreeExtent && distToBB > MAX_DIST_TO_TREE_BB)
+			if(dist2D > maxTreeRadius && distToBB > MAX_DIST_TO_TREE_BB)
 			{
 				if(CTreeManager.DEBUG && pDebug)
 					CDebug.WriteLine("- dist too high " + dist2D + "|" + distToBB);
@@ -939,6 +940,7 @@ Vector3.Distance(suitablePoint, pPoint));
 		/// <summary>
 		/// Calculates max acceptable 2D distance from peak for the new point to be added
 		/// </summary>
+		/// //TODO: obsolete method! use tree radius equation
 		public float GetTreeExtentFor(Vector3 pNewPoint, float pMaxExtentMultiplier)
 		{
 			float treeHeight = GetTreeHeight();
@@ -952,6 +954,14 @@ Vector3.Distance(suitablePoint, pPoint));
 			float extent = CTreeManager.MIN_TREE_EXTENT + EXTENT_VALUE_STEP * zDiff / Z_DIFF_STEP;
 
 			return Math.Min(extent, maxExtent);
+		}
+
+		public float GetTreeRadius()
+		{
+			float height = GetTreeHeight();
+			float radius = CTreeRadiusCalculator.GetTreeRadius(height);
+
+			return radius;
 		}
 
 		public List<Vector3> GetFurthestPoints()

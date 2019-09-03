@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 
 namespace ForestReco.GUI
@@ -38,6 +39,19 @@ namespace ForestReco.GUI
 			}
 			pText.Clear(); //necessary?
 			pText.Text = path;
+		}
+
+		public void SelectFile(TextBox pFolder, TextBox pName, TextBox pExtension, string pTitle, List<string> pExtensions, string pDescription)
+		{
+			string path = CParameterSetter.SelectFile(pTitle, pExtensions, pDescription);
+			if(path.Length == 0)
+			{
+				CDebug.Warning("no path selected");
+				return;
+			}
+			pFolder.Text = Path.GetDirectoryName(path);
+			pName.Text = Path.GetFileNameWithoutExtension(path);
+			pExtension.Text = Path.GetExtension(path);
 		}
 
 	}

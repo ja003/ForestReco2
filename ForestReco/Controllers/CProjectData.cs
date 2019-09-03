@@ -51,7 +51,7 @@ namespace ForestReco
 		public static void Init()
 		{
 			saveFileName = CUtils.GetFileName(
-				CParameterSetter.GetStringSettings(ESettings.forestFilePath));
+				CParameterSetter.GetStringSettings(ESettings.forestFileFullName));
 			string outputFolderSettings = CParameterSetter.GetStringSettings(ESettings.outputFolderPath);
 
 			outputFolder = CObjExporter.CreateFolderIn(saveFileName, outputFolderSettings);

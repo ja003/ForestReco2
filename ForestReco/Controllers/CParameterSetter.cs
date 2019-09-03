@@ -183,7 +183,11 @@ namespace ForestReco
 	{
 		None,
 		//strings
-		forestFilePath,
+		forestFileName,
+		forestFileFolder,
+		forestFileExtension,
+		forestFileFullName,
+
 		reftreeFolderPath,
 		outputFolderPath,
 		checkTreeFilePath,
@@ -240,5 +244,6 @@ namespace ForestReco
 		calculateDBH,
 		calculateAGB,
 		startIndex,
+		treeRadius,
 	}
 }

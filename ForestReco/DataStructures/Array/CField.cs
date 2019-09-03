@@ -383,7 +383,14 @@ namespace ForestReco
 
 			return null;
 		}
-				
+
+		public float? GetHeightDiff(Vector3 pPoint)
+		{
+			float? height = GetHeight();
+			return height == null ? null : pPoint.Z - height;
+		}
+
+
 		public float? GetHeight(bool pUseSmoothHeight = true)
 		{
 			if (pUseSmoothHeight && SmoothHeight != null)

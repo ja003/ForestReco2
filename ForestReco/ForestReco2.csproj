@@ -92,6 +92,7 @@
     <Compile Include="Controllers\CResultSize.cs" />
     <Compile Include="Controllers\CSequenceController.cs" />
     <Compile Include="Controllers\CShpController.cs" />
+    <Compile Include="Controllers\CTreeRadiusCalculator.cs" />
     <Compile Include="DataStructures\Array\CTreeArray.cs" />
     <Compile Include="DataStructures\Array\CTreeField.cs" />
     <Compile Include="DataStructures\Array\CVegeField.cs" />

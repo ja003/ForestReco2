@@ -38,6 +38,7 @@ namespace ForestReco
 			CBiomassController.Init(
 				CParameterSetter.GetStringSettings(ESettings.dbh),
 				CParameterSetter.GetStringSettings(ESettings.agb));
+			CTreeRadiusCalculator.Init();
 			CShpController.Init();
 			CReftreeManager.Init();
 
@@ -89,11 +90,15 @@ namespace ForestReco
 			}
 
 			CDebug.Step(EProgramStep.ExportMainFiles);
-			CDartTxt.ExportMain();
-			CLasExporter.ExportMain();
-			CShpController.ExportMain();
+			//TODO: implement this in super class for all controllers
+			//dont create the main file if not needed
+			if(tilesCount > 1)
+			{
+				CDartTxt.ExportMain();
+				CLasExporter.ExportMain();
+				CShpController.ExportMain();
+			}
 			CBitmapExporter.ExportMain();
-
 
 			CDebug.Step(EProgramStep.Done);
 

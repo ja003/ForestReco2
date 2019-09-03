@@ -41,7 +41,7 @@ namespace ForestReco
 		public static bool CheckProblems()
 		{
 			Reset();
-			CheckPath("Forest", CParameterSetter.GetStringSettings(ESettings.forestFilePath), true);
+			CheckPath("Forest", CParameterSetter.GetStringSettings(ESettings.forestFileFullName), true);
 			CheckPath("Reftree", CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath), false);
 			CheckPath("Output", CParameterSetter.GetStringSettings(ESettings.outputFolderPath), false);
 			if(CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile))
@@ -54,6 +54,7 @@ namespace ForestReco
 
 			CheckDBH();
 			CheckAGB();
+			CheckTreeRadius();
 
 			bool hasProblems = problems.Count > 0;
 			if(hasProblems)
@@ -137,6 +138,13 @@ namespace ForestReco
 			string problem = CBiomassController.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.agb));
 			if(problem.Length > 0)
 				problems.Add($"DBH equation problem: {problem}");
+		}
+
+		private static void CheckTreeRadius()
+		{
+			string problem = CTreeRadiusCalculator.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.treeRadius));
+			if(problem.Length > 0)
+				problems.Add($"treeRadius equation problem: {problem}");
 		}
 	}
 }

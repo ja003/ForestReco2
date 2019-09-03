@@ -21,7 +21,7 @@ namespace ForestReco
 			CDebug.WriteLine("SetValues from config");
 
 			SSequenceConfig currentConfig = configs[currentConfigIndex];
-			CParameterSetter.SetParameter(ESettings.forestFilePath, currentConfig.path);
+			CParameterSetter.SetParameter(ESettings.forestFileFullName, currentConfig.path);
 			int treeHeight = currentConfig.treeHeight;
 
 			CParameterSetter.SetParameter(ESettings.autoAverageTreeHeight, treeHeight <= 0);
@@ -37,7 +37,7 @@ namespace ForestReco
 		{
 			if(string.IsNullOrEmpty(lastSequenceFile)){ return;}
 
-			CParameterSetter.SetParameter(ESettings.forestFilePath, lastSequenceFile);
+			CParameterSetter.SetParameter(ESettings.forestFileFullName, lastSequenceFile);
 		}
 
 		private static string lastSequenceFile;
@@ -48,7 +48,7 @@ namespace ForestReco
 			currentConfigIndex = 0;
 			if (!IsSequence()) { return; }
 
-			lastSequenceFile = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
+			lastSequenceFile = CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
 
 			string[] lines = File.ReadAllLines(lastSequenceFile);
 
@@ -83,7 +83,7 @@ namespace ForestReco
 
 		public static bool IsSequence()
 		{
-			string mainFile = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
+			string mainFile = CParameterSetter.GetStringSettings(ESettings.forestFileName);
 			if (!File.Exists(mainFile)) { return false; }
 			return Path.GetExtension(mainFile) == SEQ_EXTENSION;
 		}

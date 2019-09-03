@@ -66,8 +66,10 @@ namespace ForestReco
 			//todo: make radius dependent on bitmap width?
 			if(FILTER_MAIN_MAP)
 			{
-				FilterBitmap(ref mainMap,
-				 GetKernelSize(mainMapStepSize, .5f), EFilter.ColorOrMax);
+				//looks good enough on .3f, higher npt necessary, just slows down rapidly
+				const float kernelRadius = .3f; 
+				int kernelSize = GetKernelSize(mainMapStepSize, kernelRadius);
+				FilterBitmap(ref mainMap, kernelSize, EFilter.ColorOrMax);
 			}
 
 			ExportBitmap(mainMap, "tree_positions_main", -1);

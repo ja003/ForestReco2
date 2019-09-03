@@ -30,7 +30,10 @@ namespace ForestReco
 		/// </summary>
 		public static string IsValidEquation(string pEquation)
 		{
-			Expression expr = CreateExpression(pEquation, 10, 1);
+            if (pEquation.Length == 0)
+                return "Equation cant be empty";
+
+            Expression expr = CreateExpression(pEquation, 10, 1);
 			try
 			{
 				object eval = expr.Evaluate();
@@ -46,6 +49,9 @@ namespace ForestReco
 
 		private static Expression CreateExpression(string pEquation, float pHeight, double pDBH)
 		{
+            if (pEquation.Length == 0)
+                return null;
+
 			Expression expr = new Expression(pEquation);
 			expr.Parameters[PARAM_HEIGHT] = new Expression(pHeight.ToString(NUM_FORMAT));
 			expr.Parameters[PARAM_DBH] = new Expression(pDBH.ToString(NUM_FORMAT));

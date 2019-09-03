@@ -13,7 +13,7 @@ namespace ForestReco
 	public class CMainForm : Form
 	{
 		#region properties
-		public TextBox textForestFilePath;
+		public TextBox textForestFileName;
 		private Button btnReftreesFolder;
 		public TextBox textReftreeFolder;
 		private Button btnStart;
@@ -118,6 +118,10 @@ namespace ForestReco
 		public TextBox textStartTile;
 		private ComboBox comboBoxDetectMethod;
 		private Label label10;
+		private Label label11;
+		private RichTextBox richTextTreeRadius;
+		public TextBox textForestFileFolder;
+		public TextBox textForestFileExtension;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -139,7 +143,11 @@ namespace ForestReco
 		{
 			CParameterSetter.Init();
 			textForestFolder.Text = CParameterSetter.GetStringSettings(ESettings.forestFolderPath);
-			textForestFilePath.Text = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
+
+			textForestFileFolder.Text = CParameterSetter.GetStringSettings(ESettings.forestFileFolder);
+			textForestFileName.Text = CParameterSetter.GetStringSettings(ESettings.forestFileName);
+			textForestFileExtension.Text = CParameterSetter.GetStringSettings(ESettings.forestFileExtension);
+
 			textReftreeFolder.Text = CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath);
 			textOutputFolder.Text = CParameterSetter.GetStringSettings(ESettings.outputFolderPath);
 			textCheckTreePath.Text = CParameterSetter.GetStringSettings(ESettings.checkTreeFilePath);
@@ -180,6 +188,7 @@ namespace ForestReco
 
 			richTextDBH.Text = CParameterSetter.GetStringSettings(ESettings.dbh);
 			richTextAGB.Text = CParameterSetter.GetStringSettings(ESettings.agb);
+			richTextTreeRadius.Text = CParameterSetter.GetStringSettings(ESettings.treeRadius);
 
 			textStartTile.Text = CParameterSetter.GetIntSettings(ESettings.startIndex).ToString();
 
@@ -256,7 +265,7 @@ namespace ForestReco
 			CDebug.Init(this);
 
 			#region tooltip
-			CTooltipManager.AssignTooltip(myToolTip, btnSellectForest, ESettings.forestFilePath);
+			CTooltipManager.AssignTooltip(myToolTip, btnSellectForest, ESettings.forestFileName);
 			CTooltipManager.AssignTooltip(myToolTip, btnSequence, ETooltip.sequenceFile);
 			CTooltipManager.AssignTooltip(myToolTip, btnReftreesFolder, ESettings.reftreeFolderPath);
 			CTooltipManager.AssignTooltip(myToolTip, btnOutputFolder, ESettings.outputFolderPath);
@@ -291,6 +300,9 @@ namespace ForestReco
 			CTooltipManager.AssignTooltip(myToolTip, labelEstimatedTotalSize, ETooltip.EstimatedTotalSize);
 			CTooltipManager.AssignTooltip(myToolTip, labelEstimatedPartitionSize, ETooltip.EstimatedPartitionSize);
 			CTooltipManager.AssignTooltip(myToolTip, trackBarAvgTreeHeight, ETooltip.avgTreeHeighSlider);
+
+			CTooltipManager.AssignTooltip(myToolTip, richTextTreeRadius, ESettings.treeRadius);
+
 			#endregion
 		}
 
@@ -338,7 +350,7 @@ namespace ForestReco
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CMainForm));
 			this.btnSellectForest = new System.Windows.Forms.Button();
-			this.textForestFilePath = new System.Windows.Forms.TextBox();
+			this.textForestFileName = new System.Windows.Forms.TextBox();
 			this.btnReftreesFolder = new System.Windows.Forms.Button();
 			this.textReftreeFolder = new System.Windows.Forms.TextBox();
 			this.btnStart = new System.Windows.Forms.Button();
@@ -435,6 +447,10 @@ namespace ForestReco
 			this.textStartTile = new System.Windows.Forms.TextBox();
 			this.comboBoxDetectMethod = new System.Windows.Forms.ComboBox();
 			this.label10 = new System.Windows.Forms.Label();
+			this.label11 = new System.Windows.Forms.Label();
+			this.richTextTreeRadius = new System.Windows.Forms.RichTextBox();
+			this.textForestFileFolder = new System.Windows.Forms.TextBox();
+			this.textForestFileExtension = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -457,15 +473,17 @@ namespace ForestReco
 			this.btnSellectForest.UseVisualStyleBackColor = true;
 			this.btnSellectForest.Click += new System.EventHandler(this.btnSellectForest_Click);
 			// 
-			// textForestFilePath
+			// textForestFileName
 			// 
-			this.textForestFilePath.BackColor = System.Drawing.SystemColors.Window;
-			this.textForestFilePath.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.textForestFilePath.Location = new System.Drawing.Point(147, 50);
-			this.textForestFilePath.Name = "textForestFilePath";
-			this.textForestFilePath.Size = new System.Drawing.Size(616, 22);
-			this.textForestFilePath.TabIndex = 1;
-			this.textForestFilePath.TextChanged += new System.EventHandler(this.textForestFilePath_TextChanged);
+			this.textForestFileName.BackColor = System.Drawing.SystemColors.Window;
+			this.textForestFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.textForestFileName.Location = new System.Drawing.Point(576, 50);
+			this.textForestFileName.Name = "textForestFileName";
+			this.textForestFileName.Size = new System.Drawing.Size(126, 19);
+			this.textForestFileName.TabIndex = 1;
+			this.textForestFileName.Text = "forest file name";
+			this.textForestFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			this.textForestFileName.TextChanged += new System.EventHandler(this.textForestFileName_TextChanged);
 			// 
 			// btnReftreesFolder
 			// 
@@ -482,7 +500,7 @@ namespace ForestReco
 			// 
 			this.textReftreeFolder.Location = new System.Drawing.Point(147, 86);
 			this.textReftreeFolder.Name = "textReftreeFolder";
-			this.textReftreeFolder.Size = new System.Drawing.Size(723, 22);
+			this.textReftreeFolder.Size = new System.Drawing.Size(723, 20);
 			this.textReftreeFolder.TabIndex = 4;
 			this.textReftreeFolder.TextChanged += new System.EventHandler(this.textReftreeFolder_TextChanged);
 			// 
@@ -501,7 +519,7 @@ namespace ForestReco
 			// 
 			this.textOutputFolder.Location = new System.Drawing.Point(147, 122);
 			this.textOutputFolder.Name = "textOutputFolder";
-			this.textOutputFolder.Size = new System.Drawing.Size(723, 22);
+			this.textOutputFolder.Size = new System.Drawing.Size(723, 20);
 			this.textOutputFolder.TabIndex = 7;
 			this.textOutputFolder.TextChanged += new System.EventHandler(this.textOutputFolder_TextChanged);
 			// 
@@ -557,7 +575,7 @@ namespace ForestReco
 			this.labelPartition.AutoSize = true;
 			this.labelPartition.Location = new System.Drawing.Point(549, 237);
 			this.labelPartition.Name = "labelPartition";
-			this.labelPartition.Size = new System.Drawing.Size(90, 17);
+			this.labelPartition.Size = new System.Drawing.Size(67, 13);
 			this.labelPartition.TabIndex = 14;
 			this.labelPartition.Text = "partition step";
 			// 
@@ -566,7 +584,7 @@ namespace ForestReco
 			this.textPartition.Location = new System.Drawing.Point(640, 235);
 			this.textPartition.Name = "textPartition";
 			this.textPartition.ReadOnly = true;
-			this.textPartition.Size = new System.Drawing.Size(40, 22);
+			this.textPartition.Size = new System.Drawing.Size(40, 20);
 			this.textPartition.TabIndex = 16;
 			this.textPartition.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
@@ -591,7 +609,7 @@ namespace ForestReco
 			this.textCheckTreePath.Enabled = false;
 			this.textCheckTreePath.Location = new System.Drawing.Point(147, 197);
 			this.textCheckTreePath.Name = "textCheckTreePath";
-			this.textCheckTreePath.Size = new System.Drawing.Size(723, 22);
+			this.textCheckTreePath.Size = new System.Drawing.Size(723, 20);
 			this.textCheckTreePath.TabIndex = 21;
 			this.textCheckTreePath.TextChanged += new System.EventHandler(this.textCheckTreePath_TextChanged);
 			// 
@@ -627,7 +645,7 @@ namespace ForestReco
 			this.textGroundArrayStep.Location = new System.Drawing.Point(830, 235);
 			this.textGroundArrayStep.Name = "textGroundArrayStep";
 			this.textGroundArrayStep.ReadOnly = true;
-			this.textGroundArrayStep.Size = new System.Drawing.Size(40, 22);
+			this.textGroundArrayStep.Size = new System.Drawing.Size(40, 20);
 			this.textGroundArrayStep.TabIndex = 24;
 			this.textGroundArrayStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
@@ -636,7 +654,7 @@ namespace ForestReco
 			this.labelGroundArrayStep.AutoSize = true;
 			this.labelGroundArrayStep.Location = new System.Drawing.Point(706, 237);
 			this.labelGroundArrayStep.Name = "labelGroundArrayStep";
-			this.labelGroundArrayStep.Size = new System.Drawing.Size(121, 17);
+			this.labelGroundArrayStep.Size = new System.Drawing.Size(89, 13);
 			this.labelGroundArrayStep.TabIndex = 23;
 			this.labelGroundArrayStep.Text = "ground array step";
 			// 
@@ -659,7 +677,7 @@ namespace ForestReco
 			this.textTreeExtent.Location = new System.Drawing.Point(322, 235);
 			this.textTreeExtent.Name = "textTreeExtent";
 			this.textTreeExtent.ReadOnly = true;
-			this.textTreeExtent.Size = new System.Drawing.Size(40, 22);
+			this.textTreeExtent.Size = new System.Drawing.Size(40, 20);
 			this.textTreeExtent.TabIndex = 28;
 			this.textTreeExtent.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
@@ -669,14 +687,14 @@ namespace ForestReco
 			this.labelTreeExtent.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.labelTreeExtent.Location = new System.Drawing.Point(210, 236);
 			this.labelTreeExtent.Name = "labelTreeExtent";
-			this.labelTreeExtent.Size = new System.Drawing.Size(86, 17);
+			this.labelTreeExtent.Size = new System.Drawing.Size(68, 13);
 			this.labelTreeExtent.TabIndex = 27;
 			this.labelTreeExtent.Text = "tree extent";
 			// 
 			// trackBarTreeExtentMultiply
 			// 
 			this.trackBarTreeExtentMultiply.AutoSize = false;
-			this.trackBarTreeExtentMultiply.LargeChange = 10;
+			this.trackBarTreeExtentMultiply.LargeChange = 1;
 			this.trackBarTreeExtentMultiply.Location = new System.Drawing.Point(367, 260);
 			this.trackBarTreeExtentMultiply.Maximum = 30;
 			this.trackBarTreeExtentMultiply.Minimum = 10;
@@ -692,7 +710,7 @@ namespace ForestReco
 			this.textTreeExtentMultiply.Location = new System.Drawing.Point(493, 235);
 			this.textTreeExtentMultiply.Name = "textTreeExtentMultiply";
 			this.textTreeExtentMultiply.ReadOnly = true;
-			this.textTreeExtentMultiply.Size = new System.Drawing.Size(40, 22);
+			this.textTreeExtentMultiply.Size = new System.Drawing.Size(40, 20);
 			this.textTreeExtentMultiply.TabIndex = 32;
 			this.textTreeExtentMultiply.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
@@ -702,7 +720,7 @@ namespace ForestReco
 			this.labelTreeExtentMultiply.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.labelTreeExtentMultiply.Location = new System.Drawing.Point(374, 236);
 			this.labelTreeExtentMultiply.Name = "labelTreeExtentMultiply";
-			this.labelTreeExtentMultiply.Size = new System.Drawing.Size(112, 17);
+			this.labelTreeExtentMultiply.Size = new System.Drawing.Size(88, 13);
 			this.labelTreeExtentMultiply.TabIndex = 31;
 			this.labelTreeExtentMultiply.Text = "extent multiply";
 			// 
@@ -726,7 +744,7 @@ namespace ForestReco
 			this.textAvgTreeHeight.Location = new System.Drawing.Point(165, 235);
 			this.textAvgTreeHeight.Name = "textAvgTreeHeight";
 			this.textAvgTreeHeight.ReadOnly = true;
-			this.textAvgTreeHeight.Size = new System.Drawing.Size(40, 22);
+			this.textAvgTreeHeight.Size = new System.Drawing.Size(40, 20);
 			this.textAvgTreeHeight.TabIndex = 36;
 			this.textAvgTreeHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
@@ -736,7 +754,7 @@ namespace ForestReco
 			this.labelAvgTreeHeight.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.labelAvgTreeHeight.Location = new System.Drawing.Point(16, 236);
 			this.labelAvgTreeHeight.Name = "labelAvgTreeHeight";
-			this.labelAvgTreeHeight.Size = new System.Drawing.Size(151, 17);
+			this.labelAvgTreeHeight.Size = new System.Drawing.Size(118, 13);
 			this.labelAvgTreeHeight.TabIndex = 35;
 			this.labelAvgTreeHeight.Text = "average tree height";
 			// 
@@ -745,7 +763,7 @@ namespace ForestReco
 			this.checkBoxExportTreeStructures.AutoSize = true;
 			this.checkBoxExportTreeStructures.Location = new System.Drawing.Point(260, 314);
 			this.checkBoxExportTreeStructures.Name = "checkBoxExportTreeStructures";
-			this.checkBoxExportTreeStructures.Size = new System.Drawing.Size(122, 21);
+			this.checkBoxExportTreeStructures.Size = new System.Drawing.Size(93, 17);
 			this.checkBoxExportTreeStructures.TabIndex = 38;
 			this.checkBoxExportTreeStructures.Text = "tree structures";
 			this.myToolTip.SetToolTip(this.checkBoxExportTreeStructures, "hh");
@@ -765,7 +783,7 @@ namespace ForestReco
 			this.checkBoxExportInvalidTrees.AutoSize = true;
 			this.checkBoxExportInvalidTrees.Location = new System.Drawing.Point(260, 364);
 			this.checkBoxExportInvalidTrees.Name = "checkBoxExportInvalidTrees";
-			this.checkBoxExportInvalidTrees.Size = new System.Drawing.Size(106, 21);
+			this.checkBoxExportInvalidTrees.Size = new System.Drawing.Size(82, 17);
 			this.checkBoxExportInvalidTrees.TabIndex = 39;
 			this.checkBoxExportInvalidTrees.Text = "invalid trees";
 			this.myToolTip.SetToolTip(this.checkBoxExportInvalidTrees, "hh");
@@ -777,7 +795,7 @@ namespace ForestReco
 			this.checkBoxExportRefTrees.AutoSize = true;
 			this.checkBoxExportRefTrees.Location = new System.Drawing.Point(260, 389);
 			this.checkBoxExportRefTrees.Name = "checkBoxExportRefTrees";
-			this.checkBoxExportRefTrees.Size = new System.Drawing.Size(79, 21);
+			this.checkBoxExportRefTrees.Size = new System.Drawing.Size(61, 17);
 			this.checkBoxExportRefTrees.TabIndex = 40;
 			this.checkBoxExportRefTrees.Text = "reftrees";
 			this.myToolTip.SetToolTip(this.checkBoxExportRefTrees, "hh");
@@ -789,7 +807,7 @@ namespace ForestReco
 			this.checkBoxAssignRefTreesRandom.AutoSize = true;
 			this.checkBoxAssignRefTreesRandom.Location = new System.Drawing.Point(16, 373);
 			this.checkBoxAssignRefTreesRandom.Name = "checkBoxAssignRefTreesRandom";
-			this.checkBoxAssignRefTreesRandom.Size = new System.Drawing.Size(176, 21);
+			this.checkBoxAssignRefTreesRandom.Size = new System.Drawing.Size(132, 17);
 			this.checkBoxAssignRefTreesRandom.TabIndex = 41;
 			this.checkBoxAssignRefTreesRandom.Text = "assign reftrees random";
 			this.myToolTip.SetToolTip(this.checkBoxAssignRefTreesRandom, "hh");
@@ -803,7 +821,7 @@ namespace ForestReco
 			this.checkBoxUseCheckTree.Enabled = false;
 			this.checkBoxUseCheckTree.Location = new System.Drawing.Point(16, 432);
 			this.checkBoxUseCheckTree.Name = "checkBoxUseCheckTree";
-			this.checkBoxUseCheckTree.Size = new System.Drawing.Size(141, 21);
+			this.checkBoxUseCheckTree.Size = new System.Drawing.Size(110, 17);
 			this.checkBoxUseCheckTree.TabIndex = 42;
 			this.checkBoxUseCheckTree.Text = "use checktree file";
 			this.myToolTip.SetToolTip(this.checkBoxUseCheckTree, "hh");
@@ -815,7 +833,7 @@ namespace ForestReco
 			this.checkBoxExportCheckTrees.AutoSize = true;
 			this.checkBoxExportCheckTrees.Location = new System.Drawing.Point(260, 439);
 			this.checkBoxExportCheckTrees.Name = "checkBoxExportCheckTrees";
-			this.checkBoxExportCheckTrees.Size = new System.Drawing.Size(99, 21);
+			this.checkBoxExportCheckTrees.Size = new System.Drawing.Size(79, 17);
 			this.checkBoxExportCheckTrees.TabIndex = 43;
 			this.checkBoxExportCheckTrees.Text = "checktrees";
 			this.myToolTip.SetToolTip(this.checkBoxExportCheckTrees, "hh");
@@ -827,7 +845,7 @@ namespace ForestReco
 			this.checkBoxReducedReftrees.AutoSize = true;
 			this.checkBoxReducedReftrees.Location = new System.Drawing.Point(16, 400);
 			this.checkBoxReducedReftrees.Name = "checkBoxReducedReftrees";
-			this.checkBoxReducedReftrees.Size = new System.Drawing.Size(204, 21);
+			this.checkBoxReducedReftrees.Size = new System.Drawing.Size(154, 17);
 			this.checkBoxReducedReftrees.TabIndex = 44;
 			this.checkBoxReducedReftrees.Text = "use reduced reftree models";
 			this.myToolTip.SetToolTip(this.checkBoxReducedReftrees, "hh");
@@ -841,7 +859,7 @@ namespace ForestReco
 			this.checkBoxFilterPoints.Enabled = false;
 			this.checkBoxFilterPoints.Location = new System.Drawing.Point(16, 332);
 			this.checkBoxFilterPoints.Name = "checkBoxFilterPoints";
-			this.checkBoxFilterPoints.Size = new System.Drawing.Size(99, 21);
+			this.checkBoxFilterPoints.Size = new System.Drawing.Size(76, 17);
 			this.checkBoxFilterPoints.TabIndex = 45;
 			this.checkBoxFilterPoints.Text = "filter points";
 			this.myToolTip.SetToolTip(this.checkBoxFilterPoints, "hh");
@@ -853,7 +871,7 @@ namespace ForestReco
 			this.checkBoxExportPoints.AutoSize = true;
 			this.checkBoxExportPoints.Location = new System.Drawing.Point(260, 414);
 			this.checkBoxExportPoints.Name = "checkBoxExportPoints";
-			this.checkBoxExportPoints.Size = new System.Drawing.Size(68, 21);
+			this.checkBoxExportPoints.Size = new System.Drawing.Size(54, 17);
 			this.checkBoxExportPoints.TabIndex = 46;
 			this.checkBoxExportPoints.Text = "points";
 			this.myToolTip.SetToolTip(this.checkBoxExportPoints, "include all points into final export file");
@@ -865,7 +883,7 @@ namespace ForestReco
 			this.checkBoxAutoTreeHeight.AutoSize = true;
 			this.checkBoxAutoTreeHeight.Location = new System.Drawing.Point(16, 305);
 			this.checkBoxAutoTreeHeight.Name = "checkBoxAutoTreeHeight";
-			this.checkBoxAutoTreeHeight.Size = new System.Drawing.Size(163, 21);
+			this.checkBoxAutoTreeHeight.Size = new System.Drawing.Size(125, 17);
 			this.checkBoxAutoTreeHeight.TabIndex = 48;
 			this.checkBoxAutoTreeHeight.Text = "automatic tree height";
 			this.myToolTip.SetToolTip(this.checkBoxAutoTreeHeight, "include all points into final export file");
@@ -877,7 +895,7 @@ namespace ForestReco
 			this.checkBoxExportTreeBoxes.AutoSize = true;
 			this.checkBoxExportTreeBoxes.Location = new System.Drawing.Point(260, 339);
 			this.checkBoxExportTreeBoxes.Name = "checkBoxExportTreeBoxes";
-			this.checkBoxExportTreeBoxes.Size = new System.Drawing.Size(96, 21);
+			this.checkBoxExportTreeBoxes.Size = new System.Drawing.Size(75, 17);
 			this.checkBoxExportTreeBoxes.TabIndex = 53;
 			this.checkBoxExportTreeBoxes.Text = "tree boxes";
 			this.myToolTip.SetToolTip(this.checkBoxExportTreeBoxes, "hh");
@@ -890,7 +908,7 @@ namespace ForestReco
 			this.checkBoxExport3d.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.checkBoxExport3d.Location = new System.Drawing.Point(232, 290);
 			this.checkBoxExport3d.Name = "checkBoxExport3d";
-			this.checkBoxExport3d.Size = new System.Drawing.Size(118, 21);
+			this.checkBoxExport3d.Size = new System.Drawing.Size(96, 17);
 			this.checkBoxExport3d.TabIndex = 55;
 			this.checkBoxExport3d.Text = "EXPORT 3D";
 			this.myToolTip.SetToolTip(this.checkBoxExport3d, "hh");
@@ -903,7 +921,7 @@ namespace ForestReco
 			this.checkBoxExportBitmap.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.checkBoxExportBitmap.Location = new System.Drawing.Point(232, 532);
 			this.checkBoxExportBitmap.Name = "checkBoxExportBitmap";
-			this.checkBoxExportBitmap.Size = new System.Drawing.Size(154, 21);
+			this.checkBoxExportBitmap.Size = new System.Drawing.Size(126, 17);
 			this.checkBoxExportBitmap.TabIndex = 59;
 			this.checkBoxExportBitmap.Text = "EXPORT BITMAP";
 			this.myToolTip.SetToolTip(this.checkBoxExportBitmap, "hh");
@@ -915,7 +933,7 @@ namespace ForestReco
 			this.checkBoxPreprocess.AutoSize = true;
 			this.checkBoxPreprocess.Location = new System.Drawing.Point(411, 318);
 			this.checkBoxPreprocess.Name = "checkBoxPreprocess";
-			this.checkBoxPreprocess.Size = new System.Drawing.Size(101, 21);
+			this.checkBoxPreprocess.Size = new System.Drawing.Size(78, 17);
 			this.checkBoxPreprocess.TabIndex = 93;
 			this.checkBoxPreprocess.Text = "preprocess";
 			this.myToolTip.SetToolTip(this.checkBoxPreprocess, "hh");
@@ -927,7 +945,7 @@ namespace ForestReco
 			this.checkBoxDeleteTmp.AutoSize = true;
 			this.checkBoxDeleteTmp.Location = new System.Drawing.Point(411, 342);
 			this.checkBoxDeleteTmp.Name = "checkBoxDeleteTmp";
-			this.checkBoxDeleteTmp.Size = new System.Drawing.Size(125, 21);
+			this.checkBoxDeleteTmp.Size = new System.Drawing.Size(96, 17);
 			this.checkBoxDeleteTmp.TabIndex = 94;
 			this.checkBoxDeleteTmp.Text = "delete tmp files";
 			this.myToolTip.SetToolTip(this.checkBoxDeleteTmp, "hh");
@@ -940,7 +958,7 @@ namespace ForestReco
 			this.checkBoxExportShape.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.checkBoxExportShape.Location = new System.Drawing.Point(232, 463);
 			this.checkBoxExportShape.Name = "checkBoxExportShape";
-			this.checkBoxExportShape.Size = new System.Drawing.Size(129, 21);
+			this.checkBoxExportShape.Size = new System.Drawing.Size(105, 17);
 			this.checkBoxExportShape.TabIndex = 99;
 			this.checkBoxExportShape.Text = "EXPORT SHP";
 			this.myToolTip.SetToolTip(this.checkBoxExportShape, "hh");
@@ -952,7 +970,7 @@ namespace ForestReco
 			this.checkBoxExportLas.AutoSize = true;
 			this.checkBoxExportLas.Location = new System.Drawing.Point(232, 612);
 			this.checkBoxExportLas.Name = "checkBoxExportLas";
-			this.checkBoxExportLas.Size = new System.Drawing.Size(91, 21);
+			this.checkBoxExportLas.Size = new System.Drawing.Size(71, 17);
 			this.checkBoxExportLas.TabIndex = 101;
 			this.checkBoxExportLas.Text = "export las";
 			this.myToolTip.SetToolTip(this.checkBoxExportLas, "hh");
@@ -964,7 +982,7 @@ namespace ForestReco
 			this.checkBoxDBH.AutoSize = true;
 			this.checkBoxDBH.Location = new System.Drawing.Point(884, 16);
 			this.checkBoxDBH.Name = "checkBoxDBH";
-			this.checkBoxDBH.Size = new System.Drawing.Size(18, 17);
+			this.checkBoxDBH.Size = new System.Drawing.Size(15, 14);
 			this.checkBoxDBH.TabIndex = 102;
 			this.myToolTip.SetToolTip(this.checkBoxDBH, "hh");
 			this.checkBoxDBH.UseVisualStyleBackColor = true;
@@ -975,7 +993,7 @@ namespace ForestReco
 			this.checkBoxAGB.AutoSize = true;
 			this.checkBoxAGB.Location = new System.Drawing.Point(884, 54);
 			this.checkBoxAGB.Name = "checkBoxAGB";
-			this.checkBoxAGB.Size = new System.Drawing.Size(18, 17);
+			this.checkBoxAGB.Size = new System.Drawing.Size(15, 14);
 			this.checkBoxAGB.TabIndex = 103;
 			this.myToolTip.SetToolTip(this.checkBoxAGB, "hh");
 			this.checkBoxAGB.UseVisualStyleBackColor = true;
@@ -997,7 +1015,7 @@ namespace ForestReco
 			this.textBoxEstimatedSize.Location = new System.Drawing.Point(117, 495);
 			this.textBoxEstimatedSize.Name = "textBoxEstimatedSize";
 			this.textBoxEstimatedSize.ReadOnly = true;
-			this.textBoxEstimatedSize.Size = new System.Drawing.Size(75, 22);
+			this.textBoxEstimatedSize.Size = new System.Drawing.Size(75, 20);
 			this.textBoxEstimatedSize.TabIndex = 49;
 			// 
 			// labelEstimatedTotalSize
@@ -1005,7 +1023,7 @@ namespace ForestReco
 			this.labelEstimatedTotalSize.AutoSize = true;
 			this.labelEstimatedTotalSize.Location = new System.Drawing.Point(13, 495);
 			this.labelEstimatedTotalSize.Name = "labelEstimatedTotalSize";
-			this.labelEstimatedTotalSize.Size = new System.Drawing.Size(98, 17);
+			this.labelEstimatedTotalSize.Size = new System.Drawing.Size(73, 13);
 			this.labelEstimatedTotalSize.TabIndex = 50;
 			this.labelEstimatedTotalSize.Text = "estimated size";
 			// 
@@ -1014,7 +1032,7 @@ namespace ForestReco
 			this.labelEstimatedPartitionSize.AutoSize = true;
 			this.labelEstimatedPartitionSize.Location = new System.Drawing.Point(13, 523);
 			this.labelEstimatedPartitionSize.Name = "labelEstimatedPartitionSize";
-			this.labelEstimatedPartitionSize.Size = new System.Drawing.Size(88, 17);
+			this.labelEstimatedPartitionSize.Size = new System.Drawing.Size(65, 13);
 			this.labelEstimatedPartitionSize.TabIndex = 52;
 			this.labelEstimatedPartitionSize.Text = "partition size";
 			// 
@@ -1023,7 +1041,7 @@ namespace ForestReco
 			this.textBoxPartitionSize.Location = new System.Drawing.Point(117, 523);
 			this.textBoxPartitionSize.Name = "textBoxPartitionSize";
 			this.textBoxPartitionSize.ReadOnly = true;
-			this.textBoxPartitionSize.Size = new System.Drawing.Size(75, 22);
+			this.textBoxPartitionSize.Size = new System.Drawing.Size(75, 20);
 			this.textBoxPartitionSize.TabIndex = 51;
 			// 
 			// checkBoxColorTrees
@@ -1031,7 +1049,7 @@ namespace ForestReco
 			this.checkBoxColorTrees.AutoSize = true;
 			this.checkBoxColorTrees.Location = new System.Drawing.Point(17, 463);
 			this.checkBoxColorTrees.Name = "checkBoxColorTrees";
-			this.checkBoxColorTrees.Size = new System.Drawing.Size(97, 21);
+			this.checkBoxColorTrees.Size = new System.Drawing.Size(75, 17);
 			this.checkBoxColorTrees.TabIndex = 54;
 			this.checkBoxColorTrees.Text = "color trees";
 			this.checkBoxColorTrees.UseVisualStyleBackColor = true;
@@ -1051,7 +1069,7 @@ namespace ForestReco
 			// 
 			this.textAnalyticsFile.Location = new System.Drawing.Point(147, 159);
 			this.textAnalyticsFile.Name = "textAnalyticsFile";
-			this.textAnalyticsFile.Size = new System.Drawing.Size(723, 22);
+			this.textAnalyticsFile.Size = new System.Drawing.Size(723, 20);
 			this.textAnalyticsFile.TabIndex = 58;
 			this.textAnalyticsFile.TextChanged += new System.EventHandler(this.textAnalyticsFile_TextChanged);
 			// 
@@ -1100,7 +1118,7 @@ namespace ForestReco
 			// 
 			this.textRangeXmin.Location = new System.Drawing.Point(974, 343);
 			this.textRangeXmin.Name = "textRangeXmin";
-			this.textRangeXmin.Size = new System.Drawing.Size(85, 22);
+			this.textRangeXmin.Size = new System.Drawing.Size(85, 20);
 			this.textRangeXmin.TabIndex = 62;
 			this.textRangeXmin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.textRangeXmin.LostFocus += new System.EventHandler(this.textRangeXmin_LostFocus);
@@ -1110,7 +1128,7 @@ namespace ForestReco
 			this.label1.AutoSize = true;
 			this.label1.Location = new System.Drawing.Point(911, 346);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(58, 17);
+			this.label1.Size = new System.Drawing.Size(44, 13);
 			this.label1.TabIndex = 61;
 			this.label1.Text = "range X";
 			// 
@@ -1163,7 +1181,7 @@ namespace ForestReco
 			// 
 			this.textRangeYmin.Location = new System.Drawing.Point(974, 416);
 			this.textRangeYmin.Name = "textRangeYmin";
-			this.textRangeYmin.Size = new System.Drawing.Size(85, 22);
+			this.textRangeYmin.Size = new System.Drawing.Size(85, 20);
 			this.textRangeYmin.TabIndex = 66;
 			this.textRangeYmin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.textRangeYmin.LostFocus += new System.EventHandler(this.textRangeYmin_LostFocus);
@@ -1173,7 +1191,7 @@ namespace ForestReco
 			this.label2.AutoSize = true;
 			this.label2.Location = new System.Drawing.Point(911, 419);
 			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(58, 17);
+			this.label2.Size = new System.Drawing.Size(44, 13);
 			this.label2.TabIndex = 65;
 			this.label2.Text = "range Y";
 			// 
@@ -1181,7 +1199,7 @@ namespace ForestReco
 			// 
 			this.textLasTools.Location = new System.Drawing.Point(1021, 492);
 			this.textLasTools.Name = "textLasTools";
-			this.textLasTools.Size = new System.Drawing.Size(149, 22);
+			this.textLasTools.Size = new System.Drawing.Size(149, 20);
 			this.textLasTools.TabIndex = 70;
 			this.textLasTools.TextChanged += new System.EventHandler(this.textLasTools_TextChanged);
 			// 
@@ -1199,7 +1217,7 @@ namespace ForestReco
 			// 
 			this.textTmpFolder.Location = new System.Drawing.Point(1021, 533);
 			this.textTmpFolder.Name = "textTmpFolder";
-			this.textTmpFolder.Size = new System.Drawing.Size(149, 22);
+			this.textTmpFolder.Size = new System.Drawing.Size(149, 20);
 			this.textTmpFolder.TabIndex = 72;
 			this.textTmpFolder.TextChanged += new System.EventHandler(this.textTmpFolder_TextChanged);
 			// 
@@ -1227,7 +1245,7 @@ namespace ForestReco
 			// 
 			this.textForestFolder.Location = new System.Drawing.Point(146, 14);
 			this.textForestFolder.Name = "textForestFolder";
-			this.textForestFolder.Size = new System.Drawing.Size(616, 22);
+			this.textForestFolder.Size = new System.Drawing.Size(616, 20);
 			this.textForestFolder.TabIndex = 74;
 			this.textForestFolder.TextChanged += new System.EventHandler(this.textForestFolder_TextChanged);
 			// 
@@ -1245,7 +1263,7 @@ namespace ForestReco
 			// 
 			this.textRangeYmax.Location = new System.Drawing.Point(1079, 416);
 			this.textRangeYmax.Name = "textRangeYmax";
-			this.textRangeYmax.Size = new System.Drawing.Size(85, 22);
+			this.textRangeYmax.Size = new System.Drawing.Size(85, 20);
 			this.textRangeYmax.TabIndex = 77;
 			this.textRangeYmax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.textRangeYmax.LostFocus += new System.EventHandler(this.textRangeYmax_LostFocus);
@@ -1254,7 +1272,7 @@ namespace ForestReco
 			// 
 			this.textRangeXmax.Location = new System.Drawing.Point(1079, 343);
 			this.textRangeXmax.Name = "textRangeXmax";
-			this.textRangeXmax.Size = new System.Drawing.Size(85, 22);
+			this.textRangeXmax.Size = new System.Drawing.Size(85, 20);
 			this.textRangeXmax.TabIndex = 76;
 			this.textRangeXmax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.textRangeXmax.TextChanged += new System.EventHandler(this.textRangeXmax_TextChanged);
@@ -1265,7 +1283,7 @@ namespace ForestReco
 			this.label3.AutoSize = true;
 			this.label3.Location = new System.Drawing.Point(1063, 346);
 			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(13, 17);
+			this.label3.Size = new System.Drawing.Size(10, 13);
 			this.label3.TabIndex = 78;
 			this.label3.Text = "-";
 			// 
@@ -1274,7 +1292,7 @@ namespace ForestReco
 			this.label4.AutoSize = true;
 			this.label4.Location = new System.Drawing.Point(1063, 419);
 			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(13, 17);
+			this.label4.Size = new System.Drawing.Size(10, 13);
 			this.label4.TabIndex = 79;
 			this.label4.Text = "-";
 			// 
@@ -1283,7 +1301,7 @@ namespace ForestReco
 			this.labelRangeXval.AutoSize = true;
 			this.labelRangeXval.Location = new System.Drawing.Point(917, 375);
 			this.labelRangeXval.Name = "labelRangeXval";
-			this.labelRangeXval.Size = new System.Drawing.Size(47, 17);
+			this.labelRangeXval.Size = new System.Drawing.Size(36, 13);
 			this.labelRangeXval.TabIndex = 80;
 			this.labelRangeXval.Text = "100 m";
 			// 
@@ -1292,7 +1310,7 @@ namespace ForestReco
 			this.labelRangeYval.AutoSize = true;
 			this.labelRangeYval.Location = new System.Drawing.Point(917, 448);
 			this.labelRangeYval.Name = "labelRangeYval";
-			this.labelRangeYval.Size = new System.Drawing.Size(47, 17);
+			this.labelRangeYval.Size = new System.Drawing.Size(36, 13);
 			this.labelRangeYval.TabIndex = 81;
 			this.labelRangeYval.Text = "100 m";
 			// 
@@ -1305,7 +1323,7 @@ namespace ForestReco
             "Shapefile"});
 			this.comboBoxSplitMode.Location = new System.Drawing.Point(1019, 248);
 			this.comboBoxSplitMode.Name = "comboBoxSplitMode";
-			this.comboBoxSplitMode.Size = new System.Drawing.Size(121, 24);
+			this.comboBoxSplitMode.Size = new System.Drawing.Size(121, 21);
 			this.comboBoxSplitMode.TabIndex = 85;
 			this.comboBoxSplitMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxSplitMode_SelectedIndexChanged);
 			// 
@@ -1313,7 +1331,7 @@ namespace ForestReco
 			// 
 			this.textShapefile.Location = new System.Drawing.Point(1019, 297);
 			this.textShapefile.Name = "textShapefile";
-			this.textShapefile.Size = new System.Drawing.Size(151, 22);
+			this.textShapefile.Size = new System.Drawing.Size(151, 20);
 			this.textShapefile.TabIndex = 87;
 			this.textShapefile.TextChanged += new System.EventHandler(this.textShapefile_TextChanged);
 			// 
@@ -1332,7 +1350,7 @@ namespace ForestReco
 			this.label5.AutoSize = true;
 			this.label5.Location = new System.Drawing.Point(917, 251);
 			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(72, 17);
+			this.label5.Size = new System.Drawing.Size(54, 13);
 			this.label5.TabIndex = 88;
 			this.label5.Text = "split mode";
 			// 
@@ -1356,7 +1374,7 @@ namespace ForestReco
 			this.textTileSize.Location = new System.Drawing.Point(982, 171);
 			this.textTileSize.Name = "textTileSize";
 			this.textTileSize.ReadOnly = true;
-			this.textTileSize.Size = new System.Drawing.Size(40, 22);
+			this.textTileSize.Size = new System.Drawing.Size(40, 20);
 			this.textTileSize.TabIndex = 90;
 			this.textTileSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
@@ -1365,7 +1383,7 @@ namespace ForestReco
 			this.label6.AutoSize = true;
 			this.label6.Location = new System.Drawing.Point(891, 173);
 			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(55, 17);
+			this.label6.Size = new System.Drawing.Size(41, 13);
 			this.label6.TabIndex = 89;
 			this.label6.Text = "tile size";
 			// 
@@ -1380,7 +1398,7 @@ namespace ForestReco
 			this.checkedListBoxBitmaps.Location = new System.Drawing.Point(260, 556);
 			this.checkedListBoxBitmaps.Margin = new System.Windows.Forms.Padding(15);
 			this.checkedListBoxBitmaps.Name = "checkedListBoxBitmaps";
-			this.checkedListBoxBitmaps.Size = new System.Drawing.Size(126, 55);
+			this.checkedListBoxBitmaps.Size = new System.Drawing.Size(126, 49);
 			this.checkedListBoxBitmaps.TabIndex = 92;
 			this.checkedListBoxBitmaps.SelectedIndexChanged += new System.EventHandler(this.checkedListBox1_SelectedIndexChanged);
 			// 
@@ -1398,7 +1416,7 @@ namespace ForestReco
 			this.label7.AutoSize = true;
 			this.label7.Location = new System.Drawing.Point(911, 16);
 			this.label7.Name = "label7";
-			this.label7.Size = new System.Drawing.Size(49, 17);
+			this.label7.Size = new System.Drawing.Size(39, 13);
 			this.label7.TabIndex = 96;
 			this.label7.Text = "DBH =";
 			// 
@@ -1407,7 +1425,7 @@ namespace ForestReco
 			this.label8.AutoSize = true;
 			this.label8.Location = new System.Drawing.Point(911, 54);
 			this.label8.Name = "label8";
-			this.label8.Size = new System.Drawing.Size(49, 17);
+			this.label8.Size = new System.Drawing.Size(38, 13);
 			this.label8.TabIndex = 98;
 			this.label8.Text = "AGB =";
 			// 
@@ -1430,7 +1448,7 @@ namespace ForestReco
 			this.checkedListBoxShape.Location = new System.Drawing.Point(260, 487);
 			this.checkedListBoxShape.Margin = new System.Windows.Forms.Padding(15);
 			this.checkedListBoxShape.Name = "checkedListBoxShape";
-			this.checkedListBoxShape.Size = new System.Drawing.Size(126, 38);
+			this.checkedListBoxShape.Size = new System.Drawing.Size(126, 34);
 			this.checkedListBoxShape.TabIndex = 100;
 			this.checkedListBoxShape.SelectedIndexChanged += new System.EventHandler(this.checkedListBoxShape_SelectedIndexChanged);
 			// 
@@ -1449,7 +1467,7 @@ namespace ForestReco
 			this.label9.AutoSize = true;
 			this.label9.Location = new System.Drawing.Point(1028, 176);
 			this.label9.Name = "label9";
-			this.label9.Size = new System.Drawing.Size(74, 17);
+			this.label9.Size = new System.Drawing.Size(55, 13);
 			this.label9.TabIndex = 105;
 			this.label9.Text = "start at tile";
 			// 
@@ -1457,7 +1475,7 @@ namespace ForestReco
 			// 
 			this.textStartTile.Location = new System.Drawing.Point(1108, 173);
 			this.textStartTile.Name = "textStartTile";
-			this.textStartTile.Size = new System.Drawing.Size(56, 22);
+			this.textStartTile.Size = new System.Drawing.Size(56, 20);
 			this.textStartTile.TabIndex = 106;
 			this.textStartTile.Text = "0";
 			this.textStartTile.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -1472,7 +1490,7 @@ namespace ForestReco
             "2D detection"});
 			this.comboBoxDetectMethod.Location = new System.Drawing.Point(762, 579);
 			this.comboBoxDetectMethod.Name = "comboBoxDetectMethod";
-			this.comboBoxDetectMethod.Size = new System.Drawing.Size(121, 24);
+			this.comboBoxDetectMethod.Size = new System.Drawing.Size(121, 21);
 			this.comboBoxDetectMethod.TabIndex = 107;
 			this.comboBoxDetectMethod.SelectedIndexChanged += new System.EventHandler(this.comboBoxDetectMethod_SelectedIndexChanged);
 			// 
@@ -1481,14 +1499,59 @@ namespace ForestReco
 			this.label10.AutoSize = true;
 			this.label10.Location = new System.Drawing.Point(637, 582);
 			this.label10.Name = "label10";
-			this.label10.Size = new System.Drawing.Size(117, 17);
+			this.label10.Size = new System.Drawing.Size(89, 13);
 			this.label10.TabIndex = 108;
 			this.label10.Text = "detection method";
+			// 
+			// label11
+			// 
+			this.label11.AutoSize = true;
+			this.label11.Location = new System.Drawing.Point(878, 85);
+			this.label11.Name = "label11";
+			this.label11.Size = new System.Drawing.Size(65, 13);
+			this.label11.TabIndex = 110;
+			this.label11.Text = "tree radius =";
+			// 
+			// richTextTreeRadius
+			// 
+			this.richTextTreeRadius.Location = new System.Drawing.Point(965, 82);
+			this.richTextTreeRadius.Name = "richTextTreeRadius";
+			this.richTextTreeRadius.Size = new System.Drawing.Size(205, 27);
+			this.richTextTreeRadius.TabIndex = 109;
+			this.richTextTreeRadius.Text = "";
+			this.richTextTreeRadius.TextChanged += new System.EventHandler(this.richTextBox1_TextChanged);
+			// 
+			// textForestFileFolder
+			// 
+			this.textForestFileFolder.BackColor = System.Drawing.SystemColors.Window;
+			this.textForestFileFolder.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.textForestFileFolder.Location = new System.Drawing.Point(147, 50);
+			this.textForestFileFolder.Name = "textForestFileFolder";
+			this.textForestFileFolder.Size = new System.Drawing.Size(423, 19);
+			this.textForestFileFolder.TabIndex = 111;
+			this.textForestFileFolder.Text = "forest file - folder path";
+			this.textForestFileFolder.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.textForestFileFolder.TextChanged += new System.EventHandler(this.TextForestFileFolder_TextChanged);
+			// 
+			// textForestFileExtension
+			// 
+			this.textForestFileExtension.BackColor = System.Drawing.SystemColors.Window;
+			this.textForestFileExtension.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.textForestFileExtension.Location = new System.Drawing.Point(708, 50);
+			this.textForestFileExtension.Name = "textForestFileExtension";
+			this.textForestFileExtension.Size = new System.Drawing.Size(53, 19);
+			this.textForestFileExtension.TabIndex = 112;
+			this.textForestFileExtension.Text = ".las";
+			this.textForestFileExtension.TextChanged += new System.EventHandler(this.TextForestFileExtension_TextChanged);
 			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
 			this.ClientSize = new System.Drawing.Size(1182, 633);
+			this.Controls.Add(this.textForestFileExtension);
+			this.Controls.Add(this.textForestFileFolder);
+			this.Controls.Add(this.label11);
+			this.Controls.Add(this.richTextTreeRadius);
 			this.Controls.Add(this.label10);
 			this.Controls.Add(this.comboBoxDetectMethod);
 			this.Controls.Add(this.textStartTile);
@@ -1583,7 +1646,7 @@ namespace ForestReco
 			this.Controls.Add(this.btnStart);
 			this.Controls.Add(this.textReftreeFolder);
 			this.Controls.Add(this.btnReftreesFolder);
-			this.Controls.Add(this.textForestFilePath);
+			this.Controls.Add(this.textForestFileName);
 			this.Controls.Add(this.btnSellectForest);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1639,20 +1702,43 @@ namespace ForestReco
 
 		private void btnSellectForest_Click(object sender, EventArgs e)
 		{
-			pathSelection.SelectFile(textForestFilePath, "Select forest file", new List<string>() { "las", "laz" }, "forest");
+			//pathSelection.SelectFile(textForestFileName, "Select forest file", new List<string>() { "las", "laz" }, "forest");
+
+			pathSelection.SelectFile(textForestFileFolder, textForestFileName, textForestFileExtension, 
+				"Select forest file", new List<string>() { "las", "laz" }, "forest");
 		}
 
 		private void btnSequence_Click(object sender, EventArgs e)
 		{
-			pathSelection.SelectFile(textForestFilePath, "Select sequence config", "seq", "sequence");
+			pathSelection.SelectFile(textForestFileName, "Select sequence config", "seq", "sequence");
 		}
 
-		private void textForestFilePath_TextChanged(object sender, EventArgs e)
+		private void textForestFileName_TextChanged(object sender, EventArgs e)
 		{
-			CParameterSetter.SetParameter(
-				ESettings.forestFilePath, textForestFilePath.Text);
+			CParameterSetter.SetParameter(ESettings.forestFileName, textForestFileName.Text);
+			UpdateForestFile();
+		}
 
-			string fullFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
+		private void TextForestFileFolder_TextChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.forestFileFolder, textForestFileFolder.Text);
+			UpdateForestFile();
+		}
+
+		private void TextForestFileExtension_TextChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.forestFileExtension, textForestFileExtension.Text);
+			UpdateForestFile();
+		}
+
+		private void UpdateForestFile()
+		{
+			string folder = CParameterSetter.GetStringSettings(ESettings.forestFileFolder) + "\\";
+			string name = CParameterSetter.GetStringSettings(ESettings.forestFileName);
+			string extension = CParameterSetter.GetStringSettings(ESettings.forestFileExtension);
+
+			string fullFilePath = folder + name + extension;
+			CParameterSetter.SetParameter(ESettings.forestFileFullName, fullFilePath);
 
 			string infoFileName = CUtils.GetFileName(fullFilePath) + "_i.txt";
 			string infoFilePath = CPreprocessController.currentTmpFolder + infoFileName;
@@ -1674,12 +1760,12 @@ namespace ForestReco
 
 		private void btnSelectCheckTree_Click(object sender, EventArgs e)
 		{
-			pathSelection.SelectFile(textForestFilePath, "Select checktree file", "txt", "checktree");
+			pathSelection.SelectFile(textForestFileName, "Select checktree file", "txt", "checktree");
 		}
 
 		private void buttonAnalytics_Click(object sender, EventArgs e)
 		{
-			pathSelection.SelectFile(textForestFilePath, "Select analytics file (CSV)", "csv", "csv");
+			pathSelection.SelectFile(textForestFileName, "Select analytics file (CSV)", "csv", "csv");
 		}
 
 		private void textAnalyticsFile_TextChanged(object sender, EventArgs e)
@@ -2106,7 +2192,7 @@ namespace ForestReco
 
 			if(File.Exists(mergedFilePath))
 			{
-				textForestFilePath.Text = mergedFilePath;
+				textForestFileName.Text = mergedFilePath;
 				CDebug.WriteLine($"Merge successful. forest file set to: {mergedFilePath}");
 			}
 			else
@@ -2241,5 +2327,12 @@ namespace ForestReco
 		{
 			CParameterSetter.SetParameter(ESettings.detectMethod, comboBoxDetectMethod.SelectedIndex);
 		}
+
+		private void richTextBox1_TextChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.treeRadius, richTextTreeRadius.Text);
+
+		}
+
 	}
 }

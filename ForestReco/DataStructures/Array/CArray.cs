@@ -148,6 +148,11 @@ namespace ForestReco
 			return array[index.Item1, index.Item2];
 		}
 
+		public float? GetHeightDiffAtPoint(Vector3 pPoint)
+		{
+			return GetElementContainingPoint(pPoint).GetHeightDiff(pPoint);
+		}
+		
 		public float? GetHeightAtPoint(Vector3 pPoint)
 		{
 			return GetElementContainingPoint(pPoint).GetHeight(pPoint);

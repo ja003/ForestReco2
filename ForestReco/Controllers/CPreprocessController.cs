@@ -22,7 +22,7 @@ namespace ForestReco
 
 		private static string tmpFolder => CParameterSetter.TmpFolder;
 
-		private static string forestFilePath => CParameterSetter.GetStringSettings(ESettings.forestFilePath);
+		private static string forestFilePath => CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
 
 		private static string forestFileName => CUtils.GetFileName(forestFilePath);
 
@@ -52,7 +52,7 @@ namespace ForestReco
 		/// </summary>
 		private static string GetTiledFilesFolder(string pSourceFileName, int pTileSize)
 		{
-			string forestFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
+			string forestFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFileName));
 			string path = currentTmpFolder + $"_tiles[{pTileSize}]_{pSourceFileName}\\";
 			Directory.CreateDirectory(path);
 			return path;
