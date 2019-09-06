@@ -10,6 +10,7 @@ namespace ForestReco
 	{
 		None = 0,
 		AddFactor = 1,
-		Detection2D = 2
+		Detection2D = 2,
+		AddFactor2D = 3
 	}
 }

@@ -435,7 +435,7 @@ namespace ForestReco
 			catch(Exception e)
 			{
 				//split command creates file with other name...
-				//CDebug.WriteLine($"exception {e}");
+				CDebug.WriteLine($"exception {e}");
 			}
 
 			//for some reason output split file gets appendix: "_0000000" => rename it

@@ -29,8 +29,14 @@ namespace ForestReco
 			if(pIsPeak)
 				IsPeak = true;
 
+
 			if(!DetectedTrees.Contains(pTree))
 			{
+				if(IsDetail && DetectedTrees.Count > 0)
+				{
+					CDebug.Error($"Adding tree to detail field {this} where tree {DetectedTrees[0]} altready is");
+				}
+
 				DetectedTrees.Add(pTree);
 				pTree.AddField(this);
 				return true;

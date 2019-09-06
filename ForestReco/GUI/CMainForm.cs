@@ -306,10 +306,7 @@ namespace ForestReco
 			#endregion
 		}
 
-		private void MainForm_Load(object sender, EventArgs e)
-		{
-
-		}
+		
 
 		private void btnStart_Click(object sender, EventArgs e)
 		{
@@ -1487,7 +1484,8 @@ namespace ForestReco
 			this.comboBoxDetectMethod.Items.AddRange(new object[] {
             "None",
             "Add factor",
-            "2D detection"});
+            "2D detection",
+            "Add factor 2D"});
 			this.comboBoxDetectMethod.Location = new System.Drawing.Point(762, 579);
 			this.comboBoxDetectMethod.Name = "comboBoxDetectMethod";
 			this.comboBoxDetectMethod.Size = new System.Drawing.Size(121, 21);
@@ -1653,6 +1651,7 @@ namespace ForestReco
 			this.MaximizeBox = false;
 			this.Name = "CMainForm";
 			this.Text = "ForestReco";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CMainForm_FormClosing);
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).EndInit();
@@ -2334,5 +2333,15 @@ namespace ForestReco
 
 		}
 
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			Location = Properties.Settings.Default.formLocation;
+		}
+
+		private void CMainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			Properties.Settings.Default.formLocation = Location;
+			Properties.Settings.Default.Save();
+		}
 	}
 }

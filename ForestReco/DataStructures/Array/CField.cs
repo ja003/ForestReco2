@@ -14,7 +14,7 @@ namespace ForestReco
 		public CField Top;
 		public CField Bot;
 		private List<CField> neighbours;
-		public bool Detail { get; private set; }
+		public bool IsDetail { get; private set; }
 
 		private float stepSize;
 
@@ -40,7 +40,7 @@ namespace ForestReco
 			indexInField = pIndexInField;
 			center = pCenter;
 			stepSize = pStepSize;
-			Detail = pDetail;
+			IsDetail = pDetail;
 		}
 
 
@@ -359,12 +359,12 @@ namespace ForestReco
 					higher = closestFirst;
 					smaller = closestSecond;
 				}
-				int totalDistance = smaller.GetDistanceTo(higher);
+				int totalDistance = smaller.GetStepCountTo(higher);
 				float? heightDiff = higher.GetHeight() - smaller.GetHeight();
 				if (heightDiff != null)
 				{
 					float? smallerHeight = smaller.GetHeight();
-					float distanceToSmaller = GetDistanceTo(smaller);
+					float distanceToSmaller = GetStepCountTo(smaller);
 					
 					return smallerHeight + distanceToSmaller / totalDistance * heightDiff;
 				}
@@ -489,10 +489,18 @@ namespace ForestReco
 			return fields;
 		}
 
-		public int GetDistanceTo(CField pGroundField)
+		/// <summary>
+		/// Returns number of steps required to reach 'pField' in 4-neighbourhood stepping
+		/// </summary>
+		public int GetStepCountTo(CField pField)
 		{
-			return Math.Abs(indexInField.Item1 - pGroundField.indexInField.Item1) +
-				   Math.Abs(indexInField.Item2 - pGroundField.indexInField.Item2);
+			return Math.Abs(indexInField.Item1 - pField.indexInField.Item1) +
+				   Math.Abs(indexInField.Item2 - pField.indexInField.Item2);
+		}
+
+		public float GetDistanceTo(CField pField)
+		{
+			return CUtils.Get2DDistance(this, pField);
 		}
 
 

@@ -46,7 +46,9 @@ namespace ForestReco
 		public static float highestHeight = int.MinValue;
 		public const int bufferSize = 10;
 
-		private const float DETAIL_STEP = 0.1f;
+		//step sizes for arrays
+		private const float NORMAL_STEP = 1f;
+		private const float DETAIL_STEP = 0.2f;
 
 		public static void Init()
 		{
@@ -83,13 +85,13 @@ namespace ForestReco
 
 		public static void InitArrays()
 		{
-			groundArray = new CGroundArray(CParameterSetter.groundArrayStep, false);
+			groundArray = new CGroundArray(NORMAL_STEP, false);
 			vegeArray = new CVegeArray(DETAIL_STEP, true);
 			preprocessDetailArray = new CVegeArray(DETAIL_STEP, true);
-			preprocessNormalArray = new CVegeArray(CParameterSetter.groundArrayStep, false);
+			preprocessNormalArray = new CVegeArray(NORMAL_STEP, false);
 
 			treeDetailArray = new CTreeArray(DETAIL_STEP, true);
-			treeNormalArray = new CTreeArray(CParameterSetter.groundArrayStep, false);
+			treeNormalArray = new CTreeArray(NORMAL_STEP, false);
 
 
 			CObjPartition.Init();

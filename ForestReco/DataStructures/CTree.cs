@@ -50,7 +50,7 @@ namespace ForestReco
 		/// </summary>
 		public void AddField(CTreeField pTreeField)
 		{
-			if(pTreeField.Detail)
+			if(pTreeField.IsDetail)
 			{
 				if(!detailFields.Contains(pTreeField))
 					detailFields.Add(pTreeField);
@@ -310,6 +310,9 @@ namespace ForestReco
 
 		public void AddPoint(Vector3 pPoint)
 		{
+			if(Equals(72))
+				pPoint = pPoint;
+
 			//if this tree is currently being merged into another tree add this 
 			//point into the target tree. see 'mergingInto' comment
 			if(mergingInto != null)
@@ -322,6 +325,8 @@ namespace ForestReco
 			bool belongsToPeak = BelongsToPeak(pPoint);
 			if(belongsToPeak)
 			{
+				if(Equals(72))
+					pPoint = pPoint;
 				peak.AddPoint(pPoint);
 			}
 			else
@@ -357,8 +362,22 @@ namespace ForestReco
 		/// would not be previously assigned.
 		/// </summary>
 		private void OnAddFirstNonPeakPoint()
-		{	
+		{
+			//if(Equals(72))
+			//	firstNonPeakPoint = true;
+
+			//firstNonPeakPoint = true;
+			////return;
+
+			//if(CTreeManager.GetDetectMethod() == EDetectionMethod.AddFactor2D &&
+			//	!Equals(72))				
+			//	return;
+
 			firstNonPeakPoint = true;
+
+			if(CTreeManager.GetDetectMethod() == EDetectionMethod.AddFactor)
+				return;
+
 
 			//try add the newly formed tree peak to some close possible trees.
 			//if it fits delete this tree and merge it into the best possible.
@@ -401,17 +420,25 @@ namespace ForestReco
 			CVegeField peakCenterField = CProjectData.preprocessNormalArray.GetElementContainingPoint(peak.Center);
 
 			var directions = Enum.GetValues(typeof(EDirection));
-			
+
 			foreach(EDirection dir in directions)
 			{
 				if(dir == EDirection.None)
 					continue;
 
-				CVegeField closestNeighbourField = (CVegeField)peakCenterField.GetClosestNeighbourWithout(peak.Points, dir);
+				CVegeField closestNeighbourField = (CVegeField)peakCenterField.GetClosestNeighbourWithout(peak.Points, dir);				
+
 				if(closestNeighbourField == null)
 					continue;
 
-				float? heightDiff = peak.Center.Z - closestNeighbourField.MaxZ;
+				CTreeField debugF = CProjectData.treeNormalArray.GetElement(closestNeighbourField.indexInField);
+
+				float maxDistanceToNeighbour = 2 * CProjectData.preprocessNormalArray.stepSize;
+				float distanceToNeighbour = closestNeighbourField.GetDistanceTo(peakCenterField);
+				if(distanceToNeighbour > maxDistanceToNeighbour)
+					continue;
+
+				float? heightDiff = peak.maxHeight.Z - closestNeighbourField.MaxZ;
 				if(heightDiff < 0.2f)
 					return false;
 			}

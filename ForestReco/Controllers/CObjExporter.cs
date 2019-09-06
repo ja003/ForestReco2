@@ -229,7 +229,7 @@ namespace ForestReco
 			string path = pInFolder;
 
 			EDetectionMethod method = CTreeManager.GetDetectMethod();
-			string suffix = method == EDetectionMethod.AddFactor ? "_af" : "_2d";
+			string suffix = CUtils.GetMethodSuffix(method);
 
 			int folderIndex = 0;
 			string fullFileName = pFileName + suffix;

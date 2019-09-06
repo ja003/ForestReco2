@@ -245,6 +245,20 @@ namespace ForestReco
 			return Kernel;
 		}
 
+		public static string GetMethodSuffix(EDetectionMethod pMethod)
+		{
+			switch(pMethod)
+			{
+				case EDetectionMethod.AddFactor:
+					return "_af";
+				case EDetectionMethod.Detection2D:
+					return "_2d";
+				case EDetectionMethod.AddFactor2D:
+					return "_af2d";
+			}
+			return "_noMethod";
+		}
+
 		private static Random rng = new Random();
 
 		public static void Shuffle<T>(this IList<T> list)

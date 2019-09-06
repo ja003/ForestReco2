@@ -47,7 +47,7 @@ namespace ForestReco
 			InvalidTrees = new List<CTree>();
 			//invalidVegePoints = new List<Vector3>();
 			//allPoints = new List<Vector3>();
-			
+
 			pointCounter = 0;
 		}
 
@@ -91,8 +91,8 @@ namespace ForestReco
 
 		public static void AddPoint(Vector3 pPoint, int pPointIndex)
 		{
-			//if(pPointIndex == 2016)
-			//	CDebug.WriteLine("");
+			if(pPointIndex == 1240)
+				CDebug.WriteLine("");
 			//	return;
 
 			pointCounter++;
@@ -110,26 +110,19 @@ namespace ForestReco
 			CTree selectedTree = SelectBestPossibleTree(possibleTrees, pPoint);
 
 			if(selectedTree != null)
-			{				
+			{
 				selectedTree.AddPoint(pPoint);
+			}
+			else if(CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).DetectedTrees.Count > 0)
+			{
+				//new tree cant be created on field where another tree was already detected - shouldnt happen
+				CDebug.Error("trying to create tree on a field where a tree already is");
+				return;
 			}
 			else
 			{
-				if(detectMethod == EDetectionMethod.Detection2D)
-				{
-					//new tree cant be created on field where another tree was already detected - shouldnt happen?
-					if(CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).DetectedTrees.Count > 0)
-						return;
-				}
-
 				CreateNewTree(pPoint);
 			}
-
-			//check if first tree was asigned correct point count //todo: delete
-			//if(Trees.Count == 1 && pPointIndex != Trees[0].Points.Count - 1 + invalidVegePoints.Count)
-			//{
-			//	CDebug.Error(pPointIndex + " Incorrect point count. " + pPoint);
-			//}
 		}
 
 		public static CTree SelectBestPossibleTree(List<CTree> pPossibleTrees, Vector3 pPoint)
@@ -144,6 +137,13 @@ namespace ForestReco
 			{
 				CTree tree = pPossibleTrees[i];
 				if(DEBUG) { CDebug.WriteLine("- try add to : " + tree.ToString(CTree.EDebug.Peak)); }
+
+				CTree treeAtTheField = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).GetSingleDetectedTree();
+				if(treeAtTheField != null && treeAtTheField.Equals(tree))
+				{
+					selectedTree = tree;
+					break;
+				}
 
 				if(detectMethod == EDetectionMethod.Detection2D)
 				{
@@ -172,17 +172,27 @@ namespace ForestReco
 					float addPointFactor = tree.GetAddPointFactor(pPoint);
 					if(addPointFactor > 0.5f)
 					{
-						if(tree.Equals(0))
-						{
-							//Console.Write("");
-						}
-						else if(addPointFactor > bestAddPointFactor)
+						if(addPointFactor > bestAddPointFactor)
 						{
 							selectedTree = tree;
 							bestAddPointFactor = addPointFactor;
 						}
 					}
 				}
+				else if(detectMethod == EDetectionMethod.AddFactor2D)
+				{
+					float addPointFactor = tree.GetAddPointFactor(pPoint);
+
+					if(addPointFactor > 0.5f)
+					{
+						if(addPointFactor > bestAddPointFactor)
+						{
+							selectedTree = tree;
+							bestAddPointFactor = addPointFactor;
+						}
+					}
+				}
+
 			}
 			return selectedTree;
 		}
@@ -317,7 +327,7 @@ namespace ForestReco
 					possibleTrees.AddRange(CProjectData.treeNormalArray.GetTreesInDistanceFrom(pPoint, MAX_DISTANCE_FOR_POSSIBLE_TREES));
 				}
 
-				
+
 			}
 			else if(pMethod == EPossibleTreesMethod.Contains)
 			{
@@ -378,12 +388,22 @@ namespace ForestReco
 					}
 
 				}
+				//it can happen that the tree on the very same field as the point is skipped
+				CTree treeOnFieldWithPoint = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).GetSingleDetectedTree();
+				if(treeOnFieldWithPoint != null &&
+					treeOnFieldWithPoint != pExcludeTree /*&& 
+					!closestTrees.Contains(treeOnFieldWithPoint)*/)
+				{
+					closestTrees.Insert(0, treeOnFieldWithPoint);
+				}
+
+
 				return closestTrees;
 			}
 
 			return possibleTrees;
 		}
-		
+
 
 		//MERGE
 
@@ -559,7 +579,7 @@ namespace ForestReco
 				CDebug.Error("given pHigherTree is lower!");
 				return;
 			}
-			
+
 			DeleteTree(pLowerTree);
 			pHigherTree.MergeWith(pLowerTree);
 		}
