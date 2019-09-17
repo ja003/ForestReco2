@@ -175,6 +175,7 @@ namespace ForestReco
 
 			switch(pParsedLine.Item1)
 			{
+				case EClass.Undefined:
 				case EClass.Unassigned:
 					unassigned.Add(point);
 					break;

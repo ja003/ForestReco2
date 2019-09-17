@@ -1474,7 +1474,7 @@ namespace ForestReco
             "heightmap",
             "tree positions",
             "tree borders"});
-			this.checkedListBoxBitmaps.Location = new System.Drawing.Point(260, 789);
+			this.checkedListBoxBitmaps.Location = new System.Drawing.Point(260, 556);
 			this.checkedListBoxBitmaps.Margin = new System.Windows.Forms.Padding(15);
 			this.checkedListBoxBitmaps.Name = "checkedListBoxBitmaps";
 			this.checkedListBoxBitmaps.Size = new System.Drawing.Size(126, 49);
@@ -1524,7 +1524,7 @@ namespace ForestReco
 			this.checkedListBoxShape.Items.AddRange(new object[] {
             "tree positions",
             "tree areas"});
-			this.checkedListBoxShape.Location = new System.Drawing.Point(260, 720);
+			this.checkedListBoxShape.Location = new System.Drawing.Point(260, 487);
 			this.checkedListBoxShape.Margin = new System.Windows.Forms.Padding(15);
 			this.checkedListBoxShape.Name = "checkedListBoxShape";
 			this.checkedListBoxShape.Size = new System.Drawing.Size(126, 34);
@@ -1567,8 +1567,9 @@ namespace ForestReco
             "None",
             "Add factor",
             "2D detection",
-            "Add factor 2D"});
-			this.comboBoxDetectMethod.Location = new System.Drawing.Point(762, 812);
+            "Add factor 2D",
+            "Balls"});
+			this.comboBoxDetectMethod.Location = new System.Drawing.Point(762, 579);
 			this.comboBoxDetectMethod.Name = "comboBoxDetectMethod";
 			this.comboBoxDetectMethod.Size = new System.Drawing.Size(121, 21);
 			this.comboBoxDetectMethod.TabIndex = 107;
