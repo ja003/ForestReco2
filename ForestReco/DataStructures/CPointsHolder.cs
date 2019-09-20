@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace ForestReco
@@ -13,14 +14,20 @@ namespace ForestReco
 		//step sizes for arrays
 		public const float NORMAL_STEP = 1f;
 		public const float DETAIL_STEP = 0.2f;
+		public const float DETAIL_STEP_BALLS = 0.17f;
 
 		public List<Vector3> unassigned = new List<Vector3>(); //1
 		public List<Vector3> ground = new List<Vector3>(); //2
 		public List<Vector3> vege = new List<Vector3>(); //5
 		public List<Vector3> building = new List<Vector3>(); //6
 
+		public List<Vector3> ballPoints = new List<Vector3>();
+		public List<Vector3> ballsMainPoints = new List<Vector3>();
+
+
 		//main arrays
 		public CUnassignedArray unassignedArray;
+		public CUnassignedArray unassignedDetailArray;
 		public CGroundArray groundArray;
 		public CVegeArray buildingArray;
 		public CVegeArray vegeArray;
@@ -59,6 +66,11 @@ namespace ForestReco
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 						return unassignedArray.GetPoints();
 					return unassigned;
+				case EClass.Balls:
+					return ballPoints;
+				case EClass.BallsMainPoints:
+					return ballsMainPoints;
+
 				case EClass.Ground:
 					return ground;
 				case EClass.Vege:
@@ -157,6 +169,8 @@ namespace ForestReco
 		private void InitArrays()
 		{
 			unassignedArray = new CUnassignedArray(NORMAL_STEP, false);
+			unassignedDetailArray = new CUnassignedArray(DETAIL_STEP_BALLS, true);
+
 			groundArray = new CGroundArray(NORMAL_STEP, false);
 			buildingArray = new CVegeArray(NORMAL_STEP, false);
 			vegeArray = new CVegeArray(NORMAL_STEP, false);
@@ -358,7 +372,7 @@ namespace ForestReco
 			for(int i = 0; i < unassigned.Count; i++)
 			{
 				if(CProjectData.backgroundWorker.CancellationPending)
-				{ return; }
+					return; 
 
 				Vector3 point = unassigned[i];
 				unassignedArray.AddPointInField(point);
@@ -366,8 +380,47 @@ namespace ForestReco
 
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 			{
-				unassignedArray.FillArray();
+				//unassignedArray.FillArray(); //doesnt make sense
+
+				//balls are expected to be in this height above ground
 				unassignedArray.FilterPointsAtHeight(1.8f, 2.7f);
+
+				//add filtered points to detail array
+				List<Vector3> filteredPoints = unassignedArray.GetPoints();
+				foreach(Vector3 point in filteredPoints)
+				{
+					if(CProjectData.backgroundWorker.CancellationPending)
+						return;
+
+					unassignedDetailArray.AddPointInField(point);
+				}
+
+				List<CUnassignedField> ballFields = new List<CUnassignedField>();
+
+				//vege.Sort((b, a) => a.Z.CompareTo(b.Z)); //sort descending by height
+
+				List<CUnassignedField> sortedFields = unassignedDetailArray.fields;
+				//sortedFields.Sort((a, b) => a.indexInField.Item1.CompareTo(b.indexInField.Item1));
+				//sortedFields.Sort((a, b) => a.indexInField.Item2.CompareTo(b.indexInField.Item2));
+
+				sortedFields.OrderBy(a => a.indexInField.Item1).ThenBy(a => a.indexInField.Item2);
+
+				//process
+				foreach(CUnassignedField field in sortedFields)
+				{
+					bool hasBall = CBallDetector.DetectIn(field);
+					if(hasBall)
+					{
+						ballFields.Add(field);
+						//todo: set main points to the field
+						ballsMainPoints.AddRange(CBallDetector.GetMainPoints());
+					}
+				}
+
+				foreach(CUnassignedField field in ballFields)
+				{
+					ballPoints.AddRange(field.points);
+				}
 			}
 
 		}

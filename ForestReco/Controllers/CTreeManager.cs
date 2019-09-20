@@ -460,6 +460,8 @@ namespace ForestReco
 
 			//sort in descending order - trees will be processed from the end
 			NotTrees.Sort((b, a) => b.peak.Center.Z.CompareTo(a.peak.Center.Z));
+			//TODO: CHECK!!! THIS IS NOT DESCENDING ORDER???
+
 
 			int treeCountBeforeMerge = NotTrees.Count;
 

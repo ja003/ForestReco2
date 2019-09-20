@@ -22,6 +22,10 @@ namespace ForestReco
 		private static bool export => CParameterSetter.GetBoolSettings(ESettings.exportLas);
 
 		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i";
+		private const string BALLS_COLOR = "255 0 0"; 
+		private const string BALLS_MP_COLOR = "0 255 0";
+		//deep pink: 255 20 147
+
 		private const string UNASIGNED_COLOR = "190 190 145"; //pale yellow
 		private const string GROUND_COLOR = "150 90 0"; //brown
 		private const string BUILDING_COLOR = "250 150 150"; //pale red
@@ -50,6 +54,12 @@ namespace ForestReco
 			AddPointsTo(ref output, EClass.Unassigned, ref start);
 			AddPointsTo(ref output, EClass.Ground, ref start);
 			AddPointsTo(ref output, EClass.Building, ref start);
+
+			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+			{
+				AddPointsTo(ref output, EClass.Balls, ref start);
+				AddPointsTo(ref output, EClass.BallsMainPoints, ref start);
+			}
 
 			//tree points
 			AddTreePointsTo(ref output, true, ref start);
@@ -140,6 +150,10 @@ namespace ForestReco
 					return BUILDING_COLOR;
 				case EClass.Unassigned:
 					return UNASIGNED_COLOR;
+				case EClass.Balls:
+					return BALLS_COLOR;
+				case EClass.BallsMainPoints:
+					return BALLS_MP_COLOR;
 			}
 			return UNDEFINED_COLOR;
 		}

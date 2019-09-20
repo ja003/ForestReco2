@@ -12,6 +12,9 @@ namespace ForestReco
 		Unassigned = 1,
 		Ground = 2,
 		Vege = 5,
-		Building = 6
+		Building = 6,
+
+		Balls = 666,
+		BallsMainPoints = 667
 	}
 }

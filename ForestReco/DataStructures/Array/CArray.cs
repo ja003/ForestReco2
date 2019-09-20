@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Web.WebSockets;
 
-// ReSharper disable SpecifyACultureInStringConversionExplicitly
-
 namespace ForestReco
 {
 	/// <summary>
