@@ -31,6 +31,14 @@ namespace ForestReco
 					fields.Add(newField);
 				}
 			}
-		}		
+		}
+		
+		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
+		{
+			foreach(CUnassignedField f in fields)
+			{
+				f.FilterPointsAtHeight(pMinHeight, pMaxHeight);
+			}
+		}
 	}
 }

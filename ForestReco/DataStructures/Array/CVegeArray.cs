@@ -33,8 +33,6 @@ namespace ForestReco
 			}
 		}
 
-		
-
 		/// <summary>
 		/// just check
 		/// </summary>
@@ -56,7 +54,5 @@ namespace ForestReco
 		//	CDebug.Count("valid trees", validTreesCount);
 		//	CDebug.Count("invalid trees", invalidTreesCount);
 		//}
-
-
 	}
 }

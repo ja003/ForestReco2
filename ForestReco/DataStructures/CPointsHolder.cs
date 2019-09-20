@@ -20,7 +20,7 @@ namespace ForestReco
 		public List<Vector3> building = new List<Vector3>(); //6
 
 		//main arrays
-		public CVegeArray unassignedArray;
+		public CUnassignedArray unassignedArray;
 		public CGroundArray groundArray;
 		public CVegeArray buildingArray;
 		public CVegeArray vegeArray;
@@ -55,6 +55,9 @@ namespace ForestReco
 			switch(pClass)
 			{
 				case EClass.Unassigned:
+					//points has been filtered out in fields only
+					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+						return unassignedArray.GetPoints();
 					return unassigned;
 				case EClass.Ground:
 					return ground;
@@ -153,7 +156,7 @@ namespace ForestReco
 
 		private void InitArrays()
 		{
-			unassignedArray = new CVegeArray(NORMAL_STEP, false);
+			unassignedArray = new CUnassignedArray(NORMAL_STEP, false);
 			groundArray = new CGroundArray(NORMAL_STEP, false);
 			buildingArray = new CVegeArray(NORMAL_STEP, false);
 			vegeArray = new CVegeArray(NORMAL_STEP, false);
@@ -362,7 +365,10 @@ namespace ForestReco
 			}
 
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+			{
 				unassignedArray.FillArray();
+				unassignedArray.FilterPointsAtHeight(1.8f, 2.7f);
+			}
 
 		}
 		private void ProcessBuildingPoints()

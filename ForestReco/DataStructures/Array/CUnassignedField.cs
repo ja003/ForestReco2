@@ -10,7 +10,8 @@ namespace ForestReco
 	public class CUnassignedField : CField
 	{
 
-		public float ExpectedGroundZ;
+		public float ExpectedGroundZ = int.MaxValue;
+		public List<Vector3> filteredOut = new List<Vector3>();
 
 		public CUnassignedField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) : 
 			base(pIndexInField, pCenter, pStepSize, pDetail)
@@ -40,5 +41,26 @@ namespace ForestReco
 			}
 		}
 
+		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
+		{
+			for(int i = points.Count - 1; i >= 0; i--)
+			{
+				Vector3 p = points[i];
+				float height = p.Z - ExpectedGroundZ;
+				if(height < pMinHeight || height > pMaxHeight)
+				{
+					points.RemoveAt(i);
+					filteredOut.Add(p);
+				}
+			}
+		}
+
+		public override void AddPoint(Vector3 pPoint)
+		{
+			base.AddPoint(pPoint);
+
+			if(MinZ < ExpectedGroundZ)
+				ExpectedGroundZ = (float)MinZ;
+		}
 	}
 }

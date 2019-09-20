@@ -234,7 +234,7 @@ namespace ForestReco
 			return 0;
 		}
 
-		public void AddPoint(Vector3 pPoint)
+		public virtual void AddPoint(Vector3 pPoint)
 		{
 			if(IsPointOutOfField(pPoint))
 			{

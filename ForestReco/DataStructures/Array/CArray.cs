@@ -104,6 +104,19 @@ namespace ForestReco
 
 		///GETTER
 
+		/// <summary>
+		/// Returns points in all fields.
+		/// </summary>
+		public List<Vector3> GetPoints()
+		{
+			List<Vector3> points = new List<Vector3>();
+			foreach(CField f in fields)
+			{
+				points.AddRange(f.points);
+			}
+			return points;
+		}
+
 		public TypeField GetField(Tuple<int, int> pIndex)
 		{
 			return GetField(pIndex.Item1, pIndex.Item2);
