@@ -375,9 +375,9 @@ namespace ForestReco
 		/// Finds closest defined fields in direction based on pDiagonal parameter.
 		/// Returns average of 2 found heights considering their distance from this field.
 		/// </summary>
-		public float? GetAverageHeightFromClosestDefined(int pMaxSteps, bool pDiagonal)
+		public float? GetAverageHeightFromClosestDefined(int pMaxSteps, bool pDiagonal, EHeight pType)
 		{
-			if(IsDefined()) { return GetHeight(); }
+			if(IsDefined()) { return GetHeight(pType); }
 
 			CField closestFirst = null;
 			CField closestSecond = null;
@@ -398,13 +398,13 @@ namespace ForestReco
 			{
 				CField smaller = closestFirst;
 				CField higher = closestSecond;
-				if(closestSecond.GetHeight() < closestFirst.GetHeight())
+				if(closestSecond.GetHeight(pType) < closestFirst.GetHeight(pType))
 				{
 					higher = closestFirst;
 					smaller = closestSecond;
 				}
 				int totalDistance = smaller.GetStepCountTo(higher);
-				float? heightDiff = higher.GetHeight() - smaller.GetHeight();
+				float? heightDiff = higher.GetHeight(pType) - smaller.GetHeight(pType);
 				if(heightDiff != null)
 				{
 					float? smallerHeight = smaller.GetHeight();
@@ -415,14 +415,14 @@ namespace ForestReco
 			}
 			else if(!HasAllNeighbours())
 			{
-				if(closestLeft != null) { return closestLeft.GetHeight(); }
-				if(closestTop != null) { return closestTop.GetHeight(); }
-				if(closestRight != null) { return closestRight.GetHeight(); }
-				if(closestBot != null) { return closestBot.GetHeight(); }
+				if(closestLeft != null) { return closestLeft.GetHeight(pType); }
+				if(closestTop != null) { return closestTop.GetHeight(pType); }
+				if(closestRight != null) { return closestRight.GetHeight(pType); }
+				if(closestBot != null) { return closestBot.GetHeight(pType); }
 			}
 			if(!pDiagonal)
 			{
-				return GetAverageHeightFromClosestDefined(pMaxSteps, true);
+				return GetAverageHeightFromClosestDefined(pMaxSteps, true, pType);
 			}
 
 			return null;
@@ -434,13 +434,22 @@ namespace ForestReco
 			return height == null ? null : pPoint.Z - height;
 		}
 
-
-		public float? GetHeight(bool pUseSmoothHeight = true)
+		public enum EHeight
 		{
-			if(pUseSmoothHeight && SmoothHeight != null)
+			Smooth,
+			MinZ,
+			MaxZ
+		}
+
+		public float? GetHeight(EHeight pType = EHeight.Smooth)
+		{
+			if(pType == EHeight.Smooth && SmoothHeight != null)
 			{
 				return SmoothHeight;
 			}
+			else if(pType == EHeight.MinZ)
+				return MinZ;
+
 			return MaxZ;
 		}
 
@@ -622,7 +631,7 @@ namespace ForestReco
 			switch(pMethod)
 			{
 				case EFillMethod.ClosestDefined:
-					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false);
+					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false, EHeight.Smooth);
 					break;
 				case EFillMethod.FromNeighbourhood:
 					MaxFilledHeight = GetAverageHeightFromNeighbourhood(pParam);

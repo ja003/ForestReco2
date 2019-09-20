@@ -816,6 +816,12 @@ namespace ForestReco
 				branchIndex = 0;
 			}
 			//CDebug.WriteLine(pPoint + " goes to branch " + branchIndex + ". angle = " + angle);
+			if(branchIndex < 0 || branchIndex > branches.Count)
+			{
+				CDebug.Error("branchIndex too high!");
+				return null;
+			}
+
 			return branches[branchIndex];
 		}
 

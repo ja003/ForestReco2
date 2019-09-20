@@ -345,47 +345,9 @@ namespace ForestReco
 				//CDebugData.DefineArray(true, lowestHeight);
 			}
 
-			FillGroundArray();
+			groundArray.FillArray();
 
 			groundArray?.SmoothenArray(1);
-		}
-
-		/// <summary>
-		/// Approximates the height in undefined fields of ground array.
-		/// </summary>
-		private void FillGroundArray()
-		{
-			CDebug.WriteLine("FillArray", true);
-			if(groundArray == null)
-			{
-				CDebug.Error("no array to export");
-				return;
-			}
-
-			DateTime fillAllHeightsStart = DateTime.Now;
-
-			int counter = 1;
-			while(!groundArray.IsAllDefined())
-			{
-				if(CProjectData.backgroundWorker.CancellationPending)
-				{ return; }
-
-				DateTime fillHeightsStart = DateTime.Now;
-
-				CDebug.Count("FillMissingHeights", counter);
-				groundArray.FillMissingHeights(counter);
-				counter++;
-				const int maxFillArrayIterations = 5;
-				if(counter > maxFillArrayIterations + 1)
-				{
-					CDebug.Error("FillMissingHeights");
-					CDebug.Count("too many iterations", counter);
-					break;
-				}
-				CDebug.Duration("FillMissingHeights", fillHeightsStart);
-			}
-			CAnalytics.fillAllHeightsDuration = CAnalytics.GetDuration(fillAllHeightsStart);
-			CDebug.Duration("fillAllHeights", fillAllHeightsStart);
 		}
 
 		private void ProcessUnassignedPoints()
@@ -398,6 +360,10 @@ namespace ForestReco
 				Vector3 point = unassigned[i];
 				unassignedArray.AddPointInField(point);
 			}
+
+			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+				unassignedArray.FillArray();
+
 		}
 		private void ProcessBuildingPoints()
 		{

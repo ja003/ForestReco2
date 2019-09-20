@@ -7,22 +7,21 @@ using System.Threading.Tasks;
 
 namespace ForestReco
 {
-	public class CGroundArray : CArray<CGroundField>
+	public class CUnassignedArray : CArray<CUnassignedField>
 	{
-
-		public CGroundArray(float pStepSize, bool pDetail) : base(pStepSize, pDetail)
+		public CUnassignedArray(float pStepSize, bool pDetail) : base(pStepSize, pDetail)
 		{
 		}
 
 		protected override void InitFields(float pStepSize)
 		{
-			array = new CGroundField[arrayXRange, arrayYRange];
-			fields = new List<CGroundField>();
+			array = new CUnassignedField[arrayXRange, arrayYRange];
+			fields = new List<CUnassignedField>();
 			for(int x = 0; x < arrayXRange; x++)
 			{
 				for(int y = 0; y < arrayYRange; y++)
 				{
-					CGroundField newField = new CGroundField(new Tuple<int, int>(x, y),
+					CUnassignedField newField = new CUnassignedField(new Tuple<int, int>(x, y),
 						new Vector3(
 							topLeftCorner.X + x * stepSize + stepSize / 2,
 							topLeftCorner.Y - y * stepSize - stepSize / 2,
@@ -32,8 +31,6 @@ namespace ForestReco
 					fields.Add(newField);
 				}
 			}
-		}
-
-
+		}		
 	}
 }

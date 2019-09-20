@@ -35,7 +35,7 @@ namespace ForestReco
 				{
 					Vertex v = new Vertex();
 					CGroundField el = pArray.GetField(x, y);
-					float? height = el.GetHeight(pUseSmoothHeight);
+					float? height = el.GetHeight(pUseSmoothHeight ? CField.EHeight.Smooth : CField.EHeight.MaxZ);
 
 					height = GetHeight(pStrategy, y, el, height);
 
@@ -118,7 +118,7 @@ namespace ForestReco
 			{
 				if(height == null)
 				{
-					height = el.GetAverageHeightFromClosestDefined(3, false);
+					height = el.GetAverageHeightFromClosestDefined(3, false, CField.EHeight.Smooth);
 				}
 			}
 			else if(pStrategy == EExportStrategy.FillHeightsAroundDefined)

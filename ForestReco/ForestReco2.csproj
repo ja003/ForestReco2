@@ -95,6 +95,8 @@
     <Compile Include="Controllers\CTreeRadiusCalculator.cs" />
     <Compile Include="DataStructures\Array\CTreeArray.cs" />
     <Compile Include="DataStructures\Array\CTreeField.cs" />
+    <Compile Include="DataStructures\Array\CUnassignedArray.cs" />
+    <Compile Include="DataStructures\Array\CUnassignedField.cs" />
     <Compile Include="DataStructures\Array\CVegeField.cs" />
     <Compile Include="DataStructures\Array\CVegeArray.cs" />
     <Compile Include="DataStructures\Array\IField.cs" />

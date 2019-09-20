@@ -266,13 +266,40 @@ namespace ForestReco
 		//	}
 		//}
 
-		public void FillMissingHeights(int pParam = -1)
-		{
-			FillMissingHeights(CField.EFillMethod.FromNeighbourhood, pParam);
-			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
-			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
-		}
 
+		/// <summary>
+		/// Approximates the height in undefined fields of ground array.
+		/// </summary>
+		public void FillArray()
+		{
+			CDebug.WriteLine("FillArray", true);
+
+			DateTime fillAllHeightsStart = DateTime.Now;
+
+			int counter = 1;
+			while(!IsAllDefined())
+			{
+				if(CProjectData.backgroundWorker.CancellationPending)
+				{ return; }
+
+				DateTime fillHeightsStart = DateTime.Now;
+
+				CDebug.Count("FillMissingHeights", counter);
+				FillMissingHeights(counter);
+				counter++;
+				const int maxFillArrayIterations = 5;
+				if(counter > maxFillArrayIterations + 1)
+				{
+					CDebug.Error("FillMissingHeights");
+					CDebug.Count("too many iterations", counter);
+					break;
+				}
+				CDebug.Duration("FillMissingHeights", fillHeightsStart);
+			}
+			CAnalytics.fillAllHeightsDuration = CAnalytics.GetDuration(fillAllHeightsStart);
+			CDebug.Duration("fillAllHeights", fillAllHeightsStart);
+		}
+		
 		//todo: dont use during testing, otherwise result is nondeterministic
 		bool useRandomForSmoothing = false;
 
@@ -415,6 +442,13 @@ namespace ForestReco
 		}
 
 		///PRIVATE
+		
+		private void FillMissingHeights(int pKernelMultiplier)
+		{
+			FillMissingHeights(CField.EFillMethod.FromNeighbourhood, pKernelMultiplier);
+			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
+			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
+		}
 
 		private void ApplyFillMissingHeights()
 		{
