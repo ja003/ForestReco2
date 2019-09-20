@@ -41,19 +41,41 @@ namespace ForestReco
 
 
 		const float BALL_DIAMETER = 0.145f;
+		const float DEBUG_OFFSET = 0.0005f;
 
 		public static List<Vector3> GetMainPoints()
 		{
 			List<Vector3> points = new List<Vector3>();
 			points.Add(ballTop);
+
+			points.AddRange(GetPointLine(ballTop, Vector3.UnitZ));
+
 			if(ballBot != null)
+			{
 				points.Add((Vector3)ballBot);
+				points.AddRange(GetPointLine((Vector3)ballBot, -Vector3.UnitZ));
+			}
 
 			points.Add(furthestPointPlusX);
-			points.Add(furthestPointPlusY);
+			points.AddRange(GetPointLine(furthestPointPlusX, Vector3.UnitX));
 			points.Add(furthestPointMinusX);
+			points.AddRange(GetPointLine(furthestPointMinusX, -Vector3.UnitX));
+			
+			points.Add(furthestPointPlusY);
+			points.AddRange(GetPointLine(furthestPointPlusY, Vector3.UnitY));
 			points.Add(furthestPointMinusY);
+			points.AddRange(GetPointLine(furthestPointMinusY, -Vector3.UnitY));
 
+			return points;
+		}
+
+		private static List<Vector3> GetPointLine(Vector3 pStart, Vector3 pDirection, float pLength = 100)
+		{
+			List<Vector3> points = new List<Vector3>();
+			for(float i = 1; i < pLength; i++)
+			{ 
+				points.Add(pStart + pDirection * DEBUG_OFFSET * i);
+			}
 			return points;
 		}
 
@@ -113,38 +135,52 @@ namespace ForestReco
 				isBall = false;
 		}
 
+		private static float GetMinFurthestPointDist2D()
+		{
+			return GetMaxPointsDist(-3);
+		}
+
 		private static void UpdateFurthestPoints(Vector3 pPoint)
 		{
+			float minFurthestPointDist2D = GetMaxPointsDist(-1) / 2;
+			float diffZ = ballTop.Z - pPoint.Z;
+			if(diffZ < minFurthestPointDist2D)
+				return;
+
 			float dist2D = CUtils.Get2DDistance(pPoint, ballTop);
 
 			if(dist2D > GetFurthestPointDist2D())
 				furthestPoint = pPoint;
 
+
 			float diff = 0;
+			
+
+
 
 			if(pPoint.X > ballTop.X)
 			{
 				diff = pPoint.X - ballTop.X;
-				if(diff > furthestPointPlusX.X - ballTop.X)
+				if(diff > minFurthestPointDist2D && diff > furthestPointPlusX.X - ballTop.X)
 					furthestPointPlusX = pPoint;
 			}
 			else
 			{
 				diff = ballTop.X - pPoint.X;
-				if(diff > ballTop.X - furthestPointMinusX.X)
+				if(diff > minFurthestPointDist2D && diff > ballTop.X - furthestPointMinusX.X)
 					furthestPointMinusX = pPoint;
 			}
 
 			if(pPoint.Y > ballTop.Y)
 			{
 				diff = pPoint.Y - ballTop.Y;
-				if(diff > furthestPointPlusY.Y - ballTop.Y)
+				if(diff > minFurthestPointDist2D && diff > furthestPointPlusY.Y - ballTop.Y)
 					furthestPointPlusY = pPoint;
 			}
 			else
 			{
 				diff = ballTop.Y - pPoint.Y;
-				if(diff > ballTop.Y - furthestPointMinusY.Y)
+				if(diff > minFurthestPointDist2D && diff > ballTop.Y - furthestPointMinusY.Y)
 					furthestPointMinusY = pPoint;
 			}
 		}
