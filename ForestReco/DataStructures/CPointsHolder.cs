@@ -417,20 +417,20 @@ namespace ForestReco
 
 				sortedFields.OrderBy(a => a.indexInField.Item1).ThenBy(a => a.indexInField.Item2);
 
-				List<Vector3> mainPoints = new List<Vector3>();
+				//List<Vector3> mainPoints = new List<Vector3>();
 
 				//process
 				foreach(CBallField field in sortedFields)
 				{
-					bool hasBall = CBallDetector.DetectIn(field);
-					if(hasBall)
+					field.Detect();
+					if(field.ball != null && field.ball.isValid)
 					{
 						ballFields.Add(field);
 						//todo: set main points to the field
-						mainPoints = CBallDetector.GetMainPoints(false);
-						ballsMainPoints.AddRange(CBallDetector.GetMainPoints(true));
+						//mainPoints = field.ball.GetMainPoints(false);
+						ballsMainPoints.AddRange(field.ball.GetMainPoints(true));
 
-						ballsCenters.Add(CBallDetector.GetBallCenterFrom(mainPoints));
+						ballsCenters.Add(field.ball.GetCenter());
 					}
 				}
 

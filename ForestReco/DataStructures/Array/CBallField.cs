@@ -62,5 +62,26 @@ namespace ForestReco
 			if(MinZ < ExpectedGroundZ)
 				ExpectedGroundZ = (float)MinZ;
 		}
+
+		public CBall ball;
+
+		public void Detect()
+		{
+			if(!HasAllNeighbours())
+				return;
+
+			//todo: explain
+			List<Vector3> processPoints = points;
+			if(processPoints.Count == 0)
+				return;
+
+			processPoints.AddRange(Right.points);
+			processPoints.AddRange(Bot.points);
+			processPoints.AddRange(Bot.Right.points);
+
+			ball = new CBall(processPoints);
+
+		}
+
 	}
 }
