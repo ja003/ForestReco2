@@ -24,6 +24,7 @@ namespace ForestReco
 		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i";
 		private const string BALLS_COLOR = "255 0 0"; 
 		private const string BALLS_MP_COLOR = "0 255 0";
+		private const string BALLS_CENTER_COLOR = "255 0 255";
 		//deep pink: 255 20 147
 
 		private const string UNASIGNED_COLOR = "190 190 145"; //pale yellow
@@ -59,6 +60,7 @@ namespace ForestReco
 			{
 				AddPointsTo(ref output, EClass.Balls, ref start);
 				AddPointsTo(ref output, EClass.BallsMainPoints, ref start);
+				AddPointsTo(ref output, EClass.BallsCenters, ref start);
 			}
 
 			//tree points
@@ -154,6 +156,8 @@ namespace ForestReco
 					return BALLS_COLOR;
 				case EClass.BallsMainPoints:
 					return BALLS_MP_COLOR;
+				case EClass.BallsCenters:
+					return BALLS_CENTER_COLOR;
 			}
 			return UNDEFINED_COLOR;
 		}

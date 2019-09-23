@@ -44,7 +44,7 @@ namespace ForestReco
 		const float DEBUG_OFFSET = 0.0005f;
 		private const float DIST_TOLLERANCE = 0.01f;
 
-		public static List<Vector3> GetMainPoints()
+		public static List<Vector3> GetMainPoints(bool pAddDebugLine)
 		{
 			List<Vector3> points = new List<Vector3>();
 			points.Add(ballTop);
@@ -54,29 +54,34 @@ namespace ForestReco
 			if(ballBot != null)
 			{
 				points.Add((Vector3)ballBot);
-				points.AddRange(GetPointLine((Vector3)ballBot, -Vector3.UnitZ));
+				if(pAddDebugLine)
+					points.AddRange(GetPointLine((Vector3)ballBot, -Vector3.UnitZ));
 			}
 
 			if(IsValidMainPoint(furthestPointPlusX))
 			{
 				points.Add(furthestPointPlusX);
-				points.AddRange(GetPointLine(furthestPointPlusX, Vector3.UnitX));
+				if(pAddDebugLine)
+					points.AddRange(GetPointLine(furthestPointPlusX, Vector3.UnitX));
 			}
 			if(IsValidMainPoint(furthestPointMinusX))
 			{
 				points.Add(furthestPointMinusX);
-				points.AddRange(GetPointLine(furthestPointMinusX, -Vector3.UnitX));
+				if(pAddDebugLine)
+					points.AddRange(GetPointLine(furthestPointMinusX, -Vector3.UnitX));
 			}
 
 			if(IsValidMainPoint(furthestPointPlusY))
 			{
 				points.Add(furthestPointPlusY);
-				points.AddRange(GetPointLine(furthestPointPlusY, Vector3.UnitY));
+				if(pAddDebugLine)
+					points.AddRange(GetPointLine(furthestPointPlusY, Vector3.UnitY));
 			}
 			if(IsValidMainPoint(furthestPointMinusY))
 			{
 				points.Add(furthestPointMinusY);
-				points.AddRange(GetPointLine(furthestPointMinusY, -Vector3.UnitY));
+				if(pAddDebugLine)
+					points.AddRange(GetPointLine(furthestPointMinusY, -Vector3.UnitY));
 			}
 			return points;
 		}
@@ -229,5 +234,16 @@ namespace ForestReco
 			return BALL_DIAMETER + pTolleranceMultiply * DIST_TOLLERANCE;
 		}
 
+		//todo: make main points structure
+		public static Vector3 GetBallCenterFrom(List<Vector3> pMainPoints)
+		{
+			if(pMainPoints.Count < 4)
+				return pMainPoints[0];
+			Vector3 c1 = (pMainPoints[pMainPoints.Count - 1] + pMainPoints[pMainPoints.Count - 2]) / 2;
+			Vector3 c2 = (pMainPoints[0] + pMainPoints[1]) / 2;
+			Vector3 center = (c1 + c2) / 2;
+			//toto: move center in correct dir
+			return center;
+		}
 	}
 }

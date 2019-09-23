@@ -15,6 +15,7 @@ namespace ForestReco
 		Building = 6,
 
 		Balls = 666,
-		BallsMainPoints = 667
+		BallsMainPoints = 667,
+		BallsCenters = 668
 	}
 }

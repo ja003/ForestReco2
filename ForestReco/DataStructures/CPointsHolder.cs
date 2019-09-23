@@ -23,6 +23,7 @@ namespace ForestReco
 
 		public List<Vector3> ballPoints = new List<Vector3>();
 		public List<Vector3> ballsMainPoints = new List<Vector3>();
+		public List<Vector3> ballsCenters = new List<Vector3>();
 
 
 		//main arrays
@@ -70,6 +71,8 @@ namespace ForestReco
 					return ballPoints;
 				case EClass.BallsMainPoints:
 					return ballsMainPoints;
+				case EClass.BallsCenters:
+					return ballsCenters;
 
 				case EClass.Ground:
 					return ground;
@@ -405,6 +408,8 @@ namespace ForestReco
 
 				sortedFields.OrderBy(a => a.indexInField.Item1).ThenBy(a => a.indexInField.Item2);
 
+				List<Vector3> mainPoints = new List<Vector3>();
+
 				//process
 				foreach(CUnassignedField field in sortedFields)
 				{
@@ -413,7 +418,10 @@ namespace ForestReco
 					{
 						ballFields.Add(field);
 						//todo: set main points to the field
-						ballsMainPoints.AddRange(CBallDetector.GetMainPoints());
+						mainPoints = CBallDetector.GetMainPoints(false);
+						ballsMainPoints.AddRange(CBallDetector.GetMainPoints(true));
+
+						ballsCenters.Add(CBallDetector.GetBallCenterFrom(mainPoints));
 					}
 				}
 
