@@ -9,7 +9,7 @@ namespace ForestReco
 {
 	public static class CBallDetector
 	{
-		internal static bool DetectIn(CUnassignedField pField)
+		internal static bool DetectIn(CBallField pField)
 		{
 			if(!pField.HasAllNeighbours())
 				return false;

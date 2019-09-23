@@ -7,21 +7,21 @@ using System.Threading.Tasks;
 
 namespace ForestReco
 {
-	public class CUnassignedArray : CArray<CUnassignedField>
+	public class CBallArray : CArray<CBallField>
 	{
-		public CUnassignedArray(float pStepSize, bool pDetail) : base(pStepSize, pDetail)
+		public CBallArray(float pStepSize, bool pDetail) : base(pStepSize, pDetail)
 		{
 		}
 
 		protected override void InitFields(float pStepSize)
 		{
-			array = new CUnassignedField[arrayXRange, arrayYRange];
-			fields = new List<CUnassignedField>();
+			array = new CBallField[arrayXRange, arrayYRange];
+			fields = new List<CBallField>();
 			for(int x = 0; x < arrayXRange; x++)
 			{
 				for(int y = 0; y < arrayYRange; y++)
 				{
-					CUnassignedField newField = new CUnassignedField(new Tuple<int, int>(x, y),
+					CBallField newField = new CBallField(new Tuple<int, int>(x, y),
 						new Vector3(
 							topLeftCorner.X + x * stepSize + stepSize / 2,
 							topLeftCorner.Y - y * stepSize - stepSize / 2,
@@ -30,6 +30,14 @@ namespace ForestReco
 					array[x, y] = newField;
 					fields.Add(newField);
 				}
+			}
+		}
+		
+		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
+		{
+			foreach(CBallField f in fields)
+			{
+				f.FilterPointsAtHeight(pMinHeight, pMaxHeight);
 			}
 		}
 	}

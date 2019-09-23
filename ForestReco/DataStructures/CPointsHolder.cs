@@ -28,7 +28,9 @@ namespace ForestReco
 
 		//main arrays
 		public CUnassignedArray unassignedArray;
-		public CUnassignedArray unassignedDetailArray;
+
+		public CBallArray ballArray;
+		public CBallArray ballDetailArray;
 		public CGroundArray groundArray;
 		public CVegeArray buildingArray;
 		public CVegeArray vegeArray;
@@ -65,7 +67,7 @@ namespace ForestReco
 				case EClass.Unassigned:
 					//points has been filtered out in fields only
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
-						return unassignedArray.GetPoints();
+						return ballArray.GetPoints();
 					return unassigned;
 				case EClass.Balls:
 					return ballPoints;
@@ -172,7 +174,9 @@ namespace ForestReco
 		private void InitArrays()
 		{
 			unassignedArray = new CUnassignedArray(NORMAL_STEP, false);
-			unassignedDetailArray = new CUnassignedArray(DETAIL_STEP_BALLS, true);
+
+			ballArray = new CBallArray(NORMAL_STEP, false);
+			ballDetailArray = new CBallArray(DETAIL_STEP_BALLS, true);
 
 			groundArray = new CGroundArray(NORMAL_STEP, false);
 			buildingArray = new CVegeArray(NORMAL_STEP, false);
@@ -379,6 +383,11 @@ namespace ForestReco
 
 				Vector3 point = unassigned[i];
 				unassignedArray.AddPointInField(point);
+				if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+				{
+					ballArray.AddPointInField(point);
+				}
+
 			}
 
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
@@ -386,23 +395,23 @@ namespace ForestReco
 				//unassignedArray.FillArray(); //doesnt make sense
 
 				//balls are expected to be in this height above ground
-				unassignedArray.FilterPointsAtHeight(1.8f, 2.7f);
+				ballArray.FilterPointsAtHeight(1.8f, 2.7f);
 
 				//add filtered points to detail array
-				List<Vector3> filteredPoints = unassignedArray.GetPoints();
+				List<Vector3> filteredPoints = ballArray.GetPoints();
 				foreach(Vector3 point in filteredPoints)
 				{
 					if(CProjectData.backgroundWorker.CancellationPending)
 						return;
 
-					unassignedDetailArray.AddPointInField(point);
+					ballDetailArray.AddPointInField(point);
 				}
 
-				List<CUnassignedField> ballFields = new List<CUnassignedField>();
+				List<CBallField> ballFields = new List<CBallField>();
 
 				//vege.Sort((b, a) => a.Z.CompareTo(b.Z)); //sort descending by height
 
-				List<CUnassignedField> sortedFields = unassignedDetailArray.fields;
+				List<CBallField> sortedFields = ballDetailArray.fields;
 				//sortedFields.Sort((a, b) => a.indexInField.Item1.CompareTo(b.indexInField.Item1));
 				//sortedFields.Sort((a, b) => a.indexInField.Item2.CompareTo(b.indexInField.Item2));
 
@@ -411,7 +420,7 @@ namespace ForestReco
 				List<Vector3> mainPoints = new List<Vector3>();
 
 				//process
-				foreach(CUnassignedField field in sortedFields)
+				foreach(CBallField field in sortedFields)
 				{
 					bool hasBall = CBallDetector.DetectIn(field);
 					if(hasBall)
@@ -425,7 +434,7 @@ namespace ForestReco
 					}
 				}
 
-				foreach(CUnassignedField field in ballFields)
+				foreach(CBallField field in ballFields)
 				{
 					ballPoints.AddRange(field.points);
 				}
