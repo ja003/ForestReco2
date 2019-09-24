@@ -352,12 +352,27 @@ namespace ForestReco
 			return clonePoint;
 		}
 
-		//public static Vector3 GetSwappedYZ(this Vector3 pVec)
-		//{
-		//	float tmp = pVec.Z;
-		//	pVec.Z = pVec.Y;
-		//	pVec.Y = tmp;
-		//	return pVec;
-		//}
+		public static List<Vector3> GetPointCross(Vector3 pCenter, float pLength = 50)
+		{
+			List<Vector3> points = new List<Vector3>();
+			points.AddRange(GetPointLine(pCenter, Vector3.UnitX, pLength));
+			points.AddRange(GetPointLine(pCenter, -Vector3.UnitX, pLength));
+			points.AddRange(GetPointLine(pCenter, Vector3.UnitY, pLength));
+			points.AddRange(GetPointLine(pCenter, -Vector3.UnitY, pLength));
+			points.AddRange(GetPointLine(pCenter, Vector3.UnitZ, pLength));
+			points.AddRange(GetPointLine(pCenter, -Vector3.UnitZ, pLength));
+			return points;
+		}
+
+		public static List<Vector3> GetPointLine(Vector3 pStart, Vector3 pDirection, float pLength = 100)
+		{
+			const float DEBUG_OFFSET = 0.0005f;
+			List<Vector3> points = new List<Vector3>();
+			for(float i = 1; i < pLength; i++)
+			{
+				points.Add(pStart + pDirection * DEBUG_OFFSET * i);
+			}
+			return points;
+		}
 	}
 }

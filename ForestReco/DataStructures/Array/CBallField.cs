@@ -70,6 +70,9 @@ namespace ForestReco
 			if(!HasAllNeighbours())
 				return;
 
+			if(IsBallInNeigbhourhood())
+				return;
+
 			//todo: explain
 			List<Vector3> processPoints = points;
 			if(processPoints.Count == 0)
@@ -83,5 +86,14 @@ namespace ForestReco
 
 		}
 
+		private bool IsBallInNeigbhourhood()
+		{
+			foreach(CBallField neigbour in GetNeighbours())
+			{
+				if(neigbour.ball != null && neigbour.ball.isValid)
+					return true;
+			}
+			return false;
+		}
 	}
 }

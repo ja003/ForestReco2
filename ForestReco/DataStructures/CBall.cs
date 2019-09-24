@@ -11,7 +11,7 @@ namespace ForestReco
 	{
 		public Vector3 ballTop;
 		public Vector3? ballBot;
-		public Vector3 furthestPoint;
+		public Vector3 furthestPoint2D;
 
 		public Vector3 furthestPointPlusX;
 		public Vector3 furthestPointMinusX;
@@ -29,12 +29,12 @@ namespace ForestReco
 			pPoints.Sort((a, b) => b.Z.CompareTo(a.Z));
 
 			ballTop = pPoints[0];
-			furthestPoint = ballTop;
+			furthestPoint2D = ballTop;
 			furthestPointPlusX = ballTop;
 			furthestPointMinusX = ballTop;
 			furthestPointPlusY = ballTop;
 			furthestPointMinusY = ballTop;
-			
+
 			foreach(Vector3 point in pPoints)
 			{
 				float zDiff = ballTop.Z - point.Z;
@@ -68,11 +68,40 @@ namespace ForestReco
 				}
 			}
 
-			//if(ballBot == null)
-			//	isBall = false;
+			if(ballBot != null)
+			{
+				float topBotDiffZ = ballTop.Z - ((Vector3)ballBot).Z;
+				//if bot is too close then it is probably not a ball
+				if(topBotDiffZ < GetMaxPointsDist(2) / 2)
+				{
+					isValid = false;
+					return;
+				}
+			}
 
-			if(GetFurthestPointDist2D() < (GetMaxPointsDist(-3) / 2))
+			float furthestDist2D = GetFurthestPointDist2D();
+			float maxDist = GetMaxPointsDist(-3) / 2;
+			if(furthestDist2D < maxDist)
+			{
 				isValid = false;
+				return;
+			}
+
+
+			isValid = HasValidMainPoints();
+		}
+
+		private bool HasValidMainPoints()
+		{
+			if(IsValidMainPoint(furthestPointPlusX) && IsValidMainPoint(furthestPointMinusX))
+			{
+				return IsValidMainPoint(furthestPointPlusY) || IsValidMainPoint(furthestPointMinusY);
+			}
+			else if(IsValidMainPoint(furthestPointPlusY) && IsValidMainPoint(furthestPointMinusY))
+			{
+				return IsValidMainPoint(furthestPointPlusX) || IsValidMainPoint(furthestPointMinusX);
+			}
+			return false;
 		}
 
 		public List<Vector3> GetMainPoints(bool pAddDebugLine)
@@ -80,61 +109,54 @@ namespace ForestReco
 			List<Vector3> points = new List<Vector3>();
 			points.Add(ballTop);
 
-			points.AddRange(GetPointLine(ballTop, Vector3.UnitZ));
+			points.AddRange(CUtils.GetPointLine(ballTop, Vector3.UnitZ));
 
 			if(ballBot != null)
 			{
 				points.Add((Vector3)ballBot);
 				if(pAddDebugLine)
-					points.AddRange(GetPointLine((Vector3)ballBot, -Vector3.UnitZ));
+					points.AddRange(CUtils.GetPointLine((Vector3)ballBot, -Vector3.UnitZ));
 			}
 
 			if(IsValidMainPoint(furthestPointPlusX))
 			{
 				points.Add(furthestPointPlusX);
 				if(pAddDebugLine)
-					points.AddRange(GetPointLine(furthestPointPlusX, Vector3.UnitX));
+					points.AddRange(CUtils.GetPointLine(furthestPointPlusX, Vector3.UnitX));
 			}
 			if(IsValidMainPoint(furthestPointMinusX))
 			{
 				points.Add(furthestPointMinusX);
 				if(pAddDebugLine)
-					points.AddRange(GetPointLine(furthestPointMinusX, -Vector3.UnitX));
+					points.AddRange(CUtils.GetPointLine(furthestPointMinusX, -Vector3.UnitX));
 			}
 
 			if(IsValidMainPoint(furthestPointPlusY))
 			{
 				points.Add(furthestPointPlusY);
 				if(pAddDebugLine)
-					points.AddRange(GetPointLine(furthestPointPlusY, Vector3.UnitY));
+					points.AddRange(CUtils.GetPointLine(furthestPointPlusY, Vector3.UnitY));
 			}
 			if(IsValidMainPoint(furthestPointMinusY))
 			{
 				points.Add(furthestPointMinusY);
 				if(pAddDebugLine)
-					points.AddRange(GetPointLine(furthestPointMinusY, -Vector3.UnitY));
+					points.AddRange(CUtils.GetPointLine(furthestPointMinusY, -Vector3.UnitY));
 			}
 			return points;
 		}
 
-		private List<Vector3> GetPointLine(Vector3 pStart, Vector3 pDirection, float pLength = 100)
-		{
-			List<Vector3> points = new List<Vector3>();
-			for(float i = 1; i < pLength; i++)
-			{
-				points.Add(pStart + pDirection * DEBUG_OFFSET * i);
-			}
-			return points;
-		}
+
 
 		private bool IsValidMainPoint(Vector3 pPoint)
 		{
-			return Vector3.Distance(ballTop, pPoint) > DIST_TOLLERANCE;
+			return Vector3.Distance(ballTop, pPoint) > DIST_TOLLERANCE &&
+				IsAtMainPointZDistance(pPoint);
 		}
 
 		private float GetFurthestPointDist2D()
 		{
-			return CUtils.Get2DDistance(ballTop, furthestPoint);
+			return CUtils.Get2DDistance(ballTop, furthestPoint2D);
 		}
 
 		private void UpdateFurthestPoints(Vector3 pPoint)
@@ -153,10 +175,9 @@ namespace ForestReco
 			float dist2D = CUtils.Get2DDistance(pPoint, ballTop);
 
 			if(dist2D > GetFurthestPointDist2D())
-				furthestPoint = pPoint;
+				furthestPoint2D = pPoint;
 
-
-			float diff = 0;
+			float diff;
 
 			if(diffY < DIST_TOLLERANCE)
 			{
@@ -209,14 +230,62 @@ namespace ForestReco
 			if(!isValid)
 				return Vector3.Zero;
 
-			Vector3 c1 = (furthestPointMinusY + furthestPointPlusY) / 2;
+			List<Vector3> centers = new List<Vector3>();
+			Vector3 centerY = (furthestPointMinusY + furthestPointPlusY) / 2;
+			bool isMainPointYValid = IsValidMainPoint(centerY);
+			if(isMainPointYValid)
+				centers.Add(centerY);
 
-			Vector3 p1 = ballBot != null ? ballTop : furthestPointMinusY;
-			Vector3 p2 = ballBot != null ? (Vector3)ballBot: furthestPointPlusY;
-			Vector3 c2 = (p1 + p2) / 2;
-			Vector3 center = (c1 + c2) / 2;
-			//toto: move center in correct dir
-			return center;
+			Vector3 centerX = (furthestPointMinusX + furthestPointPlusX) / 2;
+			bool isMainPointXValid = IsValidMainPoint(centerX);
+			if(isMainPointXValid)
+				centers.Add(centerX);
+
+			Vector3 ceterZ = GetAverage(centers);
+			if(ballBot != null)
+			{
+				ceterZ = ((Vector3)ballBot + ballTop) / 2;
+				centers.Add(ceterZ);
+			}
+
+			Vector3 approxCenter = GetAverage(centers);
+			if(isMainPointXValid && isMainPointYValid)
+				return approxCenter;
+
+			//todo: make method
+			if(isMainPointXValid)
+			{
+				Vector3 validMainPointY = (IsValidMainPoint(furthestPointMinusY) ?
+						furthestPointMinusY : furthestPointPlusY);
+				float yDistToMP = approxCenter.Y - validMainPointY.Y;
+				approxCenter = validMainPointY + (yDistToMP > 0 ? 1 : -1) * (approxCenter - validMainPointY) * (BALL_DIAMETER / 2 - Math.Abs(yDistToMP));
+
+			}
+			else if(isMainPointYValid)
+			{
+				Vector3 validMainPointX = (IsValidMainPoint(furthestPointMinusX) ?
+						furthestPointMinusX : furthestPointPlusX);
+				float xDistToMP = approxCenter.X - validMainPointX.X;
+				Vector3 dir = Vector3.Normalize(approxCenter - validMainPointX);
+				float dist = BALL_DIAMETER / 2;// - Math.Abs(xDistToMP);
+				approxCenter = validMainPointX + (xDistToMP > 0 ? 1 : -1) * dir * dist;
+			}
+			else
+			{
+				CDebug.Error("Incorrect calculation");
+			}
+
+			return approxCenter;
+		}
+
+		private static Vector3 GetAverage(List<Vector3> pPoints)
+		{
+			Vector3 avg = Vector3.Zero;
+			foreach(Vector3 p in pPoints)
+			{
+				avg += p;
+			}
+			return avg / pPoints.Count;
 		}
 	}
 }

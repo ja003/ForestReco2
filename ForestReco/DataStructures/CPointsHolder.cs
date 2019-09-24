@@ -430,7 +430,9 @@ namespace ForestReco
 						//mainPoints = field.ball.GetMainPoints(false);
 						ballsMainPoints.AddRange(field.ball.GetMainPoints(true));
 
-						ballsCenters.Add(field.ball.GetCenter());
+						Vector3 center = field.ball.GetCenter();
+						ballsCenters.Add(center);
+						ballsCenters.AddRange(CUtils.GetPointCross(center));
 					}
 				}
 
