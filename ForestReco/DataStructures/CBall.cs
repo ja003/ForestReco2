@@ -28,6 +28,7 @@ namespace ForestReco
 		{
 			pPoints.Sort((a, b) => b.Z.CompareTo(a.Z));
 
+			//todo: make balltop a list of points and get avg
 			ballTop = pPoints[0];
 			furthestPoint2D = ballTop;
 			furthestPointPlusX = ballTop;
@@ -51,7 +52,7 @@ namespace ForestReco
 					ballBot = point;
 				}
 
-				if(dist2D > GetMaxPointsDist(1) / 2)
+				if(dist2D > GetMaxPointsDist(3) / 2)
 				{
 					isValid = false;
 					return;
@@ -101,6 +102,11 @@ namespace ForestReco
 			{
 				return IsValidMainPoint(furthestPointPlusX) || IsValidMainPoint(furthestPointMinusX);
 			}
+			else if(ballBot != null)
+			{
+				return IsValidMainPoint(furthestPointPlusX) || IsValidMainPoint(furthestPointMinusX) ||
+					IsValidMainPoint(furthestPointPlusY) || IsValidMainPoint(furthestPointMinusY);
+			}
 			return false;
 		}
 
@@ -110,6 +116,9 @@ namespace ForestReco
 			points.Add(ballTop);
 
 			points.AddRange(CUtils.GetPointLine(ballTop, Vector3.UnitZ));
+
+			points.AddRange(CUtils.GetPointLine(furthestPoint2D, -Vector3.UnitZ));
+
 
 			if(ballBot != null)
 			{

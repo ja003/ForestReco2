@@ -433,6 +433,8 @@ namespace ForestReco
 						Vector3 center = field.ball.GetCenter();
 						ballsCenters.Add(center);
 						ballsCenters.AddRange(CUtils.GetPointCross(center));
+
+						//return;
 					}
 				}
 
