@@ -24,6 +24,7 @@ namespace ForestReco
 		public List<Vector3> ballPoints = new List<Vector3>();
 		public List<Vector3> ballsMainPoints = new List<Vector3>();
 		public List<Vector3> ballsCenters = new List<Vector3>();
+		public List<Vector3> ballsSurface = new List<Vector3>();
 
 
 		//main arrays
@@ -75,6 +76,8 @@ namespace ForestReco
 					return ballsMainPoints;
 				case EClass.BallsCenters:
 					return ballsCenters;
+				case EClass.BallsSurface:
+					return ballsSurface;
 
 				case EClass.Ground:
 					return ground;
@@ -426,18 +429,12 @@ namespace ForestReco
 					if(field.ball != null && field.ball.isValid)
 					{
 						ballFields.Add(field);
-						//todo: set main points to the field
-						//mainPoints = field.ball.GetMainPoints(false);
 						ballsMainPoints.AddRange(field.ball.GetMainPoints(true));
-
-						//Vector3 center = field.ball.GetCenter();
-						//ballsCenters.Add(center);
-						//ballsCenters.AddRange(CUtils.GetPointCross(center));
-
-						Vector3 center2 = field.ball.GetCenter2();
-						ballsCenters.Add(center2);
-						ballsCenters.AddRange(CUtils.GetPointCross(center2));
+						
+						ballsCenters.Add(field.ball.center);
+						ballsCenters.AddRange(CUtils.GetPointCross(field.ball.center));
 						//return;
+						ballsSurface.AddRange(field.ball.GetSurfacePoints());
 					}
 				}
 
@@ -448,6 +445,7 @@ namespace ForestReco
 			}
 
 		}
+
 		private void ProcessBuildingPoints()
 		{
 			for(int i = 0; i < building.Count; i++)

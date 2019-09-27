@@ -25,6 +25,7 @@ namespace ForestReco
 		private const float DIST_TOLLERANCE = 0.01f;
 
 		public bool isValid = true;
+		public Vector3 center { get; private set; }
 
 		public CBall(List<Vector3> pPoints)
 		{
@@ -92,6 +93,9 @@ namespace ForestReco
 
 
 			isValid = HasValidMainPoints();
+
+			if(isValid)
+				center = CalculateCenter();
 		}
 
 		private bool HasValidMainPoints()
@@ -243,7 +247,11 @@ namespace ForestReco
 			return BALL_RADIUS + pTolleranceMultiply * DIST_TOLLERANCE;
 		}
 
-		public Vector3 GetCenter()
+		/// <summary>
+		/// Initial simple method for center approximation.
+		/// Not very precise, probably delete.
+		/// </summary>
+		private Vector3 CalculateCenterB()
 		{
 			if(!isValid)
 				return Vector3.Zero;
@@ -296,7 +304,12 @@ namespace ForestReco
 			return approxCenter;
 		}
 
-		public Vector3 GetCenter2()
+		/// <summary>
+		/// Iterates through possible centers and selects the on having smallest diff
+		/// to distance-to-mainPoints function
+		/// </summary>
+		/// <returns></returns>
+		private Vector3 CalculateCenter()
 		{
 			List<Vector3> possibleCenters = GetPossibleCenters();
 			Dictionary<float, Vector3> diffCeters = new Dictionary<float, Vector3>();
@@ -305,25 +318,26 @@ namespace ForestReco
 			foreach(Vector3 possibleCenter in possibleCenters)
 			{
 				float diff = 0;
-				//float diff = GetDiffOfPossibleCenter(ballTop, possibleCenter);
+				//calculate diff to all main points
 				foreach(Vector3 mainPoint in mainPoints)
 				{
 					diff += GetDiffOfPossibleCenter(mainPoint, possibleCenter);
 				}
-				//if(ballBot != null)
-				//{
-				//	diff += GetDiffOfPossibleCenter((Vector3)ballBot, possibleCenter);
-				//}
 
 				const float max_diff = 0.2f;
 				if(diff < max_diff)
-					diffCeters.Add(diff, possibleCenter);
+				{
+					if(!diffCeters.ContainsKey(diff))
+						diffCeters.Add(diff, possibleCenter);
+				}
 			}
 
 			var tmp = diffCeters.OrderBy(key => key.Key);
 			var orderedDiffCenters = tmp.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
 
-			return orderedDiffCenters.First().Value;
+			Vector3 center = orderedDiffCenters.First().Value;
+			//todo: recalculate with higher precision
+			return center;
 		}
 
 		/// <summary>
@@ -372,6 +386,28 @@ namespace ForestReco
 				avg += p;
 			}
 			return avg / pPoints.Count;
+		}
+
+		public List<Vector3> GetSurfacePoints()
+		{
+			List<Vector3> points = new List<Vector3>();
+			const float step = 0.001f;
+			for(float x = -BALL_RADIUS; x < BALL_RADIUS; x += step)
+			{
+				for(float y = -BALL_RADIUS; y < BALL_RADIUS; y += step)
+				{
+					for(float z = -BALL_RADIUS; z < BALL_RADIUS; z += step)
+					{
+						Vector3 point = center + new Vector3(x, y, z);
+						float dist = Vector3.Distance(center, point);
+						if(Math.Abs(dist - GetApproxPointCenterDist()) < step)
+						{
+							points.Add(point);
+						}
+					}
+				}
+			}
+			return points;
 		}
 	}
 }

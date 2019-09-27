@@ -25,6 +25,8 @@ namespace ForestReco
 		private const string BALLS_COLOR = "255 0 0"; 
 		private const string BALLS_MP_COLOR = "0 255 0";
 		private const string BALLS_CENTER_COLOR = "255 0 255";
+		private const string BALLS_SURFACE_COLOR = "255 255 0";
+		
 		//deep pink: 255 20 147
 
 		private const string UNASIGNED_COLOR = "190 190 145"; //pale yellow
@@ -58,6 +60,7 @@ namespace ForestReco
 
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 			{
+				AddPointsTo(ref output, EClass.BallsSurface, ref start);
 				AddPointsTo(ref output, EClass.Balls, ref start);
 				AddPointsTo(ref output, EClass.BallsMainPoints, ref start);
 				AddPointsTo(ref output, EClass.BallsCenters, ref start);
@@ -158,6 +161,8 @@ namespace ForestReco
 					return BALLS_MP_COLOR;
 				case EClass.BallsCenters:
 					return BALLS_CENTER_COLOR;
+				case EClass.BallsSurface:
+					return BALLS_SURFACE_COLOR;
 			}
 			return UNDEFINED_COLOR;
 		}
