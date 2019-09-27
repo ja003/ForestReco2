@@ -19,6 +19,8 @@ namespace ForestReco
 		public Vector3 furthestPointMinusY;
 
 		const float BALL_DIAMETER = 0.145f;
+		private float BALL_RADIUS => BALL_DIAMETER / 2;
+
 		const float DEBUG_OFFSET = 0.0005f;
 		private const float DIST_TOLLERANCE = 0.01f;
 
@@ -115,9 +117,11 @@ namespace ForestReco
 			List<Vector3> points = new List<Vector3>();
 			points.Add(ballTop);
 
-			points.AddRange(CUtils.GetPointLine(ballTop, Vector3.UnitZ));
+			if(pAddDebugLine)
+				points.AddRange(CUtils.GetPointLine(ballTop, Vector3.UnitZ));
 
-			points.AddRange(CUtils.GetPointLine(furthestPoint2D, -Vector3.UnitZ));
+			if(pAddDebugLine)
+				points.AddRange(CUtils.GetPointLine(furthestPoint2D, -Vector3.UnitZ));
 
 
 			if(ballBot != null)
@@ -234,6 +238,11 @@ namespace ForestReco
 			return BALL_DIAMETER + pTolleranceMultiply * DIST_TOLLERANCE;
 		}
 
+		private float GetApproxPointCenterDist(int pTolleranceMultiply = 0)
+		{
+			return BALL_RADIUS + pTolleranceMultiply * DIST_TOLLERANCE;
+		}
+
 		public Vector3 GetCenter()
 		{
 			if(!isValid)
@@ -285,6 +294,74 @@ namespace ForestReco
 			}
 
 			return approxCenter;
+		}
+
+		public Vector3 GetCenter2()
+		{
+			List<Vector3> possibleCenters = GetPossibleCenters();
+			Dictionary<float, Vector3> diffCeters = new Dictionary<float, Vector3>();
+			List<Vector3> mainPoints = GetMainPoints(false);
+
+			foreach(Vector3 possibleCenter in possibleCenters)
+			{
+				float diff = 0;
+				//float diff = GetDiffOfPossibleCenter(ballTop, possibleCenter);
+				foreach(Vector3 mainPoint in mainPoints)
+				{
+					diff += GetDiffOfPossibleCenter(mainPoint, possibleCenter);
+				}
+				//if(ballBot != null)
+				//{
+				//	diff += GetDiffOfPossibleCenter((Vector3)ballBot, possibleCenter);
+				//}
+
+				const float max_diff = 0.2f;
+				if(diff < max_diff)
+					diffCeters.Add(diff, possibleCenter);
+			}
+
+			var tmp = diffCeters.OrderBy(key => key.Key);
+			var orderedDiffCenters = tmp.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
+
+			return orderedDiffCenters.First().Value;
+		}
+
+		/// <summary>
+		/// Returns the difference between ball radius and distance of given points.
+		/// For real center it should return 0.
+		/// </summary>
+		private float GetDiffOfPossibleCenter(Vector3 pPoint, Vector3 pPossibleCenter)
+		{
+			float dist = Vector3.Distance(pPoint, pPossibleCenter);
+			return Math.Abs(dist - BALL_RADIUS);
+		}
+
+		/// <summary>
+		/// Returns points bellow the ball top in 2D distance < ball radius and
+		/// Z difference cca equal to ball radius
+		/// </summary>
+		private List<Vector3> GetPossibleCenters()
+		{
+			List<Vector3> centers = new List<Vector3>();
+
+			const float step = 0.01f;
+			for(float x = -BALL_RADIUS; x < BALL_RADIUS; x += step)
+			{
+				for(float y = -BALL_RADIUS; y < BALL_RADIUS; y += step)
+				{
+					for(float z = GetApproxPointCenterDist(-5); z < GetApproxPointCenterDist(5); z += step)
+					{
+						Vector3 possibleCenter = ballTop + new Vector3(x, y, -z);
+						float dist = Vector3.Distance(ballTop, possibleCenter);
+						if(dist < GetApproxPointCenterDist(2))
+						{
+							centers.Add(possibleCenter);
+						}
+					}
+				}
+			}
+
+			return centers;
 		}
 
 		private static Vector3 GetAverage(List<Vector3> pPoints)
