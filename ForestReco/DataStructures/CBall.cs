@@ -311,11 +311,28 @@ namespace ForestReco
 		/// <returns></returns>
 		private Vector3 CalculateCenter()
 		{
+			CDebug.WriteLine($"Ball = {this}");
+
 			List<Vector3> possibleCenters = GetPossibleCenters();
+			Vector3 center = SelectBestCenter(possibleCenters);
+			CDebug.WriteLine($"center = {center}");
+
+			possibleCenters = GetPointsInRadius(center, 0.01f, 0.001f);
+			center = SelectBestCenter(possibleCenters);
+			CDebug.WriteLine($"new center = {center}");
+
+			return center;
+		}
+
+		/// <summary>
+		/// Returns the center which has the most equal distance to all of the main points.
+		/// </summary>
+		private Vector3 SelectBestCenter(List<Vector3> pPossibleCenters)
+		{
 			Dictionary<float, Vector3> diffCeters = new Dictionary<float, Vector3>();
 			List<Vector3> mainPoints = GetMainPoints(false);
 
-			foreach(Vector3 possibleCenter in possibleCenters)
+			foreach(Vector3 possibleCenter in pPossibleCenters)
 			{
 				float diff = 0;
 				//calculate diff to all main points
@@ -336,7 +353,6 @@ namespace ForestReco
 			var orderedDiffCenters = tmp.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
 
 			Vector3 center = orderedDiffCenters.First().Value;
-			//todo: recalculate with higher precision
 			return center;
 		}
 
@@ -378,6 +394,29 @@ namespace ForestReco
 			return centers;
 		}
 
+		private static List<Vector3> GetPointsInRadius(Vector3 pPoint, float pRadius, float pStep)
+		{
+			List<Vector3> centers = new List<Vector3>();
+
+			for(float x = -pRadius; x < pRadius; x += pStep)
+			{
+				for(float y = -pRadius; y < pRadius; y += pStep)
+				{
+					for(float z = -pRadius; z < pRadius; z += pStep)
+					{
+						Vector3 possibleCenter = pPoint + new Vector3(x, y, z);
+						float dist = Vector3.Distance(pPoint, possibleCenter);
+						if(dist < pRadius)
+						{
+							centers.Add(possibleCenter);
+						}
+					}
+				}
+			}
+
+			return centers;
+		}
+
 		private static Vector3 GetAverage(List<Vector3> pPoints)
 		{
 			Vector3 avg = Vector3.Zero;
@@ -388,6 +427,10 @@ namespace ForestReco
 			return avg / pPoints.Count;
 		}
 
+		/// <summary>
+		/// Generates points which are in radius distance from the center
+		/// </summary>
+		/// <returns></returns>
 		public List<Vector3> GetSurfacePoints()
 		{
 			List<Vector3> points = new List<Vector3>();
@@ -408,6 +451,11 @@ namespace ForestReco
 				}
 			}
 			return points;
+		}
+
+		public override string ToString()
+		{
+			return $"Ball[{isValid}], center = {center}, ballTop = {ballTop}";
 		}
 	}
 }
