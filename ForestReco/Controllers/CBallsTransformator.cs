@@ -13,32 +13,63 @@ namespace ForestReco
 	/// </summary>
 	public static class CBallsTransformator
 	{
+		public const float MAX_OFFSET = 0.001F;
+
 		/// <summary>
-		/// Calculates a rotation and translation that needs to be applied
-		/// on pSetA to match pSetB
+		/// Calculates rigid transformations between all permutations of pSetA and pSetB
+		/// and returns the best one (having the smallest offset).
+		/// This is done due to the expected indexing in function CalculateRigidTransform
 		/// </summary>
-		public static void GetRigidTransform(List<Vector3> pSetA, List<Vector3> pSetB)
+		public static CRigidTransform GetRigidTransform(List<Vector3> pSetA, List<Vector3> pSetB)
 		{
+			CDebug.WriteLine($"GetRigidTransform from set : {CDebug.GetString(pSetA)} to {CDebug.GetString(pSetB)}");
 			if(pSetA.Count != pSetB.Count)
 			{
-				return;
+				CDebug.Error("Sets copunt dont match");
+				return null;
 			}
-			CDebug.WriteLine($"GetRigidTransform from set : {CDebug.GetString(pSetA)} to {CDebug.GetString(pSetB)}");
 
-			//List<Vector3> setAorig;
-			Vector3[] setAorig = new Vector3[pSetA.Count];
-			pSetA.CopyTo(setAorig);
-			Vector3[] setBorig = new Vector3[pSetB.Count];
-			pSetB.CopyTo(setBorig);
+			IEnumerable<IEnumerable<Vector3>> setApermutations = pSetA.Permute();
+			List<CRigidTransform> rigTransforms = new List<CRigidTransform>();
+			foreach(var permutation in setApermutations)
+			{
+				CRigidTransform rigTransform = CalculateRigidTransform(permutation.ToList(), pSetB);
+				rigTransforms.Add(rigTransform);
+				//CDebug.WriteLine($"{rigTransform}");
+				if(rigTransform.offset < MAX_OFFSET)
+					break;
+			}
 
-			Vector3 centroid_A = CUtils.GetAverage(pSetA);
-			Vector3 centroid_B = CUtils.GetAverage(pSetB);
+			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
+				(curMin, x) => x.offset < curMin.offset ? x : curMin);
 
-			CUtils.MovePointsBy(ref pSetA, -centroid_A);
-			CUtils.MovePointsBy(ref pSetB, -centroid_B);
+			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
+			return minOffsetRigTransform;
+		}
+		
+		/// <summary>
+		/// Calculates a rotation and translation that needs to be applied
+		/// on pSetA to match pSetB.
+		/// The process expects the matching points from sets having the same index.
+		/// </summary>
+		private static CRigidTransform CalculateRigidTransform(List<Vector3> pSetA, List<Vector3> pSetB)
+		{		
+			//prevent modification of the input parameters
+			List<Vector3> setA = CUtils.GetCopy(pSetA);
+			List<Vector3> setB = CUtils.GetCopy(pSetB);
 
-			Matrix mA = CreateMatrix(pSetA);
-			Matrix mB = CreateMatrix(pSetB);
+			//setA and setB will be modified
+			List<Vector3> setAorig = CUtils.GetCopy(pSetA);
+			List<Vector3> setBorig = CUtils.GetCopy(pSetB);
+
+			Vector3 centroid_A = CUtils.GetAverage(setA);
+			Vector3 centroid_B = CUtils.GetAverage(setB);
+
+			CUtils.MovePointsBy(ref setA, -centroid_A);
+			CUtils.MovePointsBy(ref setB, -centroid_B);
+
+			Matrix mA = CreateMatrix(setA);
+			Matrix mB = CreateMatrix(setB);
 			Matrix A_multiply_B = mA.MultiplyTransposeBy(mB);
 
 			double[,] H = ConvertToDouble(A_multiply_B);
@@ -57,12 +88,13 @@ namespace ForestReco
 
 			Matrix Vt = new Matrix(vt);
 			Matrix U = new Matrix(u);
-			Matrix R = Vt.MultiplyTransposeBy(U.Transpose(true));
+			Matrix rotation = Vt.MultiplyTransposeBy(U.Transpose(true));
 			//R = Vt.T * U.T
 
-			if(GetDeterminant(ConvertToDouble(R), 3) < 0)
+			if(GetDeterminant(ConvertToDouble(rotation), 3) < 0)
 			{
-				CDebug.Warning("Reflection detected");
+				//CDebug.Warning("Reflection detected");
+
 				//for(int i = 0; i < R.Rows; i++)
 				//{
 				//	R[i, 2] *= -1; // NOT THE SAME!
@@ -73,7 +105,7 @@ namespace ForestReco
 				//Matrices need reinitialization - they are modified
 				Vt = new Matrix(vt);
 				U = new Matrix(u);
-				R = Vt.MultiplyTransposeBy(U.Transpose(true));
+				rotation = Vt.MultiplyTransposeBy(U.Transpose(true));
 			}
 
 			Matrix centerA =
@@ -82,41 +114,47 @@ namespace ForestReco
 				new Matrix(new double[,] { { centroid_B.X, centroid_B.Y, centroid_B.Z } });
 
 			//create a copy - operations affects the original object
-			Matrix Rcopy = new Matrix(R);
-			Matrix _R_mult_centerA = Rcopy.Negate().MultiplyByTranspose(centerA);
-			Matrix T = _R_mult_centerA + centerB.Transpose(true);
+			Matrix rotationCopy = new Matrix(rotation);
+			Matrix _R_mult_centerA = rotationCopy.Negate().MultiplyByTranspose(centerA);
+			Matrix translation = _R_mult_centerA + centerB.Transpose(true);
 
-			CDebug.WriteLine("Rotation = ");
-			CDebug.WriteLine("" + R);
-			CDebug.WriteLine("Translation = ");
-			CDebug.WriteLine("" + T);
+			//CDebug.WriteLine("Rotation = ");
+			//CDebug.WriteLine("" + R);
+			//CDebug.WriteLine("Translation = ");
+			//CDebug.WriteLine("" + T);
 
-			Check(setAorig.ToList(), setBorig.ToList(), R, T);
+			float offset = GetOffset(setAorig, setBorig, rotation, translation);
+
+			return new CRigidTransform(rotation, translation, offset);
 		}
 
+		
 
 
 		/// <summary>
-		/// Checks if all points from pSetA transforms correctly 
-		/// to one of points from the pSetB after applying
-		/// pRotation and pTranslation
+		/// Returns sum of difference between transformed points from pSetA
+		/// and the closest point from pSetB
 		/// </summary>
-		private static void Check(List<Vector3> pSetA, List<Vector3> pSetB, Matrix pRotation, Matrix pTranslation)
+		private static float GetOffset(List<Vector3> pSetA, List<Vector3> pSetB, Matrix pRotation, Matrix pTranslation)
 		{
-			CDebug.WriteLine("CHECK");
+			float offset = 0;
+			//CDebug.WriteLine("GetOffset");
 			foreach(Vector3 p in pSetA)
 			{
 				Vector3 transformedP = GetTransformed(p, pRotation, pTranslation);
-				CDebug.WriteLine($"Point {p} transformed to {transformedP}. Result = {SetContains(pSetB, transformedP, 0.01f)}");
+				float distance = GetDistanceToClosest(transformedP, pSetB);
+				offset += distance;
+				//CDebug.WriteLine($"Point {p} transformed to {transformedP}. Result = {SetContains(pSetB, transformedP, 0.01f)}");
 			}
-			CDebug.WriteLine("=====");
+			//CDebug.WriteLine("=====");
+			return offset;
 		}
 
 		/// <summary>
 		/// True = one of points from pSet has distance to the pPoint 
 		/// lower than pMaxOffset
 		/// </summary>
-		private static object SetContains(List<Vector3> pSet, Vector3 pPoint, float pMaxOffset)
+		private static bool SetContains(List<Vector3> pSet, Vector3 pPoint, float pMaxOffset)
 		{
 			foreach(Vector3 p in pSet)
 			{
@@ -124,6 +162,21 @@ namespace ForestReco
 					return true;
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// Returns a distance from pPoint to the closest point from pSet
+		/// </summary>
+		private static float GetDistanceToClosest(Vector3 pPoint, List<Vector3> pSet)
+		{
+			float distance = int.MaxValue;
+			foreach(Vector3 p in pSet)
+			{
+				float dist = Vector3.Distance(p, pPoint);
+				if(dist < distance)
+					distance = dist;
+			}
+			return distance;
 		}
 
 		private static Vector3 GetTransformed(Vector3 pPoint, Matrix pRotation, Matrix pTranslation)
@@ -193,6 +246,71 @@ namespace ForestReco
 				m[i, 2] = p.Z;
 			}
 			return m;
+		}
+
+		public static IEnumerable<IEnumerable<T>> Permute<T>(this IEnumerable<T> sequence)
+		{
+			if(sequence == null)
+			{
+				yield break;
+			}
+
+			var list = sequence.ToList();
+
+			if(!list.Any())
+			{
+				yield return Enumerable.Empty<T>();
+			}
+			else
+			{
+				var startingElementIndex = 0;
+
+				foreach(var startingElement in list)
+				{
+					var index = startingElementIndex;
+					var remainingItems = list.Where((e, i) => i != index);
+
+					foreach(var permutationOfRemainder in remainingItems.Permute())
+					{
+						yield return startingElement.Concat(permutationOfRemainder);
+					}
+
+					startingElementIndex++;
+				}
+			}
+		}
+
+		private static IEnumerable<T> Concat<T>(this T firstElement, IEnumerable<T> secondSequence)
+		{
+			yield return firstElement;
+			if(secondSequence == null)
+			{
+				yield break;
+			}
+
+			foreach(var item in secondSequence)
+			{
+				yield return item;
+			}
+		}
+	}
+
+	public class CRigidTransform
+	{
+		Matrix rotation;
+		Matrix translation;
+		public float offset { get; private set; }
+
+		public CRigidTransform(Matrix pRotation, Matrix pTransform, float pOffset)
+		{
+			rotation = pRotation;
+			translation = pTransform;
+			this.offset = pOffset;
+		}
+
+		public override string ToString()
+		{
+			return $"RT:\n-rotation =\n{rotation}-translation =\n{translation}-offset: {offset}";
 		}
 	}
 }

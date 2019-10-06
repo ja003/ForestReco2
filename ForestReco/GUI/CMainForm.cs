@@ -2394,7 +2394,7 @@ namespace ForestReco
 		private void buttonTest1_Click(object sender, EventArgs e)
 		{
 			CDebug.WriteLine("TEST", true, true);
-
+			CRigidTransform rigTransform;
 			List<Vector3> setA = new List<Vector3>()
 			{
 				new Vector3(1,0,0),
@@ -2449,6 +2449,42 @@ namespace ForestReco
 				new Vector3(1,3,0),
 				new Vector3(2,1,0),
 				new Vector3(1,1,1),
+				new Vector3(0,1,0),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(3,-1,0),
+				new Vector3(1,-1,1),
+				new Vector3(1,0,0),
+				new Vector3(1,-1,-1),
+			};
+			CBallsTransformator.GetRigidTransform(setA, setB);
+
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,3,0),
+				new Vector3(2,1,0),
+				new Vector3(1,1,1),
+				new Vector3(0,1,0),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(1,-1,-1),
+				new Vector3(3,-1,0),
+				new Vector3(1,-1,1),
+				new Vector3(1,0,0),
+			};
+			CBallsTransformator.GetRigidTransform(setA, setB);
+			return;
+
+
+			//////////////
+
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,3,0),
+				new Vector3(2,1,0),
+				new Vector3(1,1,1),
 			};
 			setB = new List<Vector3>()
 			{
@@ -2456,7 +2492,7 @@ namespace ForestReco
 				new Vector3(1,-1,1),
 				new Vector3(1,0,0),
 			};
-			CBallsTransformator.GetRigidTransform(setA, setB);
+			rigTransform = CBallsTransformator.GetRigidTransform(setA, setB);
 			return;
 			//////////////
 			setA = new List<Vector3>()

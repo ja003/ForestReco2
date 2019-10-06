@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 
 namespace ForestReco
@@ -393,5 +394,14 @@ namespace ForestReco
 				pPoints[i] += pDirection;
 			}
 		}
+
+		public static List<Vector3> GetCopy(List<Vector3> pSet)
+		{
+			Vector3[] setAorig = new Vector3[pSet.Count];
+			pSet.CopyTo(setAorig);
+			List<Vector3> setAorigV = setAorig.ToList();
+			return setAorigV;
+		}
+
 	}
 }
