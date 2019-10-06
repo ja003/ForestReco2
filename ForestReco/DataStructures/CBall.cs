@@ -162,9 +162,7 @@ namespace ForestReco
 			}
 			return points;
 		}
-
-
-
+			   
 		private bool IsValidMainPoint(Vector3 pPoint)
 		{
 			return Vector3.Distance(ballTop, pPoint) > DIST_TOLLERANCE &&

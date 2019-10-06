@@ -374,5 +374,24 @@ namespace ForestReco
 			}
 			return points;
 		}
+
+		public static Vector3 GetAverage(List<Vector3> pPoints)
+		{
+			Vector3 avg = Vector3.Zero;
+			foreach(Vector3 p in pPoints)
+			{
+				avg += p;
+			}
+			avg /= pPoints.Count;
+			return avg;
+		}
+
+		public static void MovePointsBy(ref List<Vector3> pPoints, Vector3 pDirection)
+		{
+			for(int i = 0; i < pPoints.Count; i++)
+			{
+				pPoints[i] += pDirection;
+			}
+		}
 	}
 }

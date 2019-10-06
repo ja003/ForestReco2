@@ -32,6 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\..\..\Users\ja004\Documents\ForestReco\algLib\csharp\net-core\alglibnet2.dll</HintPath>
+    </Reference>
+    <Reference Include="csMatrix, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\csMatrix.1.0.5\lib\netstandard2.0\csMatrix.dll</HintPath>
+    </Reference>
     <Reference Include="GeoAPI, Version=1.7.5.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
       <HintPath>..\packages\GeoAPI.Core.1.7.5\lib\net45\GeoAPI.dll</HintPath>
     </Reference>
@@ -81,6 +87,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\CBallsTransformator.cs" />
     <Compile Include="Controllers\CBiomassController.cs" />
     <Compile Include="Controllers\CBitmapExporter.cs" />
     <Compile Include="Controllers\CCmdController.cs" />

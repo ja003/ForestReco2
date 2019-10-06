@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Windows.Forms;
 
 // ReSharper disable ConditionIsAlwaysTrueOrFalse - TEST VALUES
@@ -2392,22 +2393,114 @@ namespace ForestReco
 
 		private void buttonTest1_Click(object sender, EventArgs e)
 		{
-			CBiomassController.Init(
-				CParameterSetter.GetStringSettings(ESettings.dbh),
-				CParameterSetter.GetStringSettings(ESettings.agb));
+			CDebug.WriteLine("TEST", true, true);
 
-			int height = 5;
-			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
-			height = 10;
-			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
-			height = 15;
-			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
-			height = 20;
-			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
-			height = 25;
-			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
-			height = 30;
-			CDebug.WriteLine($"DBH({height}) = {CBiomassController.GetTreeStemDiameter(height)}");
+			List<Vector3> setA = new List<Vector3>()
+			{
+				new Vector3(1,0,0),
+				new Vector3(0,1,0),
+				new Vector3(0,0,1),
+			};
+			List<Vector3> setB = new List<Vector3>()
+			{
+				new Vector3(-1,0,0),
+				new Vector3(0,1,0),
+				new Vector3(0,0,-1),
+			};
+			//CBallsTransformator.GetRigidTransform(setA, setB);
+
+			//////////////
+
+			//works in python - ok
+			setA = new List<Vector3>()
+			{
+				new Vector3(0,2,0),
+				new Vector3(1,0,0),
+				new Vector3(0,0,1),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(2,-1,0),
+				new Vector3(0,-2,0),
+				new Vector3(0,-1,1),
+			};
+			//CBallsTransformator.GetRigidTransform(setA, setB);		
+			//
+			
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,0,0),
+				new Vector3(0,1,0),
+				new Vector3(0,0,1),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(1,0,0),
+				new Vector3(0,1,0),
+				new Vector3(0,0,1),
+			};
+			CUtils.MovePointsBy(ref setB, Vector3.One);
+			//CBallsTransformator.GetRigidTransform(setA, setB);
+
+			//////////////
+
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,3,0),
+				new Vector3(2,1,0),
+				new Vector3(1,1,1),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(3,-1,0),
+				new Vector3(1,-1,1),
+				new Vector3(1,0,0),
+			};
+			CBallsTransformator.GetRigidTransform(setA, setB);
+			return;
+			//////////////
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,3,0),
+				new Vector3(2,1,0),
+				new Vector3(1,1,1),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(3,-1,0),
+				new Vector3(1,-1,1),
+				new Vector3(1,0,0),
+			};
+			CBallsTransformator.GetRigidTransform(setA, setB);
+			//////////////
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,3,0),
+				new Vector3(2,1,0),
+				new Vector3(1,1,1),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(1,-1,1),
+				new Vector3(3,-1,0),
+				new Vector3(1,0,0),
+			};
+			CBallsTransformator.GetRigidTransform(setA, setB);
+			//////////////
+			setA = new List<Vector3>()
+			{
+				new Vector3(1,3,0),
+				new Vector3(2,1,0),
+				new Vector3(1,1,1),
+			};
+			setB = new List<Vector3>()
+			{
+				new Vector3(1,-1,1),
+				new Vector3(1,0,0),
+				new Vector3(3,-1,0),
+			};
+			CBallsTransformator.GetRigidTransform(setA, setB);
+
 		}
 
 		#region range

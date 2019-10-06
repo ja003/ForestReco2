@@ -22,6 +22,18 @@ namespace ForestReco
 			countedStepsCount = GetCountedStepsCount();
 		}
 
+		public static string GetString(List<Vector3> pPoints)
+		{
+			string s = "{";
+			foreach(Vector3 p in pPoints)
+			{
+				s += $"{p} ";
+			}
+			s = s.Remove(s.Length - 1);
+			s += "}";
+			return s;
+		}
+
 		public static void Count(string pText, int pCount, int pOutOf = -1)
 		{
 			WriteLine(pText + ": " + pCount + (pOutOf > 0 ? " out of " + pOutOf : ""));
