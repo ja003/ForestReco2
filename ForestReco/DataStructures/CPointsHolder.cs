@@ -354,6 +354,9 @@ namespace ForestReco
 		/// </summary>
 		private void ProcessGroundPoints()
 		{
+			if(CRxpParser.IsRxp)
+				return;
+
 			for(int i = 0; i < ground.Count; i++)
 			{
 				if(CProjectData.backgroundWorker.CancellationPending)
@@ -422,9 +425,13 @@ namespace ForestReco
 
 				//List<Vector3> mainPoints = new List<Vector3>();
 
+				DateTime debugStart = DateTime.Now;
 				//process
-				foreach(CBallField field in sortedFields)
+				for(int i = 0; i < sortedFields.Count; i++)
 				{
+					CDebug.Progress(i, sortedFields.Count, 100000, ref debugStart, debugStart, "Detecting balls");
+
+					CBallField field = (CBallField)sortedFields[i];
 					field.Detect();
 					if(field.ball != null && field.ball.isValid)
 					{

@@ -119,28 +119,41 @@ namespace ForestReco
 
 			DateTime startTime = DateTime.Now;
 			currentTileIndex = pTileIndex;
-			string[] lines = CProgramLoader.GetFileLines(pTilePath);
+					
 
-			bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);
-			if(linesOk && CHeaderInfo.HasHeader(lines[0]))
+			List<Tuple<EClass, Vector3>> parsedLines;
+			if(CRxpParser.IsRxp)
 			{
-				//todo: where to init header?
-				CProjectData.currentTileHeader = new CHeaderInfo(lines);
+				CRxpInfo rxpInfo = CRxpParser.ParseFile(pTilePath);
+				parsedLines = rxpInfo.ParsedLines;
+				//for now we expect only one tile in rxp processing
+				CProjectData.currentTileHeader = rxpInfo.Header;
+				CProjectData.mainHeader = rxpInfo.Header;
 			}
 			else
 			{
-				const string noHeaderMsg = "Processed tile has no header";
-				CDebug.Error(noHeaderMsg);
-				throw new Exception(noHeaderMsg);
+				string[] lines = CProgramLoader.GetFileLines(pTilePath);
+				bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);
+				if(linesOk && CHeaderInfo.HasHeader(lines[0]))
+				{
+					//todo: where to init header?
+					CProjectData.currentTileHeader = new CHeaderInfo(lines);
+				}
+				else
+				{
+					const string noHeaderMsg = "Processed tile has no header";
+					CDebug.Error(noHeaderMsg);
+					throw new Exception(noHeaderMsg);
+				}
+				parsedLines = CProgramLoader.ParseLines(lines, true);
 			}
 
+			//has to be called after currentTileHeader is assigned
 			CProjectData.ReInit(pTileIndex); //has to reinit after each tile is processed
 			CTreeManager.Reinit();
 
 			if(CProjectData.backgroundWorker.CancellationPending)
 				return EProcessResult.Cancelled;
-
-			List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, true);
 
 			CProgramLoader.ProcessParsedLines(parsedLines);
 

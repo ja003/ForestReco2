@@ -95,7 +95,12 @@ namespace ForestReco
 		/// </summary>
 		private static Vector3 GetCurrentTileOffset()
 		{
-			Vector3 diff = CProjectData.mainHeader.Center - CProjectData.currentTileHeader.Center;
+			CHeaderInfo mainHeader = CProjectData.mainHeader;
+			//in rxp no main header is assigned
+			if(mainHeader == null)
+				return Vector3.Zero;
+
+			Vector3 diff = mainHeader.Center - CProjectData.currentTileHeader.Center;
 			diff.Y *= -1; //to match coord style //TODO: check..weird - checked => correct
 			return diff;
 		}

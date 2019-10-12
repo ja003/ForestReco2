@@ -13,10 +13,10 @@ namespace ForestReco
 
 		public static void Init()
 		{
+			Trees = new List<CRefTree>();
 			if(CRxpParser.IsRxp)
 				return;
 
-			Trees = new List<CRefTree>();
 			List<string> treeFileNames = GetTreeFileNames();
 			LoadTrees(treeFileNames);
 		}

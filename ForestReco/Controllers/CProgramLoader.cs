@@ -40,7 +40,7 @@ namespace ForestReco
 			{
 				CDebug.Error("header lines are null");
 				//todo: is it ok to leave it as null??
-				CProjectData.mainHeader = new CHeaderInfo();
+				//CProjectData.mainHeader = new CHeaderInfo();
 			}
 			else
 			{
@@ -54,13 +54,7 @@ namespace ForestReco
 		public static string[] GetFileLines(string pPreprocessedFilePath)
 		{
 			CDebug.Step(EProgramStep.LoadLines);
-
-			if(CRxpParser.IsRxp)
-			{
-				return CRxpParser.GetFileLines(pPreprocessedFilePath);
-			}
-
-
+			
 			string[] lines = File.ReadAllLines(pPreprocessedFilePath);
 			CDebug.Action("load", pPreprocessedFilePath);
 

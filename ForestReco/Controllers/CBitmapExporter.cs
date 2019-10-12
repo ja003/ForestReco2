@@ -39,14 +39,15 @@ namespace ForestReco
 		private static Pen treeBorderPen = new Pen(treeBorderBrush);
 		private static Pen branchPen = new Pen(branchBrush);
 
+		private static bool exportBitmap => CParameterSetter.GetBoolSettings(ESettings.exportBitmap) && !CRxpParser.IsRxp;
+
 		/// <summary>
 		/// Create a bitmap big enough to store all results together
 		/// Warning: can be inited only after main header is set
 		/// </summary>
 		public static void Init()
 		{		
-			if(!CParameterSetter.GetBoolSettings(ESettings.exportBitmap) ||
-				CRxpParser.IsRxp)
+			if(!exportBitmap)
 				return;
 
 			float mainArrayWidth = CProjectData.mainHeader.Width;
@@ -58,7 +59,7 @@ namespace ForestReco
 
 		public static void ExportMain()
 		{
-			if(!exportMain || !CParameterSetter.GetBoolSettings(ESettings.exportBitmap))
+			if(!exportMain || !exportBitmap)
 				return;
 
 			//mainMap.SetPixel(0, 0, treeColor);
@@ -78,7 +79,7 @@ namespace ForestReco
 
 		public static void Export(int pTileIndex)
 		{
-			if(!CParameterSetter.GetBoolSettings(ESettings.exportBitmap))
+			if(!exportBitmap)
 				return;
 
 			//init for each tile

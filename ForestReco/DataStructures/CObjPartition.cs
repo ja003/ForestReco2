@@ -194,7 +194,7 @@ namespace ForestReco
 			//	CProjectData.saveFileName, CProjectData.outputTileSubfolder);
 
 			//just creates a folder (for analytics etc)
-			if(!CParameterSetter.GetBoolSettings(ESettings.export3d))
+			if(!CParameterSetter.GetBoolSettings(ESettings.export3d) || CRxpParser.IsRxp)
 			{
 				CDebug.WriteLine("Skipping export");
 				return;

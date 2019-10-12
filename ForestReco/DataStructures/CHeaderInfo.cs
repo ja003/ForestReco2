@@ -23,10 +23,10 @@ namespace ForestReco
 		public float Width => TopRightCorner.X - BotLeftCorner.X; //of array
 		public float Height => TopRightCorner.Y - BotLeftCorner.Y; //of array
 
-		public CHeaderInfo()
-		{
+		//public CHeaderInfo()
+		//{
 
-		}
+		//}
 
 		public CHeaderInfo(string[] lines)
 		{
@@ -43,13 +43,27 @@ namespace ForestReco
 			if(pMaxLine.Length == 0)
 				throw new Exception($"Invalid header line pMaxLine");
 
-			ScaleFactor = (Vector3)ParseLineVector3(pScaleFactorLine);
-			Offset = (Vector3)ParseLineVector3(pOffsetLine);
+			SetValues(
+				(Vector3)ParseLineVector3(pScaleFactorLine), 
+				(Vector3)ParseLineVector3(pOffsetLine), 
+				ParseLineVector3(pMinLine), 
+				ParseLineVector3(pMaxLine));
+		}
+
+		public CHeaderInfo(Vector3 pScale, Vector3 pOffset, Vector3 pMin, Vector3 pMax)
+		{
+			SetValues(pScale, pOffset, (CVector3D)pMin, (CVector3D)pMax);
+		}
+
+		private void SetValues(Vector3 pScaleFactor, Vector3 pOffset, CVector3D pMin, CVector3D pMax)
+		{
+			ScaleFactor = pScaleFactor;
+			Offset = pOffset;
 			//Offset.Z = 0; //given Z offset will not be used
-			Min_orig = ParseLineVector3(pMinLine);
+			Min_orig = pMin;
 			CVector3D minDouble = Min_orig - Offset;
 			Min = (Vector3)minDouble;
-			Max_orig = ParseLineVector3(pMaxLine);
+			Max_orig = pMax;
 			CVector3D maxDouble = Max_orig - Offset;
 			Max = (Vector3)maxDouble;
 
