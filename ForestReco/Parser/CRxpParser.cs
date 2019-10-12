@@ -11,9 +11,9 @@ namespace ForestReco
 	{
 		public static bool IsRxp => CParameterSetter.GetStringSettings(ESettings.forestFileExtension) == ".rxp";
 
-		public static string[] GetFileLinesDebug(string pFile)
+		public static string[] GetDebugHeaderLines()
 		{
-			string[] result = new string[20];
+			string[] result = new string[19];
 			for(int i = 0; i <= 14; i++)
 			{
 				result[i] = "%";
@@ -23,7 +23,7 @@ namespace ForestReco
 			result[16] = "% offset x y z               0 0 0";
 			result[17] = "% min x y z               0 0 0";
 			result[18] = "% max x y z               0 0 0";
-			result[19] = "-20.10000	-3.21350	631.06150	0";
+			//result[19] = "-20.10000	-3.21350	631.06150	0";
 			return result;
 		}
 
@@ -35,7 +35,33 @@ namespace ForestReco
 			int opened = scanifc_point3dstream_open_with_logging(pFile, ref sync_to_pps, "log.txt", ref h3ds);
 			Console.WriteLine($"opened = {opened}, h3ds = {h3ds}");
 
-			return GetFileLinesDebug(pFile);
+			uint PointCount = 1;
+			int EndOfFrame = 1;
+			const uint BLOCK_SIZE = 1000;
+			scanifc_xyz32[] BufferXYZ = new scanifc_xyz32[BLOCK_SIZE];
+			scanifc_attributes[] BufferMISC = new scanifc_attributes[BLOCK_SIZE];
+			ulong[] BufferTIME = new ulong[BLOCK_SIZE];
+
+			List<string> fileLines = new List<string>();
+
+			fileLines.AddRange(GetDebugHeaderLines().ToList<string>());
+
+			while(PointCount != 0 || EndOfFrame != 0)
+			{
+				int read = scanifc_point3dstream_read(
+							h3ds, BLOCK_SIZE,
+							BufferXYZ, BufferMISC, BufferTIME,
+							ref PointCount, ref EndOfFrame);
+				for(int i = 0; i < PointCount; i++)
+				{
+					scanifc_xyz32 xyz = BufferXYZ[i];
+					Console.WriteLine($"BufferXYZ = {xyz.x},{xyz.y},{xyz.z}");
+
+					fileLines.Add(xyz.ToString());
+				}
+			}
+					   
+			return fileLines.ToArray();
 		}
 
 
@@ -76,6 +102,11 @@ namespace ForestReco
 		public float x;
 		public float y;
 		public float z;
+
+		public override string ToString()
+		{
+			return $"{x} {y} {z} 0";
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
