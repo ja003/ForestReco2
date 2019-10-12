@@ -35,7 +35,7 @@ namespace ForestReco
 		private const string UNDEFINED_COLOR = "0 0 0"; //black
 
 		private const string NUM_FORMAT = "0.00";
-		private const int DEBUG_FREQUENCY = 100;
+		private const int DEBUG_FREQUENCY = 10000;
 
 		public static void Init()
 		{

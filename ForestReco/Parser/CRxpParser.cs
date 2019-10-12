@@ -33,7 +33,7 @@ namespace ForestReco
 			int sync_to_pps = 0;
 			IntPtr h3ds = IntPtr.Zero;
 
-			int opened = scanifc_point3dstream_open_with_logging(pFile, ref sync_to_pps, "log.txt", ref h3ds);
+			int opened = scanifc_point3dstream_open(pFile, ref sync_to_pps, ref h3ds);
 			Console.WriteLine($"opened = {opened}, h3ds = {h3ds}");
 
 			uint PointCount = 1;
@@ -52,10 +52,20 @@ namespace ForestReco
 
 			int readIteration = 0;
 			DateTime debugStart = DateTime.Now;
+			DateTime previousDebugStart = DateTime.Now;
+
+			int maxLinesToLoad = int.MaxValue; //5000000
 			while(PointCount != 0 || EndOfFrame != 0)
 			{
+				//debug smaller batch
+				if(fileLines.Count >= maxLinesToLoad)
+					break;
+
+				if(CProjectData.backgroundWorker.CancellationPending)
+					break;
+
 				readIteration++;
-				CDebug.Progress(readIteration, int.MaxValue, 100000, ref debugStart, debugStart, "Parsing Rxp file (size unknown)");
+				CDebug.Progress(readIteration, int.MaxValue, 1000, ref previousDebugStart, debugStart, "Parsing Rxp file (size unknown)");
 				int read = scanifc_point3dstream_read(
 							h3ds, BLOCK_SIZE,
 							BufferXYZ, BufferMISC, BufferTIME,

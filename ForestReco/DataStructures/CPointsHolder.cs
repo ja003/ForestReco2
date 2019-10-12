@@ -123,7 +123,7 @@ namespace ForestReco
 		private void ClassifyPoints(List<Tuple<EClass, Vector3>> pParsedLines)
 		{
 			int pointsToAddCount = pParsedLines.Count;
-			//pointsToAddCount = 6000;
+			//pointsToAddCount = 1000000;
 			for(int i = 0; i < Math.Min(pParsedLines.Count, pointsToAddCount); i++)
 			{
 				Tuple<EClass, Vector3> parsedLine = pParsedLines[i];
@@ -382,10 +382,16 @@ namespace ForestReco
 
 		private void ProcessUnassignedPoints()
 		{
+			DateTime debugStart = DateTime.Now;
+			DateTime previousDebugStart = DateTime.Now;
 			for(int i = 0; i < unassigned.Count; i++)
 			{
 				if(CProjectData.backgroundWorker.CancellationPending)
-					return; 
+					return;
+				CDebug.Progress(i, unassigned.Count, 100000, ref previousDebugStart, debugStart, "ProcessUnassignedPoints");
+
+				if(CProjectData.backgroundWorker.CancellationPending)
+					return;
 
 				Vector3 point = unassigned[i];
 				unassignedArray.AddPointInField(point);
@@ -400,8 +406,10 @@ namespace ForestReco
 			{
 				//unassignedArray.FillArray(); //doesnt make sense
 
+				const bool filterBasedOnheight = false;
 				//balls are expected to be in this height above ground
-				ballArray.FilterPointsAtHeight(1.8f, 2.7f);
+				if(filterBasedOnheight)
+					ballArray.FilterPointsAtHeight(1.8f, 2.7f);
 
 				//add filtered points to detail array
 				List<Vector3> filteredPoints = ballArray.GetPoints();
@@ -425,11 +433,14 @@ namespace ForestReco
 
 				//List<Vector3> mainPoints = new List<Vector3>();
 
-				DateTime debugStart = DateTime.Now;
+				debugStart = DateTime.Now;
+				previousDebugStart = DateTime.Now;
 				//process
 				for(int i = 0; i < sortedFields.Count; i++)
 				{
-					CDebug.Progress(i, sortedFields.Count, 100000, ref debugStart, debugStart, "Detecting balls");
+					if(CProjectData.backgroundWorker.CancellationPending)
+						return;
+					CDebug.Progress(i, sortedFields.Count, 100000, ref previousDebugStart, debugStart, "Detecting balls");
 
 					CBallField field = (CBallField)sortedFields[i];
 					field.Detect();
@@ -437,7 +448,7 @@ namespace ForestReco
 					{
 						ballFields.Add(field);
 						ballsMainPoints.AddRange(field.ball.GetMainPoints(true));
-						
+
 						ballsCenters.Add(field.ball.center);
 						ballsCenters.AddRange(CUtils.GetPointCross(field.ball.center));
 						//return;

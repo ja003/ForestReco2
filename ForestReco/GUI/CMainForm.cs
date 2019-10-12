@@ -2318,33 +2318,13 @@ namespace ForestReco
 		// This event handler updates the progress.
 		private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
-			//resultLabel.Text = (e.ProgressPercentage.ToString() + "%");
+			//happened once...dont know how, cant go back in call stack
+			if(e.ProgressPercentage < 0)
+				return;
+
 			progressBar.Value = e.ProgressPercentage;
 
 			string[] results = null;
-			/*string result = null;
-
-			try
-			{
-				result = (string)e.UserState;
-				results = new string[1] { result };
-			}
-			catch (Exception ex)
-			{
-
-			}
-			if (string.IsNullOrEmpty(result))
-			{
-				try
-				{
-					results = (string[])e.UserState;
-				}
-				catch (Exception ex)
-				{
-					CDebug.Error("backgroundWorker exception. " + ex.Message);
-					results = new string[1] { ex.Message };
-				}
-			}*/
 			try
 			{
 				results = (string[])e.UserState;
@@ -2773,6 +2753,13 @@ namespace ForestReco
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
+			//the global settings is stored in:
+			//C:\Users\ja004\AppData\Local\ForestReco\ForestReco.exe_Url_wod4dcapztryfivsknzgz2tg0wxqxsmy\1.0.0.0
+			//local in:
+			//C:\Coding\ForestReco2\ForestReco\bin\x64\Debug
+			//needs to upgrade
+			//https://stackoverflow.com/questions/1054422/why-are-my-application-settings-not-getting-persisted
+			Properties.Settings.Default.Upgrade();
 			Location = Properties.Settings.Default.formLocation;
 		}
 
