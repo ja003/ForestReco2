@@ -44,8 +44,9 @@ namespace ForestReco
 		/// Warning: can be inited only after main header is set
 		/// </summary>
 		public static void Init()
-		{
-			if(!CParameterSetter.GetBoolSettings(ESettings.exportBitmap))
+		{		
+			if(!CParameterSetter.GetBoolSettings(ESettings.exportBitmap) ||
+				CRxpParser.IsRxp)
 				return;
 
 			float mainArrayWidth = CProjectData.mainHeader.Width;

@@ -15,6 +15,11 @@ namespace ForestReco
 
 			SetMainHeader(preprocessedFilePath);
 
+			if(CRxpParser.IsRxp)
+			{
+				return new List<string>() { preprocessedFilePath };
+			}
+
 			CDebug.Step(EProgramStep.Pre_LasToTxt);
 			//split into tiles and convert to txt
 			return CPreprocessController.GetTxtFilesPaths(preprocessedFilePath);
@@ -30,7 +35,17 @@ namespace ForestReco
 			string infoFilePath = CPreprocessController.currentTmpFolder + "\\" + CUtils.GetFileName(pPreprocessedFilePath) + "_i.txt";
 
 			string[] headerLines = CPreprocessController.GetHeaderLines(pPreprocessedFilePath, infoFilePath);
-			CProjectData.mainHeader = new CHeaderInfo(headerLines);
+
+			if(headerLines == null)
+			{
+				CDebug.Error("header lines are null");
+				//todo: is it ok to leave it as null??
+				CProjectData.mainHeader = new CHeaderInfo();
+			}
+			else
+			{
+				CProjectData.mainHeader = new CHeaderInfo(headerLines);
+			}
 
 			//can be inited only after main header is set
 			CBitmapExporter.Init();
@@ -40,10 +55,10 @@ namespace ForestReco
 		{
 			CDebug.Step(EProgramStep.LoadLines);
 
-			//CProjectData.saveFileName = CUtils.GetFileName(CParameterSetter.GetStringSettings(ESettings.forestFilePath));
-
-			//string fullFilePath = CParameterSetter.GetStringSettings(ESettings.forestFilePath);
-			//string preprocessedFilePath = GetPreprocessedFilePath();
+			if(CRxpParser.IsRxp)
+			{
+				return CRxpParser.GetFileLines(pPreprocessedFilePath);
+			}
 
 
 			string[] lines = File.ReadAllLines(pPreprocessedFilePath);
@@ -60,6 +75,11 @@ namespace ForestReco
 			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
 
 			string classifyFilePath = CPreprocessController.GetClassifiedFilePath();
+
+			if(CRxpParser.IsRxp)
+			{
+				return classifyFilePath;
+			}
 
 			/////// lassplit //////////
 

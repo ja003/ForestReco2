@@ -13,6 +13,9 @@ namespace ForestReco
 
 		public static void Init()
 		{
+			if(CRxpParser.IsRxp)
+				return;
+
 			Trees = new List<CRefTree>();
 			List<string> treeFileNames = GetTreeFileNames();
 			LoadTrees(treeFileNames);

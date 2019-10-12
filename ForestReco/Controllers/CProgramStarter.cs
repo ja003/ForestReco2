@@ -129,8 +129,9 @@ namespace ForestReco
 			}
 			else
 			{
-				CDebug.Error("No header is defined");
-				throw new Exception("No header is defined");
+				const string noHeaderMsg = "Processed tile has no header";
+				CDebug.Error(noHeaderMsg);
+				throw new Exception(noHeaderMsg);
 			}
 
 			CProjectData.ReInit(pTileIndex); //has to reinit after each tile is processed

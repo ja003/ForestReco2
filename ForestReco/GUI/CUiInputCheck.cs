@@ -42,7 +42,11 @@ namespace ForestReco
 		{
 			Reset();
 			CheckPath("Forest", CParameterSetter.GetStringSettings(ESettings.forestFileFullName), true);
-			CheckPath("Reftree", CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath), false);
+
+			if(!CRxpParser.IsRxp)
+			{
+				CheckPath("Reftree", CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath), false);
+			}
 			CheckPath("Output", CParameterSetter.GetStringSettings(ESettings.outputFolderPath), false);
 			if(CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile))
 			{

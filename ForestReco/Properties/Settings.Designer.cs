@@ -325,7 +325,7 @@ namespace ForestReco.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Resources\\ForestReco\\podklady\\data-small\\tmpFiles")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string tmpFilesFolderPath {
             get {
                 return ((string)(this["tmpFilesFolderPath"]));

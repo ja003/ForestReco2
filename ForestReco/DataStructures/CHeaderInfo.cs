@@ -23,6 +23,11 @@ namespace ForestReco
 		public float Width => TopRightCorner.X - BotLeftCorner.X; //of array
 		public float Height => TopRightCorner.Y - BotLeftCorner.Y; //of array
 
+		public CHeaderInfo()
+		{
+
+		}
+
 		public CHeaderInfo(string[] lines)
 		{
 			string pScaleFactorLine = GetLineContaining(lines, EHeaderAttribute.Scale);

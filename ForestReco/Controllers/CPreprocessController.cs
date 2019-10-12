@@ -134,7 +134,8 @@ namespace ForestReco
 			}
 
 			//forest file is already processed
-			if(!CParameterSetter.GetBoolSettings(ESettings.preprocess))
+			bool preprocess = CParameterSetter.GetBoolSettings(ESettings.preprocess);
+			if(!preprocess || CRxpParser.IsRxp)
 			{
 				return forestFilePath;
 			}
