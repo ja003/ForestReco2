@@ -24,7 +24,7 @@ namespace ForestReco
 			switch(pMethod)
 			{
 				case EFillMethod.ClosestDefined:
-					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false);
+					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false, EHeight.MaxZ);
 					break;
 				case EFillMethod.FromNeighbourhood:
 					MaxFilledHeight = GetAverageHeightFromNeighbourhood(pKernelMultiplier);

@@ -459,9 +459,9 @@ namespace ForestReco
 
 		///PRIVATE
 		
-		private void FillMissingHeights(int pKernelMultiplier)
+		public void FillMissingHeights(int pParam)
 		{
-			FillMissingHeights(CField.EFillMethod.FromNeighbourhood, pKernelMultiplier);
+			FillMissingHeights(CField.EFillMethod.FromNeighbourhood, pParam);
 			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
 			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
 		}
