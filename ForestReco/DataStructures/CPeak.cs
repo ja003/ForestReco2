@@ -32,7 +32,7 @@ namespace ForestReco
 			return base.Includes(pPoint, pToleranceMultiply) || IsPartOfPeak(pPoint);
 		}
 
-		private const float MAX_PEAK_Y_DIFF = 0.25f;
+		public const float MAX_PEAK_Y_DIFF = 0.25f;
 
 		private bool IsPartOfPeak(Vector3 pPointCenter)
 		{

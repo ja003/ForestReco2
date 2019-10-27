@@ -14,7 +14,7 @@ namespace ForestReco
 		//todo: create AllDetectedTrees and CurrentDetectedTrees (just for current tile)
 		public List<CTree> DetectedTrees { get; }
 
-		public CTreeField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) : 
+		public CTreeField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) :
 			base(pIndexInField, pCenter, pStepSize, pDetail)
 		{
 			DetectedTrees = new List<CTree>();
@@ -29,6 +29,8 @@ namespace ForestReco
 			if(pIsPeak)
 				IsPeak = true;
 
+			if(this.indexInField.Item1 == 171 && this.indexInField.Item1 == 144)
+				CDebug.WriteLine();
 
 			if(!DetectedTrees.Contains(pTree))
 			{
@@ -48,7 +50,7 @@ namespace ForestReco
 		{
 			return DetectedTrees.Remove(pTree);
 		}
-			   
+
 		public CTree GetSingleDetectedTree()
 		{
 			if(DetectedTrees.Count == 0)
@@ -58,13 +60,33 @@ namespace ForestReco
 			return DetectedTrees[0];
 		}
 
+		/// <summary>
+		/// Returns all detected trees in this field and its neighbours
+		/// sorted descending by height
+		/// </summary>
+		/// <returns></returns>
+		public List<CTree> GetDetectedTreesFromNeighbourhood()
+		{
+			List<CTree> trees = new List<CTree>();
+			foreach(CTreeField field in GetNeighbours(true))
+			{
+				foreach(CTree tree in field.DetectedTrees)
+				{
+					if(!trees.Contains(tree))
+						trees.Add(tree);
+				}
+			}
+			trees.Sort((a, b) => b.GetTreeHeight().CompareTo(a.GetTreeHeight()));
+			return trees;
+		}
+
 		//public CTreeField GetFirstOtherTreeField(CTree pOtherThanTree, EDirection pDirection)
 		//{
 		//	CTreeField currentField = (CTreeField)GetNeighbour(pDirection);
 		//	if(currentField == null)
 		//		return null;
 
-			//..not sure about this
+		//..not sure about this
 		//	while(currentField.DetectedTrees.Count > 0 && currentField.DetectedTrees.Contains(pOtherThanTree))
 		//	{
 		//		currentField = (CTreeField)currentField.GetNeighbour(pDirection);
@@ -73,5 +95,11 @@ namespace ForestReco
 		//	}
 		//	return currentField;
 		//}
+
+		public override string ToString()
+		{
+			string trees = DetectedTrees.Count > 0 ? DetectedTrees[0].ToString() : " - ";
+			return $"{ToStringIndex()}, [{DetectedTrees.Count}]:{trees}";
+		}
 	}
 }

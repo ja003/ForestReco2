@@ -18,10 +18,53 @@ namespace ForestReco
 		{
 		}
 
+		public override void FillMissingHeight(EFillMethod pMethod, int pParam)
+		{
+			if(IsDetail && Equals(192, 177))
+			{
+				CDebug.WriteLine();
+			}
+
+			if(heightFilled)
+				return;
+
+			float? maxNeighbour = GetMaxHeightFromNeigbourhood();
+			float? height = GetHeight();
+			if((height == null || maxNeighbour == null) || 
+				maxNeighbour > height && maxNeighbour - height > 0.3f)
+			{
+				heightFilled = false;
+			}
+			else
+			{
+				heightFilled = true;
+				return;
+			}
+
+			if(MaxFilledHeight != null)
+				return;
+
+			switch(pMethod)
+			{
+				case EFillMethod.FromNeighbourhood:
+					//MaxFilledHeight = GetAverageHeightFromNeighbourhood(pKernelMultiplier);
+					MaxFilledHeight = GetKRankHeightFromNeigbourhood(pParam);
+					break;
+			}
+		}
+
+		public override void ApplyFillMissingHeight()
+		{
+			base.ApplyFillMissingHeight();
+			MaxFilledHeight = null;
+			heightFilled = false;
+		}
+
+
 		public override int? GetColorValue()
 		{
 			float? fieldHeight = MaxZ;
-			float? groundHeight = CProjectData.groundArray.GetElementContainingPoint(center).GetHeight();
+			float? groundHeight = CProjectData.Points.groundArray.GetFieldContainingPoint(Center).GetHeight();
 
 			float height = 0;
 			if(fieldHeight != null && groundHeight != null)

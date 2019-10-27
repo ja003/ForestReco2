@@ -104,9 +104,7 @@ namespace ForestReco
 
 			return lines;
 		}
-
-		
-
+			   
 		/// <summary>
 		/// Reads parsed lines and loads class and point list.
 		/// Result is sorted in descending order.
@@ -114,7 +112,7 @@ namespace ForestReco
 		public static List<Tuple<EClass, Vector3>> ParseLines(string[] lines, bool pUseHeader)
 		{
 			CDebug.Step(EProgramStep.ParseLines);
-					   
+
 			//store coordinates to corresponding data strucures based on their class
 			const int DEFAULT_START_LINE = 19;
 			int startLine = pUseHeader && CProjectData.mainHeader != null ? DEFAULT_START_LINE : 0;
@@ -123,7 +121,8 @@ namespace ForestReco
 
 			int linesToRead = lines.Length;
 
-			bool classesCorect = true;
+			//todo: check that "classic" processed files work correctly without using default class
+			//bool classesCorect = true;
 			List<Tuple<EClass, Vector3>> parsedLines = new List<Tuple<EClass, Vector3>>();
 			if(useDebugData)
 			{
@@ -137,35 +136,41 @@ namespace ForestReco
 					// <class, coordinate>
 					Tuple<EClass, Vector3> c = CLazTxtParser.ParseLine(lines[i], pUseHeader);
 					if(c == null)
-					{ continue; }
+						continue;
+
 					//some files have different class counting. we are interested only in classes in EClass
-					if(c.Item1 == EClass.Other)
-					{
-						c = new Tuple<EClass, Vector3>(EClass.Vege, c.Item2);
-						classesCorect = false;
-					}
+					//if(c.Item1 == EClass.Other)
+					//{
+					//	c = new Tuple<EClass, Vector3>(EClass.Vege, c.Item2);
+					//	classesCorect = false;
+					//}
 					parsedLines.Add(c);
 				}
 			}
 
-			if(!classesCorect)
-			{
-				CDebug.WriteLine("classes not correct. using default class");
-			}
+			//if(!classesCorect)
+			//{
+			//	CDebug.WriteLine("classes not correct. using default class");
+			//}
 			CDebug.Count("parsedLines", parsedLines.Count);
 
 			return parsedLines;
 		}
 
-		static bool debug_skipDetection = false;
-
 		public static void ProcessParsedLines(List<Tuple<EClass, Vector3>> parsedLines)
 		{
 			CAnalytics.loadedPoints = parsedLines.Count;
-			AddPointsFromLines(parsedLines);
+			CProjectData.Points.AddPointsFromLines(parsedLines);
 
-			CObjPartition.AddGroundArray();
-			CObjPartition.AddVegeArray();
+			CObjPartition.AddGroundArrayObj();
+
+			if(CParameterSetter.GetBoolSettings(ESettings.exportPoints))
+			{
+				CObjPartition.AddPoints(EClass.Unassigned);
+				CObjPartition.AddPoints(EClass.Ground);
+				CObjPartition.AddPoints(EClass.Vege);
+				CObjPartition.AddPoints(EClass.Building);
+			}
 
 			CDebug.Count("Trees", CTreeManager.Trees.Count);
 
@@ -176,22 +181,30 @@ namespace ForestReco
 			CTreeManager.ValidateTrees(false, false);
 
 			//export before merge
-			//if(CProjectData.exportBeforeMerge)
-			//{
-			//	CTreeManager.AssignMaterials(); //call before export
+			if(CProjectData.exportBeforeMerge)
+			{
+				CTreeManager.AssignMaterials(); //call before export
 
-			//	CObjPartition.AddTrees(true);
-			//	CObjPartition.AddTrees(false);
-			//	CObjPartition.ExportPartition("_noMerge");
-			//	CObjPartition.Init();
-			//	CObjPartition.AddArray();
-			//}
+				CObjPartition.AddTrees(true);
+				CObjPartition.AddTrees(false);
+				CObjPartition.ExportPartition("_noMerge");
+				CObjPartition.Init();
+				//CObjPartition.AddArray();
+			}
 
 			CAnalytics.firstDetectedTrees = CTreeManager.Trees.Count;
 
+			CDebug.Step(EProgramStep.MergeNotTrees1);
+			CTreeManager.TryMergeNotTrees();
+
+
 			CDebug.Step(EProgramStep.MergeTrees1);
 			//try merge all (even valid)
-			if(CTreeManager.GetDetectMethod() == EDetectionMethod.AddFactor && CProjectData.tryMergeTrees)
+			EDetectionMethod detectionMethod = CTreeManager.GetDetectMethod();
+			if((detectionMethod == EDetectionMethod.AddFactor 
+				|| detectionMethod == EDetectionMethod.Detection2D
+				) 
+				&& CProjectData.tryMergeTrees)
 			{
 				CTreeManager.TryMergeAllTrees(false);
 			}
@@ -199,7 +212,7 @@ namespace ForestReco
 
 			//validate restrictive
 			bool cathegorize = false;
-			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Detection2D)
+			if(detectionMethod == EDetectionMethod.Detection2D)
 			{
 				cathegorize = true;
 			}
@@ -208,15 +221,19 @@ namespace ForestReco
 			CTreeManager.ValidateTrees(cathegorize, true);
 
 			CDebug.Step(EProgramStep.MergeTrees2);
-			if(CTreeManager.GetDetectMethod() == EDetectionMethod.AddFactor)
+			if(detectionMethod == EDetectionMethod.AddFactor)
 			{
 				//merge only invalid
 				if(CProjectData.tryMergeTrees2)
 					CTreeManager.TryMergeAllTrees(true);
 			}
 
+			//try merging not-trees again after trees were merged
+			CDebug.Step(EProgramStep.MergeNotTrees2);
+			CTreeManager.TryMergeNotTrees();
+
 			CDebug.Step(EProgramStep.ValidateTrees3);
-			if(CTreeManager.GetDetectMethod() == EDetectionMethod.AddFactor)
+			if(detectionMethod == EDetectionMethod.AddFactor)
 			{
 				//validate restrictive
 				//cathegorize invalid trees
@@ -254,207 +271,6 @@ namespace ForestReco
 			{
 				CObjPartition.AddTrees(false);
 			}
-		}
-
-		private static void FillArray()
-		{
-			CDebug.WriteLine("FillArray", true);
-			if(CProjectData.groundArray == null)
-			{
-				CDebug.Error("no array to export");
-				return;
-			}
-
-			DateTime fillAllHeightsStart = DateTime.Now;
-
-			int counter = 1;
-			while(!CProjectData.groundArray.IsAllDefined())
-			{
-				if(CProjectData.backgroundWorker.CancellationPending)
-				{ return; }
-
-				DateTime fillHeightsStart = DateTime.Now;
-
-				CDebug.Count("FillMissingHeights", counter);
-				CProjectData.groundArray.FillMissingHeights(counter);
-				counter++;
-				const int maxFillArrayIterations = 5;
-				if(counter > maxFillArrayIterations + 1)
-				{
-					CDebug.Error("FillMissingHeights");
-					CDebug.Count("too many iterations", counter);
-					break;
-				}
-				CDebug.Duration("FillMissingHeights", fillHeightsStart);
-			}
-			CAnalytics.fillAllHeightsDuration = CAnalytics.GetDuration(fillAllHeightsStart);
-			CDebug.Duration("fillAllHeights", fillAllHeightsStart);
-		}
-
-		private static void AddPointsFromLines(List<Tuple<EClass, Vector3>> pParsedLines)
-		{
-			ClassifyPoints(pParsedLines);
-
-			DateTime processStartTime = DateTime.Now;
-			CDebug.Count("ProcessParsedLines", pParsedLines.Count);
-
-			CDebug.Step(EProgramStep.ProcessGroundPoints);
-			ProcessGroundPoints();
-			CDebug.Step(EProgramStep.PreprocessVegePoints);
-			if(!debug_skipDetection)
-				PreprocessVegePoints();
-
-
-			CAnalytics.vegePoints = CProjectData.vegePoints.Count;
-			CAnalytics.groundPoints = CProjectData.groundPoints.Count;
-			CAnalytics.filteredPoints = CProjectData.filteredPoints.Count;
-
-			CDebug.Step(EProgramStep.ProcessVegePoints);
-			if(!debug_skipDetection)
-				ProcessVegePoints();
-
-			CDebug.Duration("All points added", processStartTime);
-		}
-
-		/// <summary>
-		/// Assigns all vege points in array and filters fake points.
-		/// </summary>
-		private static void PreprocessVegePoints()
-		{
-			const int debugFrequency = 10000;
-
-			DateTime PreprocessVegePointsStart = DateTime.Now;
-			CDebug.WriteLine("PreprocessVegePoints", true);
-
-			DateTime preprocessVegePointsStart = DateTime.Now;
-			DateTime previousDebugStart = DateTime.Now;
-
-			for(int i = 0; i < CProjectData.vegePoints.Count; i++)
-			{
-				if(CProjectData.backgroundWorker.CancellationPending)
-				{ return; }
-
-				Vector3 point = CProjectData.vegePoints[i];
-				CProjectData.preprocessDetailArray.AddPointInField(point);
-				CProjectData.preprocessNormalArray.AddPointInField(point);
-
-				CDebug.Progress(i, CProjectData.vegePoints.Count, debugFrequency, ref previousDebugStart, preprocessVegePointsStart, "preprocessed point");
-			}
-			//CProjectData.preprocessArray.Sort(); //todo: not neede anymore?
-
-			CDebug.Duration("PreprocessVegePoints", PreprocessVegePointsStart);
-
-			//determine average tree height
-			if(CParameterSetter.GetBoolSettings(ESettings.autoAverageTreeHeight))
-			{
-				//not valid anymore //why not valid??...seems to work fine
-				CTreeManager.AVERAGE_TREE_HEIGHT = CProjectData.preprocessNormalArray.GetAverageZ(); 
-
-				if(float.IsNaN(CTreeManager.AVERAGE_TREE_HEIGHT))
-				{
-					CDebug.Error("AVERAGE_TREE_HEIGHT = NaN. using input value");
-					CTreeManager.AVERAGE_TREE_HEIGHT = CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh);
-				}
-			}
-			else
-			{
-				CTreeManager.AVERAGE_TREE_HEIGHT = CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh);
-			}
-
-			//if(CParameterSetter.GetBoolSettings(ESettings.filterPoints))
-			//{
-			//	CProjectData.groundArray.FilterFakeVegePoints();
-			//}
-		}
-
-		/// <summary>
-		/// Assigns vege poins to trees. Handled in TreeManager
-		/// </summary>
-		private static void ProcessVegePoints()
-		{
-			CProjectData.vegePoints.Sort((b, a) => a.Z.CompareTo(b.Z)); //sort descending by height
-
-			const int debugFrequency = 10000;
-
-			DateTime processVegePointsStart = DateTime.Now;
-			CDebug.WriteLine("ProcessVegePoints", true);
-
-			DateTime previousDebugStart = DateTime.Now;
-
-			
-			int pointsToAddCount = CProjectData.vegePoints.Count;
-			//pointsToAddCount = 12000; 
-
-			for(int i = 0; i < pointsToAddCount; i++)
-			{
-				if(CProjectData.backgroundWorker.CancellationPending)
-					return; 
-
-				Vector3 point = CProjectData.vegePoints[i];
-				CTreeManager.AddPoint(point, i);
-
-				CDebug.Progress(i, CProjectData.vegePoints.Count, debugFrequency, ref previousDebugStart, processVegePointsStart, "added point");
-			}
-			CDebug.WriteLine("maxPossibleTreesAssignment = " + CTreeManager.maxPossibleTreesAssignment + " todo: investigate if too high");
-
-
-			CAnalytics.processVegePointsDuration = CAnalytics.GetDuration(processVegePointsStart);
-			CDebug.Duration("ProcessVegePoints", processVegePointsStart);
-		}
-
-		/// <summary>
-		/// Assigns ground points into arrays (main and detailed for precess and later bitmap generation).
-		/// Fills missing heights in the array and applies smoothing.
-		/// </summary>
-		private static void ProcessGroundPoints()
-		{
-			for(int i = 0; i < CProjectData.groundPoints.Count; i++)
-			{
-				if(CProjectData.backgroundWorker.CancellationPending)
-				{ return; }
-
-				Vector3 point = CProjectData.groundPoints[i];
-				CProjectData.groundArray.AddPointInField(point);
-				//some points can be at border of detail array - not error -> dont log
-				//CProjectData.detailArray?.AddPointInField(point, CGroundArray.EPointType.Ground, false);
-			}
-
-			if(CProjectData.groundArray == null)
-			{
-				CDebug.Error("No array defined");
-				CDebug.WriteLine("setting height to " + CProjectData.lowestHeight);
-				//CDebugData.DefineArray(true, CProjectData.lowestHeight);
-			}
-
-			FillArray();
-
-			CProjectData.groundArray?.SmoothenArray(1);
-		}
-
-		private static void ClassifyPoints(List<Tuple<EClass, Vector3>> pParsedLines)
-		{
-			int pointsToAddCount = pParsedLines.Count;
-			//pointsToAddCount = 6000;
-			for(int i = 0; i < Math.Min(pParsedLines.Count, pointsToAddCount); i++)
-			{
-				Tuple<EClass, Vector3> parsedLine = pParsedLines[i];
-				CProjectData.AddPoint(parsedLine);
-			}
-
-			//to try 0 points loaded errors
-			//CProjectData.vegePoints.Clear();
-			//CProjectData.groundPoints.Clear();
-
-			//no points loaded is not an exception.
-			//in some tile there does not have to be any point
-			//if(CProjectData.vegePoints.Count == 0)
-			//{
-			//	throw new Exception("no vegetation point loaded!");
-			//}
-			//if(CProjectData.groundPoints.Count == 0)
-			//{
-			//	throw new Exception("no ground point loaded!");
-			//}
-		}
+		}				
 	}
 }

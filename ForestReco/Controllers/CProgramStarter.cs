@@ -114,16 +114,12 @@ namespace ForestReco
 
 		private static EProcessResult ProcessTile(string pTilePath, int pTileIndex)
 		{
-			DateTime startTime = DateTime.Now;
-			currentTileIndex = pTileIndex;
-			CProjectData.ReInit(pTileIndex); //has to reinit after each tile is processed
-			CTreeManager.Reinit();
+			//has to reinit first for the correct progress output
 			CDebug.ReInit();
 
+			DateTime startTime = DateTime.Now;
+			currentTileIndex = pTileIndex;
 			string[] lines = CProgramLoader.GetFileLines(pTilePath);
-
-			if(CProjectData.backgroundWorker.CancellationPending)
-				return EProcessResult.Cancelled; 
 
 			bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);
 			if(linesOk && CHeaderInfo.HasHeader(lines[0]))
@@ -137,10 +133,11 @@ namespace ForestReco
 				throw new Exception("No header is defined");
 			}
 
-			if(CProjectData.backgroundWorker.CancellationPending)
-				return EProcessResult.Cancelled; 
+			CProjectData.ReInit(pTileIndex); //has to reinit after each tile is processed
+			CTreeManager.Reinit();
 
-			CProjectData.InitArrays();
+			if(CProjectData.backgroundWorker.CancellationPending)
+				return EProcessResult.Cancelled;
 
 			List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, true);
 

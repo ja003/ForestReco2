@@ -111,6 +111,7 @@
     <Compile Include="DataStructures\CBoundingBoxObject.cs" />
     <Compile Include="DataStructures\CBranch.cs" />
     <Compile Include="DataStructures\CPeak.cs" />
+    <Compile Include="DataStructures\CPointsHolder.cs" />
     <Compile Include="DataStructures\CTree.cs" />
     <Compile Include="DataStructures\CRefTree.cs" />
     <Compile Include="DataStructures\CTreePoint.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="GUI\CTooltipManager.cs" />
     <Compile Include="GUI\CUiInputCheck.cs" />
     <Compile Include="GUI\CUiPathSelection.cs" />
+    <Compile Include="GUI\CUiDetectionMethod.cs" />
     <Compile Include="GUI\CUiRangeController.cs" />
     <Compile Include="ObjParser\Extent.cs" />
     <Compile Include="ObjParser\Mtl.cs" />

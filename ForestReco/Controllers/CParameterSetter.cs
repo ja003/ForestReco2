@@ -201,6 +201,7 @@ namespace ForestReco
 		tileSize,
 		avgTreeHeigh,
 		detectMethod,
+		minTreeHeight,
 
 		//floats
 		groundArrayStep,
@@ -245,5 +246,10 @@ namespace ForestReco
 		calculateAGB,
 		startIndex,
 		treeRadius,
+		localMaxHeight,
+		allowedDescend,
+		minAscendSteps,
+		minDescendSteps,
+		minTreePoints,
 	}
 }

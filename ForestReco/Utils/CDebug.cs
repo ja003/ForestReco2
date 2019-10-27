@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace ForestReco
 {
@@ -112,6 +113,29 @@ namespace ForestReco
 			{
 				lastTextProgress , pComment , timeLeftString
 			});
+		}
+
+		//point in exported obj 
+		static Vector3 DEBUG_POINT_3D = new Vector3(
+			13.38f, 
+			9.935f, 
+			-10.516f);
+		//in obj Y and Z are swapped
+		static Vector3 DEBUG_POINT_3D_swapYZ = 
+			new Vector3(DEBUG_POINT_3D.X, DEBUG_POINT_3D.Z, DEBUG_POINT_3D.Y);
+		public static bool IsDebugPoint3D(Vector3 pPoint)
+		{
+			Vector3 movedPoint = CObjExporter.GetMovedPoint(pPoint);
+			bool result = Vector3.Distance(movedPoint, DEBUG_POINT_3D_swapYZ) < 0.01f;
+			if(result)
+				return result;
+			return result;
+		}
+
+		static Vector3 DEBUG_POINT = new Vector3(549.951f, 518.764f, 26.436f);
+		public static bool IsDebugPoint(Vector3 pPoint)
+		{
+			return Vector3.Distance(pPoint, DEBUG_POINT) < 0.01f;
 		}
 
 		public static void Step(EProgramStep pStep)

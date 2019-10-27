@@ -11,20 +11,45 @@ namespace ForestReco
 
 		static Expression treeRadiusExpression;
 
+		public static bool NeedsReinit;
+
 		public static void Init()
 		{
 			string eq = CParameterSetter.GetStringSettings(ESettings.treeRadius);
 			treeRadiusExpression = CreateExpression(eq);
+			NeedsReinit = false;
+		}
+
+		public static float GetTreeRadius(CTree pTree)
+		{
+			float radius = 0;
+			try
+			{
+				radius = GetTreeRadius(pTree.GetTreeHeight()); 
+			}
+			catch(Exception)
+			{
+
+			}
+			return radius;
 		}
 
 		public static float GetTreeRadius(float pHeight)
 		{
-			if(treeRadiusExpression == null)
+			if(NeedsReinit || treeRadiusExpression == null)
 				Init();
 
-			treeRadiusExpression.Parameters[PARAM_HEIGHT] = new Expression(pHeight.ToString(NUM_FORMAT));
-			treeRadiusExpression.Evaluate();
-			double result = (double)treeRadiusExpression.Evaluate();
+			double result = 0;
+			try
+			{
+				treeRadiusExpression.Parameters[PARAM_HEIGHT] = new Expression(pHeight.ToString(NUM_FORMAT));
+				treeRadiusExpression.Evaluate();
+				result = (double)treeRadiusExpression.Evaluate();
+			}
+			catch(Exception)
+			{
+
+			}
 			return (float)result;
 		}
 

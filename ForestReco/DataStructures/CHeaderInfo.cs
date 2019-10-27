@@ -7,13 +7,14 @@ namespace ForestReco
 	{
 		public Vector3 ScaleFactor;
 		public Vector3 Offset { get; private set; }
-		public Vector3 Min; //used in project (Y = elevation), moved by offset
+		public Vector3 Min; //used in project (Z = elevation), moved by offset
 		public Vector3 Max;
 
 		public CVector3D Min_orig; //values from input forest file
 		public CVector3D Max_orig;
 
 		public Vector3 BotLeftCorner => new Vector3(Min.X, Min.Y, 0);
+		public Vector3 BotRightCorner => new Vector3(Max.X, Min.Y, 0);
 		public Vector3 TopRightCorner => new Vector3(Max.X, Max.Y, 0);
 		public Vector3 TopLeftCorner => new Vector3(Min.X, Max.Y, 0);
 		public Vector3 Center => (BotLeftCorner + TopRightCorner) / 2;
@@ -46,17 +47,10 @@ namespace ForestReco
 			Max_orig = ParseLineVector3(pMaxLine);
 			CVector3D maxDouble = Max_orig - Offset;
 			Max = (Vector3)maxDouble;
-			//transfer to format Y = height //DONT
-			//float tmpY = Min.Y;
-			//Min.Y = Min.Z;
-			//Min.Z = tmpY;
-			//tmpY = Max.Y;
-			//Max.Y = Max.Z;
-			//Max.Z = tmpY;
 
 			if(Min == Vector3.Zero && Max == Vector3.Zero)
 			{
-				CDebug.WriteLine("Invalid header. Creating default header.");
+				CDebug.Error("Invalid header. Creating default header.");
 				const int defaultArraySize = 15;
 				Min = new Vector3(-defaultArraySize, -defaultArraySize, 0);
 				Max = new Vector3(defaultArraySize, defaultArraySize, 0);
@@ -64,17 +58,20 @@ namespace ForestReco
 			}
 		}
 
-		/*private string GetLine(string[] lines, EHeaderAttribute pAttribute)
+		/// <summary>
+		/// Returns a string of the tile extent (original values - offset is applied).
+		/// pShortFormat: [min.x-max.x.last3digits, min.y-max.y.last3digits]
+		/// </summary>
+		public string GetExtentString(bool pShortFormat = false)
 		{
-			switch (pAttribute)
-			{
-				case EHeaderAttribute.Scale: return lines[15];
-				case EHeaderAttribute.Offset: return lines[16];
-				case EHeaderAttribute.Min: return lines[17];
-				case EHeaderAttribute.Max: return lines[18];
-			}
-			return "";
-		}*/
+			float minXOrig = (Min + Offset).X;
+			float maxXOrig = (Max + Offset).X;
+			float minYOrig = (Min + Offset).Y;
+			float maxYOrig = (Max + Offset).Y;
+			if(!pShortFormat)
+				return $"[{minXOrig}-{maxXOrig},{minYOrig}-{maxYOrig}]";
+			return $"[{minXOrig}-{maxXOrig % 1000},{minYOrig}-{maxYOrig % 1000}]";
+		}
 
 		private string GetLineContaining(string[] pLines, EHeaderAttribute pKey)
 		{

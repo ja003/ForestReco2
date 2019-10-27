@@ -98,20 +98,20 @@ namespace ForestReco
 		private static Vector3 GetCurrentTileOffset()
 		{
 			Vector3 diff = CProjectData.mainHeader.Center - CProjectData.currentTileHeader.Center;
-			diff.Y *= -1; //to match coord style //TODO: check..weird
+			diff.Y *= -1; //to match coord style //TODO: check..weird - checked => correct
 			return diff;
 		}
 
 		///GETTER
 
-		public TypeField GetElement(Tuple<int, int> pIndex)
+		public TypeField GetField(Tuple<int, int> pIndex)
 		{
 			return GetField(pIndex.Item1, pIndex.Item2);
 		}
 
 		public TypeField GetField(int pXindex, int pYindex)
 		{
-			if (!IsWithinBounds(pXindex, pYindex)) { return null; }
+			if(!IsWithinBounds(pXindex, pYindex)) { return null; }
 			return array[pXindex, pYindex];
 		}
 
@@ -125,17 +125,17 @@ namespace ForestReco
 			return pXindex >= 0 && pXindex < arrayXRange && pYindex >= 0 && pYindex < arrayYRange;
 		}
 
-		public TypeField GetElementContainingPoint(Vector3 pPoint)
+		public TypeField GetFieldContainingPoint(Vector3 pPoint)
 		{
 			Tuple<int, int> index = GetIndexInArray(pPoint);
-			if (!IsWithinBounds(index))
+			if(!IsWithinBounds(index))
 			{
-				if (index.Item1 == -1) { index = new Tuple<int, int>(0, index.Item2);}
-				if (index.Item2 == -1) { index = new Tuple<int, int>(index.Item1, 0); }
-				if (index.Item1 == arrayXRange) { index = new Tuple<int, int>(arrayXRange - 1, index.Item2); }
-				if (index.Item2 == arrayYRange) { index = new Tuple<int, int>(index.Item1, arrayYRange - 1); }
+				if(index.Item1 == -1) { index = new Tuple<int, int>(0, index.Item2); }
+				if(index.Item2 == -1) { index = new Tuple<int, int>(index.Item1, 0); }
+				if(index.Item1 == arrayXRange) { index = new Tuple<int, int>(arrayXRange - 1, index.Item2); }
+				if(index.Item2 == arrayYRange) { index = new Tuple<int, int>(index.Item1, arrayYRange - 1); }
 
-				if (!IsWithinBounds(index))
+				if(!IsWithinBounds(index))
 				{
 					return null;
 				}
@@ -150,15 +150,15 @@ namespace ForestReco
 
 		public float? GetHeightDiffAtPoint(Vector3 pPoint)
 		{
-			return GetElementContainingPoint(pPoint).GetHeightDiff(pPoint);
+			return GetFieldContainingPoint(pPoint).GetHeightDiff(pPoint);
 		}
-		
+
 		public float? GetHeightAtPoint(Vector3 pPoint)
 		{
-			return GetElementContainingPoint(pPoint).GetHeight(pPoint);
+			return GetFieldContainingPoint(pPoint).GetHeight(pPoint);
 		}
-			  		
-		public static Tuple<int, int> GetIndexInArray(Vector3 pPoint, 
+
+		public static Tuple<int, int> GetIndexInArray(Vector3 pPoint,
 			Vector3 pTopLeftCorner, float pStepSize)
 		{
 			//todo: doesnt work correctly, fix!
@@ -183,9 +183,9 @@ namespace ForestReco
 
 			CField el = GetField(pos.Item1, pos.Item2);
 
-			if (el != null && el.IsPointOutOfField(pPoint))
+			if(el != null && el.IsPointOutOfField(pPoint))
 			{
-				CDebug.Error($"point {pPoint} is too far from center {el.center}");
+				CDebug.Error($"point {pPoint} is too far from center {el.Center}");
 			}
 
 			return pos;
@@ -202,7 +202,7 @@ namespace ForestReco
 
 		public void AddPointInField(Vector3 pPoint, bool pLogErrorInAnalytics = true)
 		{
-			if(CUtils.IsDebugPoint(pPoint))
+			if(CDebug.IsDebugPoint(pPoint))
 			{
 				//CDebug.WriteLine("");
 			}
@@ -217,7 +217,7 @@ namespace ForestReco
 			TypeField field = array[index.Item1, index.Item2];
 			if(field.IsPointOutOfField(pPoint))
 			{
-				CDebug.Error($"point {pPoint} is too far from center {field.center}");
+				CDebug.Error($"point {pPoint} is too far from center {field.Center}");
 				index = GetIndexInArray(pPoint);
 				field.IsPointOutOfField(pPoint);
 			}
@@ -266,9 +266,9 @@ namespace ForestReco
 		//	}
 		//}
 
-		public void FillMissingHeights(int pKernelMultiplier)
+		public void FillMissingHeights(int pParam = -1)
 		{
-			FillMissingHeights(CField.EFillMethod.FromNeighbourhood, pKernelMultiplier);
+			FillMissingHeights(CField.EFillMethod.FromNeighbourhood, pParam);
 			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
 			//FillMissingHeights(CField.EFillMethod.ClosestDefined);
 		}
@@ -281,7 +281,7 @@ namespace ForestReco
 			List<TypeField> fieldsRandom = fields;
 
 			//todo: dont use during testing, otherwise result is nondeterministic
-			if (useRandomForSmoothing)
+			if(useRandomForSmoothing)
 			{
 				fieldsRandom.Shuffle();
 			}
@@ -290,10 +290,10 @@ namespace ForestReco
 			int kernelSize = GetKernelSize();
 			kernelSize *= pKernelMultiplier;
 			//cant work with even sized kernel
-			if (kernelSize % 2 == 0) { kernelSize++; }
+			if(kernelSize % 2 == 0) { kernelSize++; }
 			double[,] gaussKernel = CUtils.CalculateGaussKernel(kernelSize, 1);
 
-			foreach (CField el in fieldsRandom)
+			foreach(CField el in fieldsRandom)
 			{
 				el.CalculateSmoothHeight(gaussKernel);
 			}
@@ -301,53 +301,105 @@ namespace ForestReco
 
 		public bool IsAllDefined()
 		{
-			foreach (CField f in fields)
+			foreach(CField f in fields)
 			{
-				if (!f.IsDefined()) { return false; }
+				if(!f.IsDefined()) { return false; }
 			}
 			return true;
 		}
 
 		private const float DEFAULT_KERNEL_SIZE = 5; //IN METERS
-		
+
 		public static int GetKernelSize()
 		{
 			int size = (int)(DEFAULT_KERNEL_SIZE / CParameterSetter.groundArrayStep);
-			if (size % 2 == 0) { size++; }
+			if(size % 2 == 0) { size++; }
 			return size;
 		}
 
-		public bool IsPathAscending(Vector3 pFrom, Vector3 pTo, float pMaxPathLength, float pAllowedDescend, int pMinDefinedSteps)
+		
+
+
+		public bool IsPathAscending(Vector3 pFrom, Vector3 pTo, float pMaxPathLength, 
+			float pAllowedDescend, int pMinAscendingSteps, int pMinDesceningSteps, 
+			float pIgnoredDescend, CTree pTargetTree)
 		{
-			TypeField fieldFrom = GetElementContainingPoint(pFrom);
-			TypeField fieldTo = GetElementContainingPoint(pTo);
+			TypeField fieldFrom = GetFieldContainingPoint(pFrom);
+			TypeField fieldTo = GetFieldContainingPoint(pTo);
 			List<TypeField> path = GetPathFrom(fieldFrom, fieldTo, pMaxPathLength);
-			float? lastDefinedHeight = null;
-			int definedSteps = 0;
+			//float? lastDefinedHeight = null;
+			int ascendingSteps = 0;
+			int descendingSteps = 0;
+			int undefinedSteps = 0;
+			float? fieldFromHeight = path[0].GetHeight();
 			for(int i = 0; i < path.Count - 1; i++)
 			{
-				if(definedSteps >= pMinDefinedSteps)
+				if(ascendingSteps >= pMinAscendingSteps)
 					break;
 
-				float? h1 = path[i].GetHeight();
-				if(h1 != null)
-					lastDefinedHeight = h1;
-
-				float? h2 = path[i + 1].GetHeight();
-
-				//tree 52 - diff je zápornej??QUEE?
-				float? diff = h2 - lastDefinedHeight;
-				if(diff < -pAllowedDescend)// && diff < 2) //todo: make const?
+				//todo: 3 in a row?
+				if(undefinedSteps > 3)
 					return false;
 
-				if(diff != null)
-					definedSteps++;
+				float? h2;
+				h2 = path[i + 1].GetHeight();
+				float? diff = h2 - fieldFromHeight;
+				if(diff == null)
+				{
+					undefinedSteps++;
+					continue;
+				}
+				if(diff < -pAllowedDescend)
+				{
+					if(Math.Abs((float)diff) < pIgnoredDescend)
+					{
+						descendingSteps++;
+						if(descendingSteps >= pMinDesceningSteps)
+							return false;
+					}
+					else
+					{
+						continue;
+					}
+				}
+				else
+				{
+					ascendingSteps++;
+				}
+
+				if(pTargetTree != null)
+				{
+					//if there is a tree on the path:
+					//a) it is target tree => the remaining path must be ascending -> return true
+					//b) it is other tree => path cant lead across other tree -> return false
+					List<CTree> treesInHood = CProjectData.Points.treeDetailArray.GetField(
+						path[i].indexInField).GetDetectedTreesFromNeighbourhood();
+					if(treesInHood.Contains(pTargetTree))
+						return true;
+				}
+
+				//usage of lastDefinedHeight merges trees too much - todo: check tree 55 and add criteria
+
+				/*float? h1 = path[i].GetHeight();
+				if(h1 != null)
+					lastDefinedHeight = h1;*/
+				
+				//if(h2 == null)
+				//h2 = path[i + 1].GetMaxHeightFromNeigbourhood();
+
+				//tree 52 - diff je zápornej??QUEE?
+				//float? diff = h2 - lastDefinedHeight;
+				
+
+					
 			}
-			return true;
+			return ascendingSteps > descendingSteps;
 		}
 
-		private List<TypeField> GetPathFrom(TypeField pFieldFrom, TypeField pFieldTo, float pMaxPathLength = int.MaxValue)
+		protected List<TypeField> GetPathFrom(TypeField pFieldFrom, TypeField pFieldTo, float pMaxPathLength = int.MaxValue)
 		{
+			//todo: check if generated path is valid
+
 			TypeField current = pFieldFrom;
 			List<TypeField> path = new List<TypeField>() { current };
 			float pathLength = 0;
@@ -366,35 +418,32 @@ namespace ForestReco
 
 		private void ApplyFillMissingHeights()
 		{
-			foreach (CField f in fields)
+			foreach(CField f in fields)
 			{
 				f.ApplyFillMissingHeight();
 			}
 		}
 
-		private void FillMissingHeights(CField.EFillMethod pMethod, int pKernelMultiplier)
+		private void FillMissingHeights(CField.EFillMethod pMethod, int pParam = -1)
 		{
 			List<TypeField> fieldsRandom = fields;
-			if (useRandomForSmoothing)
+			if(useRandomForSmoothing)
 			{
 				fieldsRandom.Shuffle();
 			}
 
-			foreach (CField el in fieldsRandom)
+			foreach(CField el in fieldsRandom)
 			{
-				if (CProjectData.backgroundWorker.CancellationPending) { return; }
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
 
-				if (!el.IsDefined())
-				{
-					el.FillMissingHeight(pMethod, pKernelMultiplier);
-				}
+				el.FillMissingHeight(pMethod, pParam);
 			}
 			ApplyFillMissingHeights();
 		}
 
 		//OTHER
 		/// <summary>
-		/// Returns string for x coordinate in array moved by offset
+		/// Returns x coordinate in array moved by offset
 		/// </summary>
 		public float GetFieldXCoord(int pXindex)
 		{
@@ -402,11 +451,12 @@ namespace ForestReco
 		}
 
 		/// <summary>
-		/// Returns string for y coordinate in array moved by offset
+		/// Returns y coordinate in array moved by offset
 		/// </summary>
 		public float GetFieldYCoord(int pYindex)
 		{
-			return pYindex * stepSize - CenterOffset.Y;
+			//Y-index grows with Y-coordinate decreasing => opposite to GetFieldXCoord
+			return CenterOffset.Y - pYindex * stepSize;
 		}
 
 		public override string ToString()
@@ -414,19 +464,19 @@ namespace ForestReco
 			return "Field " + arrayXRange + " x " + arrayYRange + ". Corner = " + topLeftCorner;
 		}
 
-		
+
 
 		public string WriteBounds(bool pConsole = true)
 		{
 			string output = "[" + botLeftCorner + "," + topRightCorner + "]";
-			if (pConsole) { CDebug.WriteLine(output); }
+			if(pConsole) { CDebug.WriteLine(output); }
 			return output;
 		}
 
 		public float? GetPointHeight(Vector3 pPoint)
 		{
 			float? groundHeight = GetHeightAtPoint(pPoint);
-			if (groundHeight == null) { return null; }
+			if(groundHeight == null) { return null; }
 			return pPoint.Z - groundHeight;
 		}
 
@@ -436,7 +486,7 @@ namespace ForestReco
 			return distanceToBorder < CParameterSetter.GetFloatSettings(ESettings.treeExtent);
 		}
 
-		public float  GetDistanceToBorderFrom(Vector3 pPoint)
+		public float GetDistanceToBorderFrom(Vector3 pPoint)
 		{
 			return GetDistanceAndDirectionToBorderFrom(pPoint).Item1;
 		}
@@ -467,7 +517,7 @@ namespace ForestReco
 			const float minStepSize = .1f;
 			float stepSize = minStepSize;
 			int arrayWidth = (int)(width / stepSize);
-			if (arrayWidth > pMaxArrayWidth)
+			if(arrayWidth > pMaxArrayWidth)
 			{
 				float scale = arrayWidth / (float)pMaxArrayWidth;
 				stepSize *= scale;

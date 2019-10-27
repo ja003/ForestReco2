@@ -25,7 +25,7 @@ namespace ForestReco
 		public static Tuple<EClass, Vector3> ParseLine(string pLine, bool pUseHeader)
 		{
 			string[] split = pLine.Split(null);
-			if (split.Length < 4 || (split.Length > 0 && split[0].Contains("#")))
+			if(split.Length < 4 || (split.Length > 0 && split[0].Contains("#")))
 			{
 				CDebug.WriteLine(pLine + " not valid");
 				return null;
@@ -49,11 +49,19 @@ namespace ForestReco
 			//yFloat = zFloat;
 			//zFloat = tmp;
 
-			if (_class != (int)EClass.Undefined && _class != (int)EClass.Ground && _class != (int)EClass.Vege)
-			{
-				_class = (int)EClass.Other;
-			}
-			return new Tuple<EClass, Vector3>((EClass)_class, new Vector3(xFloat, yFloat, zFloat));
+			EClass eClass = (EClass)_class;
+			//Array acceptedClasses = Enum.GetValues(typeof(EClass));
+
+			//if(IsAcceptedClass(eClass))
+			//{
+			//	_class = (int)EClass.Other;
+			//}
+
+			//if (_class != (int)EClass.Undefined && _class != (int)EClass.Ground && _class != (int)EClass.Vege)
+			//{
+			//	_class = (int)EClass.Other;
+			//}
+			return new Tuple<EClass, Vector3>(eClass, new Vector3(xFloat, yFloat, zFloat));
 		}
 	}
 }

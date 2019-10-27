@@ -78,7 +78,7 @@ namespace ForestReco
 				string line = GetLine(tree);
 				if(line != null)
 					output.Append(line + newLine);
-			}			
+			}
 
 			//CDebug.WriteLine(output);
 			WriteToFile(output.ToString());

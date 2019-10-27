@@ -31,14 +31,14 @@ namespace ForestReco
 
 		public readonly Tuple<int, int> indexInField;
 
-		public Vector3 center;
+		public Vector3 Center { get; private set; }
 
 		//--------------------------------------------------------------
 
 		public CField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail)
 		{
 			indexInField = pIndexInField;
-			center = pCenter;
+			Center = pCenter;
 			stepSize = pStepSize;
 			IsDetail = pDetail;
 		}
@@ -49,9 +49,9 @@ namespace ForestReco
 		public bool IsAnyNeighbourDefined()
 		{
 			List<CField> _neighbours = GetNeighbours();
-			foreach (CField n in _neighbours)
+			foreach(CField n in _neighbours)
 			{
-				if (n.IsDefined()) { return true; }
+				if(n.IsDefined()) { return true; }
 			}
 			return false;
 		}
@@ -59,16 +59,16 @@ namespace ForestReco
 		public bool AreAllNeighboursDefined()
 		{
 			List<CField> _neighbours = GetNeighbours();
-			foreach (CField n in _neighbours)
+			foreach(CField n in _neighbours)
 			{
-				if (!n.IsDefined()) { return false; }
+				if(!n.IsDefined()) { return false; }
 			}
 			return true;
 		}
 
 		public CField GetNeighbour(EDirection pNeighbour)
 		{
-			switch (pNeighbour)
+			switch(pNeighbour)
 			{
 				case EDirection.Bot: return Bot;
 				case EDirection.Left: return Left;
@@ -127,7 +127,7 @@ namespace ForestReco
 		private bool HasAllNeighboursDefined(bool p8neighbourhood)
 		{
 			bool neighbourhood4Defined = Left.IsDefined() && Right.IsDefined() && Top.IsDefined() && Bot.IsDefined();
-			if (!p8neighbourhood)
+			if(!p8neighbourhood)
 			{
 				return neighbourhood4Defined;
 			}
@@ -137,7 +137,28 @@ namespace ForestReco
 					   Right.Bot.IsDefined();
 			}
 		}
-		
+
+		public List<CField> GetFieldsInDistance(int pSteps)
+		{
+			List<CField> fields = new List<CField>();
+			for(int x = -pSteps; x <= pSteps; x++)
+			{
+				for(int y = -pSteps; y <= pSteps; y++)
+				{
+					CField field = GetFieldWithOffset(x, y);
+					if(field != null)
+					{
+						fields.Add(field);
+					}
+				}
+			}
+			fields.Sort((a, b) => 
+				CUtils.Get2DDistance(Center, a.Center).CompareTo(
+				CUtils.Get2DDistance(Center, b.Center)));
+
+			return fields;
+		}
+
 		/// <summary>
 		/// Returns neighbour using 8-neighbourhood
 		/// </summary>
@@ -145,13 +166,13 @@ namespace ForestReco
 		/// <returns></returns>
 		public List<CField> GetNeighbours(bool pIncludeThis = false)
 		{
-			if (neighbours != null)
+			if(neighbours != null)
 			{
-				if (pIncludeThis)
+				if(pIncludeThis)
 				{
 					List<CField> neighbourCopy = new List<CField>();
 					neighbourCopy.Add(this);
-					foreach (CField n in neighbours)
+					foreach(CField n in neighbours)
 					{
 						neighbourCopy.Add(n);
 					}
@@ -161,16 +182,16 @@ namespace ForestReco
 			}
 
 			neighbours = new List<CField>();
-			if (pIncludeThis)
+			if(pIncludeThis)
 			{
 				neighbours.Add(this);
 			}
 
 			var directions = Enum.GetValues(typeof(EDirection));
-			foreach (EDirection d in directions)
+			foreach(EDirection d in directions)
 			{
 				CField neighour = GetNeighbour(d);
-				if (neighour != null) { neighbours.Add(neighour); }
+				if(neighour != null) { neighbours.Add(neighour); }
 			}
 
 			return neighbours;
@@ -211,14 +232,13 @@ namespace ForestReco
 		public virtual int? GetColorValue()
 		{
 			return 0;
-			
 		}
 
 		public void AddPoint(Vector3 pPoint)
 		{
-			if (IsPointOutOfField(pPoint))
+			if(IsPointOutOfField(pPoint))
 			{
-				CDebug.Error($"point {pPoint} is too far from center {center}");
+				CDebug.Error($"point {pPoint} is too far from center {Center}");
 			}
 
 			float height = pPoint.Z;
@@ -233,33 +253,35 @@ namespace ForestReco
 			if(height < MinZ || MinZ == null) { MinZ = height; }
 		}
 
+
 		public static EDirection GetDirection(CField pFrom, CField pTo)
 		{
-			Vector3 dir = pTo.center - pFrom.center;
+			Vector3 dir = pTo.Center - pFrom.Center;
 			dir = Vector3.Normalize(dir);
-			if(dir.X > 0.5f)
+			const float angle_limit = 0.35f;
+			if(dir.X > angle_limit)
 			{
-				if(dir.Y > 0.5f)
+				if(dir.Y > angle_limit)
 					return EDirection.RightTop;
-				else if(dir.Y < -0.5f)
+				else if(dir.Y < -angle_limit)
 					return EDirection.RightBot;
-				else 
+				else
 					return EDirection.Right;
 			}
-			else if(dir.X < -0.5f)
+			else if(dir.X < -angle_limit)
 			{
-				if(dir.Y > 0.5f)
+				if(dir.Y > angle_limit)
 					return EDirection.LeftTop;
-				else if(dir.Y < -0.5f)
+				else if(dir.Y < -angle_limit)
 					return EDirection.LeftBot;
 				else
 					return EDirection.Left;
 			}
 			else
 			{
-				if(dir.Y > 0.5f)
+				if(dir.Y > angle_limit)
 					return EDirection.Top;
-				else if(dir.Y < -0.5f)
+				else if(dir.Y < -angle_limit)
 					return EDirection.Bot;
 				else
 					return EDirection.None;
@@ -268,13 +290,13 @@ namespace ForestReco
 
 		public bool IsPointOutOfField(Vector3 pPoint)
 		{
-			float distX = Math.Abs(pPoint.X - center.X);
-			float distY = Math.Abs(pPoint.Y - center.Y);
+			float distX = Math.Abs(pPoint.X - Center.X);
+			float distY = Math.Abs(pPoint.Y - Center.Y);
 			return distX > stepSize / 2 + FLOAT_E || distY > stepSize / 2 + FLOAT_E;
 		}
 
 		const float FLOAT_E = 0.0001f;
-				
+
 		public bool IsDefined()
 		{
 			return points.Count > 0;
@@ -295,10 +317,32 @@ namespace ForestReco
 
 			foreach(CField field in GetNeighbours(true))
 			{
-				if(field.GetHeight() > maxFromNeighbourhood)
+				if(maxFromNeighbourhood == null || field.GetHeight() > maxFromNeighbourhood)
 					maxFromNeighbourhood = field.GetHeight();
 			}
 			return maxFromNeighbourhood;
+		}
+
+		/// <summary>
+		/// 1 = max, 5 = median, 9 = min
+		/// </summary>
+		public float? GetKRankHeightFromNeigbourhood(int pK)
+		{
+			List<float> heights = new List<float>(); 
+			foreach(CField field in GetNeighbours(true))
+			{
+				float? neighbourHeight = field.GetHeight();
+				if(neighbourHeight != null)
+				{
+					heights.Add((float)neighbourHeight);
+				}
+			}
+			if(heights.Count == 0)
+				return null;
+			heights.Sort(); //ascending
+			heights.Reverse(); //descending => 0 = max
+			int index = Math.Min(heights.Count, pK);
+			return heights[index-1];
 		}
 
 		public float? GetAverageHeightFromNeighbourhood(int pKernelSizeMultiplier)
@@ -308,21 +352,21 @@ namespace ForestReco
 
 			int defined = 0;
 			float heightSum = 0;
-			for (int x = -pKernelSize; x < pKernelSize; x++)
+			for(int x = -pKernelSize; x < pKernelSize; x++)
 			{
-				for (int y = -pKernelSize; y < pKernelSize; y++)
+				for(int y = -pKernelSize; y < pKernelSize; y++)
 				{
 					int xIndex = indexInField.Item1 + x;
 					int yIndex = indexInField.Item2 + y;
-					CField el = CProjectData.groundArray.GetField(xIndex, yIndex);
-					if (el != null && el.IsDefined())
+					CField el = GetFieldWithOffset(x, y);
+					if(el != null && el.IsDefined())
 					{
 						defined++;
 						heightSum += (float)el.GetHeight();
 					}
 				}
 			}
-			if (defined == 0) { return null; }
+			if(defined == 0) { return null; }
 			return heightSum / defined;
 		}
 
@@ -333,7 +377,7 @@ namespace ForestReco
 		/// </summary>
 		public float? GetAverageHeightFromClosestDefined(int pMaxSteps, bool pDiagonal)
 		{
-			if (IsDefined()) { return GetHeight(); }
+			if(IsDefined()) { return GetHeight(); }
 
 			CField closestFirst = null;
 			CField closestSecond = null;
@@ -344,39 +388,39 @@ namespace ForestReco
 
 			closestFirst = closestLeft;
 			closestSecond = closestRight;
-			if ((closestFirst == null || closestSecond == null) && closestTop != null && closestBot != null)
+			if((closestFirst == null || closestSecond == null) && closestTop != null && closestBot != null)
 			{
 				closestFirst = closestTop;
 				closestSecond = closestBot;
 			}
-			
-			if (closestFirst != null && closestSecond != null)
+
+			if(closestFirst != null && closestSecond != null)
 			{
 				CField smaller = closestFirst;
 				CField higher = closestSecond;
-				if (closestSecond.GetHeight() < closestFirst.GetHeight())
+				if(closestSecond.GetHeight() < closestFirst.GetHeight())
 				{
 					higher = closestFirst;
 					smaller = closestSecond;
 				}
 				int totalDistance = smaller.GetStepCountTo(higher);
 				float? heightDiff = higher.GetHeight() - smaller.GetHeight();
-				if (heightDiff != null)
+				if(heightDiff != null)
 				{
 					float? smallerHeight = smaller.GetHeight();
 					float distanceToSmaller = GetStepCountTo(smaller);
-					
+
 					return smallerHeight + distanceToSmaller / totalDistance * heightDiff;
 				}
 			}
-			else if (!HasAllNeighbours())
+			else if(!HasAllNeighbours())
 			{
-				if (closestLeft != null) { return closestLeft.GetHeight(); }
-				if (closestTop != null) { return closestTop.GetHeight(); }
-				if (closestRight != null) { return closestRight.GetHeight(); }
-				if (closestBot != null) { return closestBot.GetHeight(); }
+				if(closestLeft != null) { return closestLeft.GetHeight(); }
+				if(closestTop != null) { return closestTop.GetHeight(); }
+				if(closestRight != null) { return closestRight.GetHeight(); }
+				if(closestBot != null) { return closestBot.GetHeight(); }
 			}
-			if (!pDiagonal)
+			if(!pDiagonal)
 			{
 				return GetAverageHeightFromClosestDefined(pMaxSteps, true);
 			}
@@ -393,7 +437,7 @@ namespace ForestReco
 
 		public float? GetHeight(bool pUseSmoothHeight = true)
 		{
-			if (pUseSmoothHeight && SmoothHeight != null)
+			if(pUseSmoothHeight && SmoothHeight != null)
 			{
 				return SmoothHeight;
 			}
@@ -406,9 +450,9 @@ namespace ForestReco
 		/// </summary>
 		public float? GetHeight(Vector3 pPoint)
 		{
-			if (!HasAllNeighbours() || !HasAllNeighboursDefined(true))
+			if(!HasAllNeighbours() || !HasAllNeighboursDefined(true))
 			{
-				if (!IsDefined())
+				if(!IsDefined())
 				{
 					return null;
 				}
@@ -432,14 +476,14 @@ namespace ForestReco
 
 			float step = CParameterSetter.groundArrayStep;
 
-			float x = pPoint.X - center.X;
+			float x = pPoint.X - Center.X;
 			x += step / 2;
 			x = x / step;
-			float y = center.Y - pPoint.Y;
+			float y = Center.Y - pPoint.Y;
 			y += step / 2;
 			y = y / step;
 
-			if (x < 0 || x > 1 || y < 0 || y > 1)
+			if(x < 0 || x > 1 || y < 0 || y > 1)
 			{
 				CDebug.Error("field " + this + " interpolation is incorrect! x = " + x + " z = " + y);
 			}
@@ -452,9 +496,9 @@ namespace ForestReco
 		private List<CField> GetBilinearFieldsFor(Vector3 pPoint)
 		{
 			List<CField> fields = new List<CField>();
-			if (pPoint.X > center.X)
+			if(pPoint.X > Center.X)
 			{
-				if (pPoint.Z > center.Z)
+				if(pPoint.Z > Center.Z)
 				{
 					fields.Add(this);
 					fields.Add(GetNeighbour(EDirection.Right));
@@ -471,7 +515,7 @@ namespace ForestReco
 			}
 			else
 			{
-				if (pPoint.Z > center.Z)
+				if(pPoint.Z > Center.Z)
 				{
 					fields.Add(GetNeighbour(EDirection.Left));
 					fields.Add(this);
@@ -498,9 +542,14 @@ namespace ForestReco
 				   Math.Abs(indexInField.Item2 - pField.indexInField.Item2);
 		}
 
+		public float GetDistanceTo(Vector3 pPoint)
+		{
+			return CUtils.Get2DDistance(this.Center, pPoint);
+		}
+
 		public float GetDistanceTo(CField pField)
 		{
-			return CUtils.Get2DDistance(this, pField);
+			return this.GetDistanceTo(pField.Center);
 		}
 
 
@@ -509,7 +558,7 @@ namespace ForestReco
 		/// </summary>
 		public void CalculateSmoothHeight(double[,] pGaussKernel)
 		{
-			if (!IsDefined()) { return; }
+			if(!IsDefined()) { return; }
 
 			//int defined = 0;
 			float heightSum = 0;
@@ -519,18 +568,18 @@ namespace ForestReco
 			int kernelSize = CGroundArray.GetKernelSize();
 
 			float gaussWeightSum = 0;
-			for (int x = 0; x < kernelSize; x++)
+			for(int x = 0; x < kernelSize; x++)
 			{
-				for (int y = 0; y < kernelSize; y++)
+				for(int y = 0; y < kernelSize; y++)
 				{
 					int xIndex = indexInField.Item1 + x - kernelSize / 2;
 					int yIndex = indexInField.Item2 + y - kernelSize / 2;
-					CField el = CProjectData.groundArray.GetField(xIndex, yIndex);
+					CField el = CProjectData.Points.groundArray.GetField(xIndex, yIndex);
 					float? elHeight = el?.GetHeight();
 
 					//if element is not defined, use height from the middle element
 					float definedHeight = midHeight;
-					if (elHeight != null)
+					if(elHeight != null)
 					{
 						definedHeight = (float)elHeight;
 					}
@@ -544,29 +593,40 @@ namespace ForestReco
 		}
 
 
-		public void ApplyFillMissingHeight()
-		{
-			if (IsDefined()) { return; }
-			if (MaxFilledHeight == null) { return; }
+		protected bool heightFilled;
 
-			Vector3 filledPoint = center;
+		public virtual void ApplyFillMissingHeight()
+		{
+			//if(IsDefined()) { return; }
+			if(heightFilled) return;
+			if(MaxFilledHeight == null) { return; }
+
+			Vector3 filledPoint = Center;
 			filledPoint.Z = (float)MaxFilledHeight;
 			AddPoint(filledPoint);
 		}
 
 
-		public void FillMissingHeight(EFillMethod pMethod, int pKernelMultiplier)
+		public virtual void FillMissingHeight(EFillMethod pMethod, int pParam = -1)
 		{
-			if (IsDefined()) { return; }
+			if(IsDetail && Equals(63, 75))
+			{
+				CDebug.WriteLine();
+			}
+
+			//if(IsDefined()) { return; }
+			if(MaxFilledHeight != null)
+				return;
 
 			int maxSteps = 1;
-			switch (pMethod)
+			switch(pMethod)
 			{
 				case EFillMethod.ClosestDefined:
 					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false);
 					break;
 				case EFillMethod.FromNeighbourhood:
-					MaxFilledHeight = GetAverageHeightFromNeighbourhood(pKernelMultiplier);
+					MaxFilledHeight = GetAverageHeightFromNeighbourhood(pParam);
+					//MaxFilledHeight = GetMaxHeightFromNeigbourhood();
 					break;
 			}
 		}
@@ -581,8 +641,8 @@ namespace ForestReco
 
 		private CField GetClosestDefined(EDirection pDirection, int pMaxSteps)
 		{
-			if (IsDefined()) { return this; }
-			if (pMaxSteps == 0) { return null; }
+			if(IsDefined()) { return this; }
+			if(pMaxSteps == 0) { return null; }
 			return GetNeighbour(pDirection)?.GetClosestDefined(pDirection, pMaxSteps - 1);
 		}
 
@@ -597,7 +657,7 @@ namespace ForestReco
 
 		private float? GetHeightAverage()
 		{
-			if (!IsDefined()) { return null; }
+			if(!IsDefined()) { return null; }
 			return SumZ / points.Count;
 		}
 
@@ -607,15 +667,15 @@ namespace ForestReco
 		private CField GetFieldWithOffset(int pIndexOffsetX, int pIndexOffsetY)
 		{
 			CField el = this;
-			for (int x = 0; x < Math.Abs(pIndexOffsetX); x++)
+			for(int x = 0; x < Math.Abs(pIndexOffsetX); x++)
 			{
 				el = pIndexOffsetX > 0 ? el.Right : el.Left;
-				if (el == null) { return null; }
+				if(el == null) { return null; }
 			}
-			for (int y = 0; y < Math.Abs(pIndexOffsetY); y++)
+			for(int y = 0; y < Math.Abs(pIndexOffsetY); y++)
 			{
 				el = pIndexOffsetY > 0 ? el.Top : el.Bot;
-				if (el == null) { return null; }
+				if(el == null) { return null; }
 			}
 			return el;
 		}
@@ -624,7 +684,7 @@ namespace ForestReco
 
 		private EDirection GetOpositeNeighbour(EDirection pNeighbour)
 		{
-			switch (pNeighbour)
+			switch(pNeighbour)
 			{
 				case EDirection.Bot: return EDirection.Top;
 				case EDirection.Top: return EDirection.Bot;
@@ -643,13 +703,18 @@ namespace ForestReco
 
 		public override string ToString()
 		{
-			return ToStringIndex() + " Ground = " + GetHeight() + ". Center = " + center;
+			return ToStringIndex() + " Height = " + GetHeight() + ". Center = " + Center;
+		}
+
+		public bool Equals(int pIndexX, int pIndexY)
+		{
+			return indexInField.Item1 == pIndexX && indexInField.Item2 == pIndexY;
 		}
 
 		public override bool Equals(object obj)
 		{
 			// Check for null values and compare run-time types.
-			if (obj == null || GetType() != obj.GetType())
+			if(obj == null || GetType() != obj.GetType())
 				return false;
 
 			CField e = (CField)obj;

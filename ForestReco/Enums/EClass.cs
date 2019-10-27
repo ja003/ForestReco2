@@ -8,9 +8,9 @@ namespace ForestReco
 {
 	public enum EClass
 	{
-		Undefined = 1,
+		Unassigned = 1,
 		Ground = 2,
 		Vege = 5,
-		Other = 6
+		Building = 6
 	}
 }

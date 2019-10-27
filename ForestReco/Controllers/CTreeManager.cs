@@ -9,6 +9,13 @@ namespace ForestReco
 	{
 		public static List<CTree> Trees { get; private set; }
 		public static List<CTree> InvalidTrees { get; private set; }
+		//trees which were evaluated not to be actual trees but rather unfiltered noise
+		public static List<CTree> NotTrees { get; private set; }
+
+		public static float LocalMaxHeight { get; private set; }
+		public static float AllowedDescend { get; private set; }
+		public static int MinAscendSteps { get; private set; }
+		public static int MinDescendSteps { get; private set; }
 
 		//public static List<Vector3> invalidVegePoints; //?? todo: delete
 
@@ -36,7 +43,13 @@ namespace ForestReco
 			treeIndex = 0;
 			debugcalls = 0;
 			maxPossibleTreesAssignment = 0;
+
 			detectMethod = GetDetectMethod();
+			AllowedDescend = CParameterSetter.GetFloatSettings(ESettings.allowedDescend);
+			MinAscendSteps = CParameterSetter.GetIntSettings(ESettings.minAscendSteps);
+			MinDescendSteps = CParameterSetter.GetIntSettings(ESettings.minDescendSteps);
+
+			LocalMaxHeight = CParameterSetter.GetFloatSettings(ESettings.localMaxHeight);
 
 			Reinit();
 		}
@@ -45,9 +58,7 @@ namespace ForestReco
 		{
 			Trees = new List<CTree>();
 			InvalidTrees = new List<CTree>();
-			//invalidVegePoints = new List<Vector3>();
-			//allPoints = new List<Vector3>();
-
+			NotTrees = new List<CTree>();
 			pointCounter = 0;
 		}
 
@@ -88,32 +99,60 @@ namespace ForestReco
 
 		public static int maxPossibleTreesAssignment; //just debug. number of assignment of point to the last of possible trees for that point
 
+		public static int currentPointIndex;
+
+		private static void ProcessDebug(Vector3 pPoint, int pPointIndex)
+		{
+			if(pPointIndex == 2899)
+				return;
+
+			if(CDebug.IsDebugPoint3D(pPoint))
+			{
+				return;
+			}
+			if(CDebug.IsDebugPoint(pPoint))
+			{
+				return;
+			}
+		}
 
 		public static void AddPoint(Vector3 pPoint, int pPointIndex)
 		{
-			if(pPointIndex == 1240)
-				CDebug.WriteLine("");
-			//	return;
+			//index < 0 = the point was re-added during the tree merging process 
+			//(where the index is not passed) - use the last index
+			if(pPointIndex < 0)
+				pPointIndex = currentPointIndex;
+
+			currentPointIndex = pPointIndex;
+
+			ProcessDebug(pPoint, pPointIndex);
 
 			pointCounter++;
 
-			CProjectData.vegeArray.AddPointInField(pPoint);
-			//CProjectData.detailArray.AddPointInField(pPoint, CGroundArray.EPointType.Vege, false);
+			CProjectData.Points.vegeArray.AddPointInField(pPoint);
+			CProjectData.Points.vegeDetailArray.AddPointInField(pPoint);
 
-			if(CUtils.IsDebugPoint(pPoint))
-			{
-				bool a = true;
-			}
 
 			List<CTree> possibleTrees = GetPossibleTreesFor(pPoint, EPossibleTreesMethod.ClosestHigher, false);
 
-			CTree selectedTree = SelectBestPossibleTree(possibleTrees, pPoint);
+			CTree selectedTree = SelectBestPossibleTree(possibleTrees, pPoint, true);
+
+			/*if(selectedTree == null && detectMethod == EDetectionMethod.AddFactor2D)
+			{
+				CTreeField f = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint);
+				List<CTree> treesInHood = f.GetDetectedTreesFromNeighbourhood();
+				foreach(CTree tree in treesInHood)
+				{
+					selectedTree = tree;
+					break;
+				}
+			}*/
 
 			if(selectedTree != null)
 			{
-				selectedTree.AddPoint(pPoint);
+				selectedTree.AddPoint(pPoint, pPointIndex);
 			}
-			else if(CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).DetectedTrees.Count > 0)
+			else if(CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint).DetectedTrees.Count > 0)
 			{
 				//new tree cant be created on field where another tree was already detected - shouldnt happen
 				CDebug.Error("trying to create tree on a field where a tree already is");
@@ -125,7 +164,9 @@ namespace ForestReco
 			}
 		}
 
-		public static CTree SelectBestPossibleTree(List<CTree> pPossibleTrees, Vector3 pPoint)
+
+
+		public static CTree SelectBestPossibleTree(List<CTree> pPossibleTrees, Vector3 pPoint, bool pRestrictive)
 		{
 			CTree selectedTree = null;
 			float bestAddPointFactor = 0;
@@ -138,7 +179,7 @@ namespace ForestReco
 				CTree tree = pPossibleTrees[i];
 				if(DEBUG) { CDebug.WriteLine("- try add to : " + tree.ToString(CTree.EDebug.Peak)); }
 
-				CTree treeAtTheField = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).GetSingleDetectedTree();
+				CTree treeAtTheField = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint).GetSingleDetectedTree();
 				if(treeAtTheField != null && treeAtTheField.Equals(tree))
 				{
 					selectedTree = tree;
@@ -147,7 +188,7 @@ namespace ForestReco
 
 				if(detectMethod == EDetectionMethod.Detection2D)
 				{
-					bool canBeAdded = tree.CanAdd(pPoint);
+					bool canBeAdded = tree.CanAdd(pPoint, pRestrictive);
 					if(canBeAdded)
 					{
 						//todo: what if point can be added to more trees?
@@ -191,6 +232,20 @@ namespace ForestReco
 							bestAddPointFactor = addPointFactor;
 						}
 					}
+
+					/*else {
+						CTreeField f = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint);
+						if(f.GetSingleDetectedTree() != null)
+						{
+							selectedTree = f.GetSingleDetectedTree();
+						}
+					}*/
+
+					//this joins too many trees together
+					//else if(tree.CanAdd(pPoint))
+					//{
+					//	selectedTree = tree;
+					//}
 				}
 
 			}
@@ -202,11 +257,7 @@ namespace ForestReco
 
 		private static void CreateNewTree(Vector3 pPoint)
 		{
-			//u \ANE_1000AGL_02.las nahovno...př 40 a 80
-			//...možná po definování peaku zkusit celý peak mergnout do sousendích stromů?
-			//		...nebo u každého peaku udělat check, jestli je opravdu local max
-
-			if(treeIndex == -1 && debugcalls < 1) //todo 135
+			if(treeIndex == 24 && debugcalls < 1)
 			{
 				//CDebug.WriteLine("");
 				if(debugNewTree)
@@ -221,28 +272,18 @@ namespace ForestReco
 			Trees.Add(newTree);
 			treeIndex++;
 
-			CVegeField vegeField = CProjectData.vegeArray.GetElementContainingPoint(pPoint);
-			CTreeField treeDetailField = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint);
-			CTreeField treeNormalField = CProjectData.treeNormalArray.GetElementContainingPoint(pPoint);
-
-			if(vegeField == null)
-			{
-				CDebug.Error($"Cant create tree. point {pPoint} is OOB!");
-				return;
-			}
-			bool alreadyWasPeak = treeDetailField.IsPeak;
-			treeDetailField.AddDetectedTree(newTree, true);
-			if(alreadyWasPeak && detectMethod == EDetectionMethod.Detection2D)
-			{
-				CDebug.Error($"Field {treeDetailField} already contains a tree");
-			}
-			treeNormalField.AddDetectedTree(newTree, true);
-
-			newTree.peakDetailField = treeDetailField;
-			newTree.peakNormalField = treeNormalField;
+			CProjectData.Points.OnTreeCreated(newTree, pPoint);
 
 			if(newTree.GetTreeHeight() > MaxTreeHeight)
 				MaxTreeHeight = newTree.GetTreeHeight();
+		}
+
+		public static void MarkAsNotTree(CTree pTree)
+		{
+			pTree.notTree = true;
+			//to remove references from arrays
+			DeleteTree(pTree);
+			NotTrees.Add(pTree);
 		}
 
 		public static void DeleteTree(CTree pTree)
@@ -315,18 +356,16 @@ namespace ForestReco
 			List<CTree> possibleTrees = new List<CTree>();
 			if(pMethod == EPossibleTreesMethod.ClosestHigher)
 			{
-				CTreeField field = CProjectData.treeNormalArray.GetElementContainingPoint(pPoint);
-				if(!pMerging && field.DetectedTrees.Count == 1 && field.GetSingleDetectedTree() != pExcludeTree)
-				{
-					//point will definitely belong to one of trees in this field
-					possibleTrees.AddRange(field.DetectedTrees);
-				}
-				else
-				{
-					//todo: make distance dependent on point height
-					possibleTrees.AddRange(CProjectData.treeNormalArray.GetTreesInDistanceFrom(pPoint, MAX_DISTANCE_FOR_POSSIBLE_TREES));
-				}
+				possibleTrees.AddRange(CProjectData.Points.treeNormalArray.GetTreesInMaxStepsFrom(pPoint, MAX_DISTANCE_FOR_POSSIBLE_TREES));
 
+				//remove trees that are too far
+				//for(int i = possibleTrees.Count - 1; i >= 0; i--)
+				//{
+				//	if(CUtils.Get2DDistance(pPoint, possibleTrees[i].peak.Center) > MAX_DISTANCE_FOR_POSSIBLE_TREES)
+				//	{
+				//		possibleTrees.RemoveAt(i);
+				//	}
+				//}
 
 			}
 			else if(pMethod == EPossibleTreesMethod.Contains)
@@ -362,9 +401,10 @@ namespace ForestReco
 				//}
 			}
 
+			//Already sorted in GetTreesInMaxStepsFrom
 			//sort trees by 2D distance of given point to them
-			possibleTrees.Sort((a, b) => CUtils.Get2DDistance(a.peak.Center, pPoint).CompareTo(
-				CUtils.Get2DDistance(b.peak.Center, pPoint)));
+			//possibleTrees.Sort((a, b) => CUtils.Get2DDistance(a.peak.Center, pPoint).CompareTo(
+			//	CUtils.Get2DDistance(b.peak.Center, pPoint)));
 
 			if(pMethod == EPossibleTreesMethod.ClosestHigher)
 			{
@@ -389,7 +429,7 @@ namespace ForestReco
 
 				}
 				//it can happen that the tree on the very same field as the point is skipped
-				CTree treeOnFieldWithPoint = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint).GetSingleDetectedTree();
+				CTree treeOnFieldWithPoint = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint).GetSingleDetectedTree();
 				if(treeOnFieldWithPoint != null &&
 					treeOnFieldWithPoint != pExcludeTree /*&& 
 					!closestTrees.Contains(treeOnFieldWithPoint)*/)
@@ -406,9 +446,66 @@ namespace ForestReco
 
 
 		//MERGE
+		public static bool IsMerging;
+
+		/// <summary>
+		/// If not-tree is very close to some tree then it is probably part of that tree.
+		/// Not-tree will be merged into the closest one.
+		/// </summary>
+		public static void TryMergeNotTrees()
+		{
+			IsMerging = true;
+			DateTime mergeStartTime = DateTime.Now;
+			CDebug.WriteLine("TryMergeNotTrees");
+
+			//sort in descending order - trees will be processed from the end
+			NotTrees.Sort((b, a) => b.peak.Center.Z.CompareTo(a.peak.Center.Z));
+
+			int treeCountBeforeMerge = NotTrees.Count;
+
+			for(int i = NotTrees.Count - 1; i >= 0; i--)
+			{
+				CTree notTree = NotTrees[i];
+				//if(notTree.Equals(335))
+				//	CDebug.WriteLine("");
+
+				//just debug
+				//List<CTree> closeTrees2 = CProjectData.Points.treeNormalArray.
+				//		  GetTreesInMaxStepsFrom(notTree.peak.Center, 1);
+
+				List<CTree> closeTrees = new List<CTree>();
+				//fisrt try to get a tree on the same detail field
+				CTree t = CProjectData.Points.treeDetailArray.
+					GetFieldContainingPoint(notTree.peak.Center).GetSingleDetectedTree();
+				if(t != null)
+					closeTrees.Add(t);
+
+				//if no tree is on the same field get some in close distance
+				if(closeTrees.Count == 0)
+				{
+					closeTrees = CProjectData.Points.treeDetailArray.
+						  GetTreesInMaxStepsFrom(notTree.peak.Center, 2);
+				}
+
+				//merge not-tree with the closest tree but only if it is higher.
+				//if not then it is probably some noise above the regular tree
+				if(closeTrees.Count > 0 &&
+					closeTrees[0].GetTreeHeight() > notTree.GetTreeHeight() &&
+					!notTree.IsLocalMaximum())
+				{
+					closeTrees[0].MergeWith(notTree);
+					NotTrees.RemoveAt(i);
+				}
+			}
+			IsMerging = false;
+
+			CDebug.Duration("Not-trees merge", mergeStartTime);
+			CDebug.Count("Number of not-trees merged", treeCountBeforeMerge - Trees.Count);
+		}
 
 		public static void TryMergeAllTrees(bool pOnlyInvalid)
 		{
+			IsMerging = true;
 			DateTime mergeStartTime = DateTime.Now;
 			CDebug.WriteLine("TryMergeAllTrees");
 
@@ -416,7 +513,10 @@ namespace ForestReco
 
 			int treeCountBeforeMerge = Trees.Count;
 
-			MergeGoodAddFactorTrees(pOnlyInvalid);
+			if(detectMethod == EDetectionMethod.AddFactor)
+				MergeGoodAddFactorTrees(pOnlyInvalid);
+			if(detectMethod == EDetectionMethod.Detection2D)
+				Merge2DTrees();
 
 			if(pOnlyInvalid)
 			{
@@ -426,9 +526,94 @@ namespace ForestReco
 			{
 				CAnalytics.firstMergeDuration = CAnalytics.GetDuration(mergeStartTime);
 			}
+			IsMerging = false;
 
 			CDebug.Duration("Trees merge", mergeStartTime);
 			CDebug.Count("Number of trees merged", treeCountBeforeMerge - Trees.Count);
+		}
+
+		/// <summary>
+		/// Mergind method for Detection2D
+		/// </summary>
+		private static void Merge2DTrees()
+		{
+			return;
+			for(int i = Trees.Count - 1; i >= 0; i--)
+			{
+				CTree treeToMerge = Trees[i];
+				if(treeToMerge.Equals(173))
+				{
+					CDebug.WriteLine();
+				}
+
+				//if(treeToMerge.IsLocalMaximum())
+				//{
+				//	continue;
+				//}
+
+				List<CTree> possibleTrees =
+					GetPossibleTreesToMergeWith(treeToMerge, EPossibleTreesMethod.ClosestHigher);
+
+				for(int t = 0; t < possibleTrees.Count; t++)
+				{
+					//merge trees if the target tree can be reached from the treeToMerge
+					//and they are of different heights
+					CTree tree = possibleTrees[t];
+
+					float maxRadius = CTreeRadiusCalculator.GetTreeRadius(tree);
+					float treeAvgExtent = tree.GetAverageExtent();
+					float maxDist = Math.Max(maxRadius, treeAvgExtent);
+
+					float treeDist = CUtils.Get2DDistance(treeToMerge, tree);
+					if(treeDist > maxDist)
+					{
+						continue;
+					}
+
+					/*float heightDiff = tree.GetTreeHeight() - treeToMerge.GetTreeHeight();
+					if(heightDiff < 2)
+					{
+						continue;
+					}*/
+					bool pathContainsTree = false;
+					/*
+					CTreeField closeField = tree.GetClosestField(treeToMerge.peak.Center);
+					bool pathContainsTree =
+						CProjectData.Points.treeDetailArray.PathContainsTree(
+							treeToMerge.peak.Center, closeField.Center, tree, 1, 1);
+
+					if(!pathContainsTree)
+					{
+						pathContainsTree =
+						  CProjectData.Points.treeDetailArray.PathContainsTree(
+							  treeToMerge.peak.Center, tree.peak.Center, tree, 1, 1);
+					}*/
+
+					bool canAdd = tree.CanAdd(treeToMerge.peak.Center, false);
+
+					if(pathContainsTree || canAdd)
+					{
+						treeToMerge = MergeTrees(ref treeToMerge, ref tree, true);
+						break;
+					}
+				}
+
+				/*List<CField> fields = treeToMerge.peakDetailField.GetFieldsInDistance(5);
+				foreach(CField field in fields)
+				{
+					CTreeField treeField = (CTreeField)field;
+					CTree detectedTree = treeField.GetSingleDetectedTree();
+					if(detectedTree != null && !detectedTree.Equals(treeToMerge))
+					{
+						float heightDiff = detectedTree.GetTreeHeight() - treeToMerge.GetTreeHeight();
+						if(heightDiff > 2)
+						{
+							treeToMerge = MergeTrees(ref treeToMerge, ref detectedTree, true);
+							break;
+						}
+					}
+				}*/
+			}
 		}
 
 		/// <summary>
@@ -450,16 +635,41 @@ namespace ForestReco
 					continue;
 				}
 				CTree treeToMerge = Trees[i];
-				if(treeToMerge.treeIndex == 1096 || treeToMerge.treeIndex == 1001)
+				if(treeToMerge.treeIndex == 48 || treeToMerge.treeIndex == 1001)
 				{
 					CDebug.WriteLine("");
 				}
 
-				if(pOnlyInvalid && !treeToMerge.isValid && treeToMerge.IsAtBorderOf(CProjectData.groundArray))
+				if(pOnlyInvalid && !treeToMerge.isValid && treeToMerge.IsAtBorder())
 				{
 					//CDebug.Warning(treeToMerge + " is at border");
 					continue;
 				}
+
+				//dont merge tree if it is local maximum
+				//if some tree is very close (in neighbouring detail field)
+				//merge it with the highest one
+				if(detectMethod == EDetectionMethod.AddFactor2D)
+				{
+					if(treeToMerge.Equals(22))
+						CDebug.WriteLine();
+
+					if(treeToMerge.IsLocalMaximum())
+						continue;
+
+					CTreeField f = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(treeToMerge.peak.Center);
+					List<CTree> treesInHood = f.GetDetectedTreesFromNeighbourhood();
+					foreach(CTree tree in treesInHood)
+					{
+						if(tree.Equals(treeToMerge))
+							continue;
+
+						MergeTrees(tree, treeToMerge);
+						break;
+					}
+					continue;
+				}
+
 
 				List<CTree> possibleTrees = GetPossibleTreesToMergeWith(treeToMerge, EPossibleTreesMethod.ClosestHigher);
 				Vector3 pPoint = treeToMerge.peak.Center;
@@ -655,7 +865,7 @@ namespace ForestReco
 
 		public static int GetInvalidTreesAtBorderCount()
 		{
-			return InvalidTrees.Count(tree => tree.IsAtBorderOf(CProjectData.groundArray));
+			return InvalidTrees.Count(tree => tree.IsAtBorder());
 		}
 
 		public static float GetAverageTreeHeight()

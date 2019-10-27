@@ -506,17 +506,30 @@ namespace ForestReco
 		{
 			float pointDistToPeak = CUtils.Get2DDistance(pPoint, tree.peak);
 			bool thisBranchInExtent = furthestPointDistance > pointDistToPeak;
-			if(thisBranchInExtent) { return true; }
+			Vector3 closestPoint = GetClosestPointTo(pPoint);
+			float distToClosestPoint = Vector3.Distance(pPoint, closestPoint);
+
+			if(thisBranchInExtent && distToClosestPoint < 1) { return true; }
 
 			CBranch branch1 = GetNeigbourBranch(-1);
 			float dist1 = branch1.furthestPointDistance;
 			bool leftBranchInExtent = dist1 > pointDistToPeak;
-			if(leftBranchInExtent) { return true; }
+			float distToLeftPoint = CUtils.Get2DDistance(pPoint, branch1.furthestPoint);
+			//restrict only to points close to the furthest point.
+			//for too large branches it was including points way too far
+			bool leftBranchPointClose = distToLeftPoint < 1;
+			if(leftBranchInExtent && leftBranchPointClose)
+				return true;
 
 			CBranch branch2 = GetNeigbourBranch(1);
 			float dist2 = branch2.furthestPointDistance;
 			bool rightBranchInExtent = dist2 > pointDistToPeak;
-			return rightBranchInExtent;
+			float distToRightPoint = CUtils.Get2DDistance(pPoint, branch2.furthestPoint);
+			bool rightBranchPointClose = distToRightPoint < 1;
+			if(rightBranchInExtent && rightBranchPointClose)
+				return true;
+			
+			return false;
 		}
 
 		public float GetDefinedFactor()

@@ -16,32 +16,20 @@ namespace ForestReco
 		{
 		}
 
-		public override int? GetColorValue()
+		public override void FillMissingHeight(EFillMethod pMethod, int pKernelMultiplier)
 		{
-			return 0;
-
-			float? fieldHeight = MaxZ;
-			float? groundHeight = CProjectData.GetMinHeight();
-			//float? groundHeight = CProjectData.array.GetElementContainingPoint(center).GetHeight();
-			float height = 0;
-			if(fieldHeight != null && groundHeight != null)
+			if(IsDefined()) { return; }
+			
+			int maxSteps = 1;
+			switch(pMethod)
 			{
-				height = (float)fieldHeight - (float)groundHeight;
+				case EFillMethod.ClosestDefined:
+					MaxFilledHeight = GetAverageHeightFromClosestDefined(10 * maxSteps, false);
+					break;
+				case EFillMethod.FromNeighbourhood:
+					MaxFilledHeight = GetAverageHeightFromNeighbourhood(pKernelMultiplier);
+					break;
 			}
-			//Color color = new Color();
-			float max = CTreeManager.AVERAGE_MAX_TREE_HEIGHT;
-			float value = height / max;
-			value *= 255;
-			if(value < 0 || value > 255)
-			{
-				//not error - comparing just to AVERAGE_MAX_TREE_HEIGHT, not MAX
-				value = Math.Max(0, value);
-				value = Math.Min(255, value);
-			}
-
-			int intVal = (int)value;
-			return intVal;
 		}
-		
 	}
 }

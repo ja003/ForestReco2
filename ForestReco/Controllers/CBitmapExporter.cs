@@ -67,7 +67,7 @@ namespace ForestReco
 			if(FILTER_MAIN_MAP)
 			{
 				//looks good enough on .3f, higher npt necessary, just slows down rapidly
-				const float kernelRadius = .3f; 
+				const float kernelRadius = .3f;
 				int kernelSize = GetKernelSize(mainMapStepSize, kernelRadius);
 				FilterBitmap(ref mainMap, kernelSize, EFilter.ColorOrMax);
 			}
@@ -85,7 +85,7 @@ namespace ForestReco
 
 			DateTime bitmapStart = DateTime.Now;
 
-			CVegeArray array = CProjectData.vegeArray;
+			CVegeArray array = CProjectData.Points.vegeDetailArray;
 			Bitmap bitmap = new Bitmap(array.arrayXRange, array.arrayYRange);
 
 			int maxValue = 0;
@@ -106,7 +106,7 @@ namespace ForestReco
 
 					int rVal = colorVaInt;
 					//highlight buffer zone
-					bool isAtBufferZone = CTreeMath.IsAtBufferZone(element.center);
+					bool isAtBufferZone = CTreeMath.IsAtBufferZone(element.Center);
 					if(isAtBufferZone)
 						rVal = Math.Min(rVal + 30, 255);
 
@@ -118,7 +118,7 @@ namespace ForestReco
 
 					if(exportMain && !isAtBufferZone)
 					{
-						Tuple<int, int> posInMain = GetIndexInMainBitmap(element.center);
+						Tuple<int, int> posInMain = GetIndexInMainBitmap(element.Center);
 
 						if(posInMain == null)
 							continue;
@@ -129,7 +129,7 @@ namespace ForestReco
 					}
 				}
 			}
-			
+
 			//StretchColorRange(ref bitmap, maxValue);
 
 			//FilterBitmap(ref bitmap, GetKernelSize(array.stepSize, .2f), EFilter.Max);
@@ -209,7 +209,7 @@ namespace ForestReco
 			{
 				try
 				{
-					CVegeField fieldWithTree = pArray.GetElementContainingPoint(tree.peak.Center);
+					CVegeField fieldWithTree = pArray.GetFieldContainingPoint(tree.peak.Center);
 					if(fieldWithTree == null)
 					{
 						CDebug.Error($"tree {tree.treeIndex} field = null");
@@ -239,8 +239,8 @@ namespace ForestReco
 							Vector3 furthestPoint = furthestPoints[i];
 							Vector3 nextFurthestPoint = furthestPoints[(i + 1) % furthestPoints.Count];
 
-							CVegeField fieldWithFP1 = pArray.GetElementContainingPoint(furthestPoint);
-							CVegeField fieldWithFP2 = pArray.GetElementContainingPoint(nextFurthestPoint);
+							CVegeField fieldWithFP1 = pArray.GetFieldContainingPoint(furthestPoint);
+							CVegeField fieldWithFP2 = pArray.GetFieldContainingPoint(nextFurthestPoint);
 							if(fieldWithFP1 == null || fieldWithFP2 == null)
 							{
 								CDebug.Error($"futhest points {furthestPoint} + {nextFurthestPoint} - no field assigned");
@@ -260,7 +260,7 @@ namespace ForestReco
 
 						foreach(CBranch branch in tree.Branches)
 						{
-							CVegeField fieldWithBranch = pArray.GetElementContainingPoint(branch.furthestPoint);
+							CVegeField fieldWithBranch = pArray.GetFieldContainingPoint(branch.furthestPoint);
 							if(fieldWithBranch == null)
 							{
 								CDebug.Error($"branch {branch} is OOB");

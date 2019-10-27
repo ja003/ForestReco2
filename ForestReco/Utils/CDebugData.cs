@@ -61,28 +61,28 @@ namespace ForestReco
 		//		"","","","","","","","","","","","","","","",
 		//		"0 0 0", "0 0 0" , "0 0 0" , "0 0 0"
 		//	});
-		//	CProjectData.groundArray = new CGroundArray(CParameterSetter.groundArrayStep);
+		//	CProjectData.Points.groundArray = new CGroundArray(CParameterSetter.groundArrayStep);
 
 		//	if (pConstantHeight)
 		//	{
-		//		for (int x = 0; x < CProjectData.groundArray.arrayXRange; x++)
+		//		for (int x = 0; x < CProjectData.Points.groundArray.arrayXRange; x++)
 		//		{
-		//			for (int y = 0; y < CProjectData.groundArray.arrayXRange; y++)
+		//			for (int y = 0; y < CProjectData.Points.groundArray.arrayXRange; y++)
 		//			{
 		//				//CProjectData.array.GetElement(x, y).AddPoint(new Vector3(0, pHeight, 0));
-		//				CProjectData.groundArray.SetHeight(pHeight, x, y);
+		//				CProjectData.Points.groundArray.SetHeight(pHeight, x, y);
 		//			}
 		//		}
 		//	}
 		//	else
 		//	{
-		//		CProjectData.groundArray.SetHeight(0, 0, 0);
-		//		CProjectData.groundArray.SetHeight(0, CProjectData.groundArray.arrayXRange - 1, 0);
+		//		CProjectData.Points.groundArray.SetHeight(0, 0, 0);
+		//		CProjectData.Points.groundArray.SetHeight(0, CProjectData.Points.groundArray.arrayXRange - 1, 0);
 
-		//		CProjectData.groundArray.SetHeight(2, CProjectData.groundArray.arrayXRange / 2, CProjectData.groundArray.arrayYRange / 2);
+		//		CProjectData.Points.groundArray.SetHeight(2, CProjectData.Points.groundArray.arrayXRange / 2, CProjectData.Points.groundArray.arrayYRange / 2);
 
-		//		CProjectData.groundArray.SetHeight(5, CProjectData.groundArray.arrayXRange - 1, CProjectData.groundArray.arrayYRange - 1);
-		//		CProjectData.groundArray.SetHeight(5, 0, CProjectData.groundArray.arrayYRange - 1);
+		//		CProjectData.Points.groundArray.SetHeight(5, CProjectData.Points.groundArray.arrayXRange - 1, CProjectData.Points.groundArray.arrayYRange - 1);
+		//		CProjectData.Points.groundArray.SetHeight(5, 0, CProjectData.Points.groundArray.arrayYRange - 1);
 		//	}
 		//	CObjPartition.Init();
 		//}

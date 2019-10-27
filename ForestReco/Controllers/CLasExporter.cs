@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -10,25 +11,28 @@ namespace ForestReco
 		private static string newLine => Environment.NewLine;
 
 		private static string tileFileName = "points";
-		private static string tileTxtFilePath => CProjectData.outputTileSubfolder + tileFileName + ".txt";
-		private static string tileLasFilePath => CProjectData.outputTileSubfolder + tileFileName + ".las";
+		private static string tileFilePath => CProjectData.outputTileSubfolder + tileFileName;
+
+		private static List<string> exportedTiles;
 
 		private static string mainFileName = tileFileName + "_main";
-		private static string mainTxtFilePath => CProjectData.outputFolder + mainFileName + ".txt";
-		private static string mainLasFilePath => CProjectData.outputFolder + mainFileName + ".las";
 
+		private static string mainFilePath => CProjectData.outputFolder + mainFileName;
+		
 		private static bool export => CParameterSetter.GetBoolSettings(ESettings.exportLas);
 
-		private static StringBuilder mainOutput;
 		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i";
-		private const string GROUND_COLOR = "255 0 255"; //pink
+		private const string UNASIGNED_COLOR = "190 190 145"; //pale yellow
+		private const string GROUND_COLOR = "150 90 0"; //brown
+		private const string BUILDING_COLOR = "250 150 150"; //pale red
+		private const string UNDEFINED_COLOR = "0 0 0"; //black
 
 		private const string NUM_FORMAT = "0.00";
 		private const int DEBUG_FREQUENCY = 100;
 
 		public static void Init()
 		{
-			mainOutput = new StringBuilder();
+			exportedTiles = new List<string>();
 		}
 
 		public static void ExportTile()
@@ -43,57 +47,31 @@ namespace ForestReco
 			DateTime start = DateTime.Now;
 			DateTime lastDebug = DateTime.Now;
 
-			//ground points
-			for(int i = 0; i < CProjectData.groundPoints.Count; i++)
-			{
-				if(CProjectData.backgroundWorker.CancellationPending) { return; }
-
-				CDebug.Progress(i, CProjectData.groundPoints.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (ground points)");
-
-				Vector3 p = CProjectData.groundPoints[i];
-				CVector3D globalP = CUtils.GetGlobalPosition(p);
-				res = GetPointLine(globalP, 2, (byte)0, GROUND_COLOR) + newLine;
-				output.Append(res);
-			}
-			mainOutput.Append(output);
+			AddPointsTo(ref output, EClass.Unassigned, ref start);
+			AddPointsTo(ref output, EClass.Ground, ref start);
+			AddPointsTo(ref output, EClass.Building, ref start);
 
 			//tree points
-			for(int i = 0; i < CTreeManager.Trees.Count; i++)
-			{
-				if(CProjectData.backgroundWorker.CancellationPending) { return; }
-
-				CDebug.Progress(i, CTreeManager.Trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (trees)");
-
-				CTree t = CTreeManager.Trees[i];
-				res = GetTreeLines(t); //already ends with "newLine"
-				output.Append(res);
-			}
-			mainOutput.Append(output);
-
+			AddTreePointsTo(ref output, true, ref start);
 			//invalid tree points
-			for(int i = 0; i < CTreeManager.InvalidTrees.Count; i++)
-			{
-				if(CProjectData.backgroundWorker.CancellationPending) { return; }
-
-				CDebug.Progress(i, CTreeManager.InvalidTrees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (invalid trees)");
-
-				CTree t = CTreeManager.InvalidTrees[i];
-				res = GetTreeLines(t);
-				output.Append(res);
-				//mainOutput += res; //dont add invalid trees to main file
-			}
+			AddTreePointsTo(ref output, false, ref start);
 
 			if(output.Length == 0)
 			{
 				CDebug.Warning($"CLasExporter: no output created on tile {CProgramStarter.currentTileIndex}");
 				return;
 			}
+			
+			//1. Create the text file 
+			string txtOutputPath = tileFilePath + ".txt";
+			WriteToFile(output, txtOutputPath);
+			//2. save output path for the main file export
+			exportedTiles.Add(txtOutputPath);
 
-			WriteToFile(output.ToString(), tileTxtFilePath);
-
+			//3. Convert the txt to las using LasTools
 			//format: x, y, z, class, user comment (id), R, G, B
-			string cmd = $"{txt2lasCmd} {tileTxtFilePath}";
-			CCmdController.RunLasToolsCmd(cmd, tileLasFilePath);
+			string cmd = $"{txt2lasCmd} {txtOutputPath}";
+			CCmdController.RunLasToolsCmd(cmd, tileFilePath + ".las");
 
 			CAnalytics.lasExportDuration = CAnalytics.GetDuration(exportStart);
 		}
@@ -103,17 +81,89 @@ namespace ForestReco
 			if(!export)
 				return;
 
-			if(mainOutput.Length == 0)
+			if(exportedTiles.Count == 0)
 			{
 				CDebug.Warning($"CLasExporter: no mainoutput created");
 				return;
 			}
+			string mainTxtFilePath = mainFilePath + ".txt";
 
-			WriteToFile(mainOutput.ToString(), mainTxtFilePath);
+			foreach(string filePath in exportedTiles)
+			{
+				//copy content of all exported tile files to one
+				StringBuilder fileContent = new StringBuilder(File.ReadAllText(filePath));
+				WriteToFile(fileContent, mainTxtFilePath);
+			}
 
-			//format: x, y, z, class, user comment (id), R, G, B
+			//convert to las
 			string cmd = $"{txt2lasCmd} {mainTxtFilePath}";
-			CCmdController.RunLasToolsCmd(cmd, mainLasFilePath);
+			CCmdController.RunLasToolsCmd(cmd, mainFilePath + ".las");
+
+			//delete all txt files
+			File.Delete(mainTxtFilePath);
+			foreach(string filePath in exportedTiles)
+			{
+				File.Delete(filePath);
+			}
+		}
+
+		/// <summary>
+		/// Add points from given class to the output and main output
+		/// </summary>
+		private static void AddPointsTo(ref StringBuilder pOutput, EClass pClass, ref DateTime start)
+		{
+			List<Vector3> points = CProjectData.Points.GetPoints(pClass);
+			string res;
+			DateTime lastDebug = DateTime.Now;
+
+			for(int i = 0; i < points.Count; i++)
+			{
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
+
+				CDebug.Progress(i, points.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (ground points)");
+
+				Vector3 p = points[i];
+				CVector3D globalP = CUtils.GetGlobalPosition(p);
+				res = GetPointLine(globalP, 1, 0, GetClassColor(pClass)) + newLine;
+				pOutput.Append(res);
+			}
+			//mainOutput.Append(pOutput);
+		}
+
+		private static string GetClassColor(EClass pClass)
+		{
+			switch(pClass)
+			{
+				case EClass.Ground:
+					return GROUND_COLOR;
+				case EClass.Building:
+					return BUILDING_COLOR;
+				case EClass.Unassigned:
+					return UNASIGNED_COLOR;
+			}
+			return UNDEFINED_COLOR;
+		}
+
+		/// <summary>
+		/// Add all (valid/invalid) tree points to the output and main output
+		/// </summary>
+		private static void AddTreePointsTo(ref StringBuilder pOutput, bool pValid, ref DateTime start)
+		{
+			string res;
+			DateTime lastDebug = DateTime.Now;
+
+			List<CTree> trees = pValid ? CTreeManager.Trees : CTreeManager.InvalidTrees;
+			for(int i = 0; i < trees.Count; i++)
+			{
+				if(CProjectData.backgroundWorker.CancellationPending) { return; }
+
+				CDebug.Progress(i, trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (trees)");
+
+				CTree t = trees[i];
+				res = GetTreeLines(t); //already ends with "newLine"
+				pOutput.Append(res);
+			}
+			//mainOutput.Append(pOutput);
 		}
 
 		/// <summary>
@@ -151,15 +201,29 @@ namespace ForestReco
 
 
 		/// <summary>
-		/// todo: create file manager
+		/// todo: create file manager and use this approach (passing SB and writing by buffers)
 		/// </summary>
-		/// <param name="pText"></param>
-		private static void WriteToFile(string pText, string pFilePath)
+		private static void WriteToFile(StringBuilder pTextSB, string pFilePath)
 		{
-			using(var outStream = File.OpenWrite(pFilePath))
-			using(var writer = new StreamWriter(outStream))
+			//if file exists, append the text to it
+			using(var writer = new StreamWriter(pFilePath, true))
 			{
-				writer.Write(pText);
+				const int maxStringLength = 1000000;
+				char[] buffer = new char[maxStringLength];
+				for(int i = 0; i < pTextSB.Length; i += maxStringLength)
+				{
+					int count = maxStringLength;
+					if(i + maxStringLength > pTextSB.Length)
+					{
+						count = pTextSB.Length - i;
+						//reinit buffer to not copy last unassigned values
+						//this happens only once at the end
+						buffer = new char[count];
+					}
+
+					pTextSB.CopyTo(i, buffer, 0, count);
+					writer.Write(new string(buffer));
+				}
 			}
 		}
 	}

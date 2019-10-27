@@ -25,7 +25,12 @@ namespace ForestReco
 			AddMaterial("alarm", 1, 0, 0, EMaterial.Alarm);
 			AddMaterial("fake", 1, 0, 1, EMaterial.Fake);
 			AddMaterial("checkTree", 0, 0, 1, EMaterial.CheckTree);
-			AddMaterial("white", 1, 1, 1, EMaterial.VegePoint);
+
+			//https://www.december.com/html/spec/colorper.html
+			AddMaterial("unassignedGold", .6f, .8f, .1f, EMaterial.UnassignedPoint);
+			AddMaterial("groundBrown", .62f, .44f, .23f, EMaterial.GroundPoint);
+			AddMaterial("vegeGreen", .6f, 1, .6f, EMaterial.VegePoint);
+			AddMaterial("buildingRed", .63f, .32f, .18f, EMaterial.BuildingPoint);
 
 			AddTreeMaterial("red", 1, 0, 0);
 			AddTreeMaterial("orange", 1, .5f, 0);
@@ -79,7 +84,7 @@ namespace ForestReco
 		{
 			int selectedIndex = pTree.treeIndex;
 
-			List<CTree> neighbourTrees = CProjectData.treeNormalArray.GetTreesInDistanceFrom(pTree.Center, 5);		
+			List<CTree> neighbourTrees = CProjectData.Points.treeNormalArray.GetTreesInMaxStepsFrom(pTree.Center, 5);		
 			List<Material> assignedMaterials = new List<Material>();
 			foreach (CTree tree in neighbourTrees)
 			{
@@ -100,6 +105,7 @@ namespace ForestReco
 			return selectedMaterial;
 		}
 
+
 		private static Material GetTreeMaterial(int pIndex)
 		{
 			if(!useTreeMaterial){ return null; }
@@ -115,9 +121,28 @@ namespace ForestReco
 			return materials.MaterialList[treeIndexes[matIndex]];
 		}
 
-		public static Material GetVegePointsMaterial()
+
+		public static Material GetPointsMaterial(EClass pClass)
 		{
-			return materials.MaterialList[materialSet[EMaterial.VegePoint][0]];
+			EMaterial material = GetClassMaterial(pClass);
+			return materials.MaterialList[materialSet[material][0]];
+		}
+
+		private static EMaterial GetClassMaterial(EClass pClass)
+		{
+			switch(pClass)
+			{
+				case EClass.Unassigned:
+					return EMaterial.UnassignedPoint;
+				case EClass.Ground:
+					return EMaterial.GroundPoint;
+				case EClass.Vege:
+					return EMaterial.VegePoint;
+				case EClass.Building:
+					return EMaterial.BuildingPoint;
+			}
+
+			return EMaterial.None;
 		}
 
 		public static Material GetInvalidMaterial()
@@ -150,6 +175,9 @@ namespace ForestReco
 		Invalid,
 		Fake,
 		Alarm,
-		VegePoint
+		VegePoint,
+		UnassignedPoint,
+		GroundPoint,
+		BuildingPoint
 	}
 }

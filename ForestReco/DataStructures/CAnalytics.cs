@@ -10,7 +10,9 @@ namespace ForestReco
 	{
 		public static int loadedPoints;
 		public static int vegePoints;
+		public static int unassignedPoints;
 		public static int groundPoints;
+		public static int buildingPoints;
 		public static int filteredPoints;
 
 		public static float arrayWidth;
@@ -65,6 +67,8 @@ namespace ForestReco
 			output += $"loadedPoints = {loadedPoints} " + newLine;
 			output += $"vegePoints = {vegePoints} " + newLine;
 			output += $"groundPoints = {groundPoints} " + newLine;
+			output += $"unassignedPoints = {unassignedPoints} " + newLine;
+			output += $"buildingPoints = {buildingPoints} " + newLine;
 			output += $"filteredPoints = {filteredPoints}" + newLine2;
 
 			output += $"arrayWidth = {arrayWidth} m" + newLine;

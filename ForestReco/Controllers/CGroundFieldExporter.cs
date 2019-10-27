@@ -14,7 +14,7 @@ namespace ForestReco
 		public static Obj ExportToObj(string pArrayName, EExportStrategy pStrategy, bool pUseSmoothHeight, 
 			Tuple<int, int> pStartIndex, Tuple<int, int> pEndIndex)
 		{
-			CGroundArray pArray = CProjectData.groundArray;
+			CGroundArray pArray = CProjectData.Points.groundArray;
 			Obj obj = new Obj(pArrayName);
 			float minHeight = CProjectData.GetMinHeight();
 

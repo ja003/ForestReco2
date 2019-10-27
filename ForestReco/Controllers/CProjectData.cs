@@ -16,21 +16,8 @@ namespace ForestReco
 
 		public static BackgroundWorker backgroundWorker;
 
-		//during one session is always processed one array file
-		public static List<Vector3> groundPoints = new List<Vector3>();
-		public static List<Vector3> vegePoints = new List<Vector3>();
-		public static List<Vector3> filteredPoints = new List<Vector3>();
-
-		public static CGroundArray groundArray;
-		public static CVegeArray vegeArray;
-		public static CVegeArray preprocessDetailArray;
-		public static CVegeArray preprocessNormalArray;
-		
-		public static CTreeArray treeDetailArray;
-		public static CTreeArray treeNormalArray;
-
-
-		//public static CGroundArray detailArray;
+		//main data structure holding processed points and arrays
+		public static CPointsHolder Points;
 
 		public static CHeaderInfo sourceFileHeader; //header of source file (not split)
 		public static CHeaderInfo mainHeader; //header of file being processed (split applied)
@@ -38,17 +25,11 @@ namespace ForestReco
 
 		public static bool tryMergeTrees = true; //default true, user dont choose
 		public static bool tryMergeTrees2 = true;//default true, user dont choose
-		//public static bool exportBeforeMerge = false;
+		public static bool exportBeforeMerge = true;
 
 		public static bool useMaterial;
 
-		public static float lowestHeight = int.MaxValue;
-		public static float highestHeight = int.MinValue;
 		public const int bufferSize = 10;
-
-		//step sizes for arrays
-		private const float NORMAL_STEP = 1f;
-		private const float DETAIL_STEP = 0.2f;
 
 		public static void Init()
 		{
@@ -56,98 +37,64 @@ namespace ForestReco
 				CParameterSetter.GetStringSettings(ESettings.forestFileFullName));
 			string outputFolderSettings = CParameterSetter.GetStringSettings(ESettings.outputFolderPath);
 
+			//include the method alias into the main folder name
+			EDetectionMethod method = CTreeManager.GetDetectMethod();
+			string suffix = CUtils.GetMethodSuffix(method);
+			saveFileName += suffix;
+
 			outputFolder = CObjExporter.CreateFolderIn(saveFileName, outputFolderSettings);
 
-
-			//string[] lines = CPreprocessController.GetHeaderLines(fullFilePath);
-			//sourceFileHeader = new CHeaderInfo(lines);
-
+			Points = new CPointsHolder();
 		}
 
 		public static void ReInit(int pTileIndex)
 		{
 			//dont create subfolder if we export only one tile
 			bool isOnlyTile = CProgramStarter.tilesCount == 1;
+			string tileIndexString = GetTileIndexString(pTileIndex);
+
+			string tileExtent = currentTileHeader.GetExtentString();
+
 			outputTileSubfolder = isOnlyTile ? outputFolder :
-				CObjExporter.CreateFolderIn($"tile_{pTileIndex}", outputFolder);
+				CObjExporter.CreateFolderIn($"tile_{tileIndexString}_{tileExtent}", outputFolder);
 
-			groundArray = null;
-			//header = null;
-			currentTileHeader = null;
-
-			vegePoints.Clear();
-			groundPoints.Clear();
-			filteredPoints.Clear();
-
-			lowestHeight = int.MaxValue;
-			highestHeight = int.MinValue;
+			Points.ReInit();
 		}
 
-		public static void InitArrays()
+		/// <summary>
+		/// Calculates correct tile index string for the folder based on 
+		/// total count of tiles.
+		/// For better ordering of output folders
+		/// </summary>
+		private static string GetTileIndexString(int pTileIndex)
 		{
-			groundArray = new CGroundArray(NORMAL_STEP, false);
-			vegeArray = new CVegeArray(DETAIL_STEP, true);
-			preprocessDetailArray = new CVegeArray(DETAIL_STEP, true);
-			preprocessNormalArray = new CVegeArray(NORMAL_STEP, false);
-
-			treeDetailArray = new CTreeArray(DETAIL_STEP, true);
-			treeNormalArray = new CTreeArray(NORMAL_STEP, false);
-
-
-			CObjPartition.Init();
+			string format = "0";
+			if(CProgramStarter.tilesCount > 10)
+				format = "00";
+			if(CProgramStarter.tilesCount > 100)
+				format = "000";
+			return pTileIndex.ToString(format);
 		}
 
 		public static Vector3 GetOffset()
 		{
-			//return mainHeader?.Offset ?? Vector3.Zero;
 			return mainHeader.Offset;
-			//return currentTileHeader.Offset;
 		}
 
 		public static Vector3 GetArrayCenter()
 		{
-			//return mainHeader?.Center ?? Vector3.Zero;
 			return mainHeader.Center;
-			//return currentTileHeader.Center;
 		}
 
 		public static float GetMinHeight()
 		{
-			//return mainHeader?.MinHeight ?? 0;
 			return mainHeader.MinHeight;
 		}
 
 		public static float GetMaxHeight()
 		{
-			//return mainHeader?.MaxHeight ?? 1;
 			return mainHeader.MaxHeight;
 		}
 
-		public static void AddPoint(Tuple<EClass, Vector3> pParsedLine)
-		{
-			//1 = unclassified
-			//2 = ground
-			//5 = high vegetation
-			Vector3 point = pParsedLine.Item2;
-
-			if(pParsedLine.Item1 == EClass.Ground)
-			{
-				groundPoints.Add(point);
-			}
-			else if(pParsedLine.Item1 == EClass.Vege)
-			{
-				vegePoints.Add(point);
-			}
-
-			float height = point.Z;
-			if (height < lowestHeight)
-			{
-				lowestHeight = height;
-			}
-			if(height > highestHeight)
-			{
-				highestHeight = height;
-			}
-		}
 	}
 }

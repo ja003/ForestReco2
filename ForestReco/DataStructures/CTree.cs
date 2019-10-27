@@ -7,7 +7,7 @@ using System.Numerics;
 namespace ForestReco
 {
 	/// <summary>
-	/// Y = height
+	/// Z = height
 	/// </summary>
 	public class CTree : CBoundingBoxObject
 	{
@@ -36,6 +36,8 @@ namespace ForestReco
 		public Material assignedMaterial;
 
 		public bool isValid; //invalid by default - until Validate is called
+		public bool notTree; //if true then this tree was created from unfiltered noise 
+		public bool tooLow; //tree is lower than minimal required height
 
 		private float? groundHeight;
 
@@ -175,35 +177,116 @@ namespace ForestReco
 			return dist;
 		}
 
-		public bool CanAdd(Vector3 pPoint)
+		public bool CanAdd(Vector3 pPoint, bool pRestrictive)
 		{
-			CTreeField treeFieldWithPoint = CProjectData.treeNormalArray.GetElementContainingPoint(pPoint);
-			if(treeFieldWithPoint.DetectedTrees.Count > 0)
+			CTreeField treeFieldWithPoint =
+				CProjectData.Points.treeNormalArray.GetFieldContainingPoint(pPoint);
+			CTreeField detailTreeFieldWithPoint =
+				CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint);
+
+			if(peakDetailField.Equals(detailTreeFieldWithPoint))
 			{
-				bool containsTree = treeFieldWithPoint.DetectedTrees.Contains(this);
-				bool pointIsTreePeak = treeFieldWithPoint.GetSingleDetectedTree().peak.CenterEquals(pPoint);
-				if(!pointIsTreePeak)
-					return containsTree;
+				return true;
 			}
 
+			//if(peakNormalField.Equals(treeFieldWithPoint))
+			//{
+			//	List<CTree> treesInHood = detailTreeFieldWithPoint.GetDetectedTreesFromNeighbourhood();
+			//	if(treesInHood.Contains(this))
+			//		return true;
+			//}
+			List<CTree> treesInHood = detailTreeFieldWithPoint.GetDetectedTreesFromNeighbourhood();
+			if(treesInHood.Contains(this))
+				return true;
+
+
+			//float maxExtent = CTreeRadiusCalculator.GetTreeRadius(GetTreeHeight());
+			//float heightDiffToPeak = peak.Center.Z - pPoint.Z;
+			//if(!IsInTreeExtent(pPoint) && heightDiffToPeak < maxExtent)
+			//{
+			//	return false;
+			//}
+
+
+
+			//if(treeFieldWithPoint.DetectedTrees.Count > 0)
+			//{
+			//	bool containsTree = treeFieldWithPoint.DetectedTrees.Contains(this);
+			//	bool pointIsTreePeak = treeFieldWithPoint.GetSingleDetectedTree().peak.CenterEquals(pPoint);
+			//	if(!pointIsTreePeak)
+			//		return containsTree;
+			//}
+
 			//prevent adding of point in the peak level to branches
-			float angle = CUtils.GetAngleToTree(this, pPoint);
+			/*float angle = CUtils.GetAngleToTree(this, pPoint);
 			bool belongsToPeak = BelongsToPeak(pPoint);
 			if(belongsToPeak)
 				return true;
-			else if(angle > 80)
+			else if(angle > 60)
 				return false;
+			*/
 
 			CBranch branch = GetBranchFor(pPoint);
 			bool isPointInExtent = branch.IsPointInExtent(pPoint);
 			if(isPointInExtent)
 				return true;
 
+			/*if(pRestrictive)
+			{
+				Vector3 closestBranchPoint = branch.GetClosestHigherTo(pPoint);
+				float distToClosePoint = Vector3.Distance(pPoint, closestBranchPoint);
+				bool isSomePointClose = distToClosePoint < 1;
+				if(!isSomePointClose)
+					return false;
+			}*/
+
+
+			//TODO: tree 9, 16, 17 se nemergne, ale jsou to špičky...buď tot ak prostě nechám, nebo je třeba přidat další kritérium. případně další merge.
+			//Prvně otestovat na další sadě
+
+			//todo: or fields?
+			//get the closest field to pPoint containing this tree
+			CTreeField closeField = GetClosestField(pPoint);
+			//if there is valid path to it => pPoint can be added
+			bool canReachCloseField = CanReach(pPoint, closeField.Center, pRestrictive);
+			if(canReachCloseField)
+				return true;
+
+			//same with the tree peak
+			bool canReachPeak = CanReach(pPoint, peak.Center, pRestrictive);
+			if(canReachPeak)
+				return true;
+
+			return false;
+
+			//todo: moved to CanReach method, test and remove
+			const float max_path_length = 2f;
+			const float allowed_descend = 0.3f;
+			const int min_ascending_steps = 4;
+			const int min_descending_steps = 2;
+			float ignoredDescend = GetTreeHeight() / 2;
+			bool isAscending = CProjectData.Points.preprocessDetailArray.
+				IsPathAscending(
+					pPoint, peak.Center,
+					max_path_length, allowed_descend, min_ascending_steps,
+					min_descending_steps, ignoredDescend, this);
+
+			const int max_path_length_to_tree = 1;
+			bool pathContainsTree = CProjectData.Points.treeDetailArray.PathContainsTree(pPoint, peak.Center, this, max_path_length_to_tree);
+
+			return isAscending && pathContainsTree;
+
+
 			EDirection dirToTreePeak = CField.GetDirection(treeFieldWithPoint, peakNormalField);
 			//neighbourInTreeDir has to be defined!
 			CTreeField neighbourInTreeDir = (CTreeField)treeFieldWithPoint.GetNeighbour(dirToTreePeak);
 			float distToNeighbour = CUtils.Get2DDistance(treeFieldWithPoint, neighbourInTreeDir);
 
+			if(neighbourInTreeDir == null)
+			{
+				CDebug.Error("neighbour is null");
+				return false;
+			}
 			bool neigbourBelongsToTheTree = neighbourInTreeDir.DetectedTrees.Contains(this);
 
 
@@ -243,6 +326,7 @@ namespace ForestReco
 				}
 			}
 
+			/*
 			////detect if the way from the point to the tree is ascending
 			////...or maybe this should be the main criteria???
 			//TODO: not very effective so far
@@ -250,11 +334,63 @@ namespace ForestReco
 			if(neigbourBelongsToTheTree && distance > 2) //todo: get radius value
 			{
 				//bool isAscending = CProjectData.preprocessArray.IsWayAscending(pPoint, peak.Center, 0.1f);
-				bool isAscending = CProjectData.preprocessNormalArray.IsPathAscending(pPoint, peak.Center, 1.6f, 0.3f, 1); //todo: make consts
+				bool isAscending = CProjectData.Points.preprocessNormalArray.IsPathAscending(pPoint, peak.Center, 1.6f, 0.3f, 1); //todo: make consts
 				return isAscending;
 			}
 
-			return neigbourBelongsToTheTree;
+			return neigbourBelongsToTheTree;*/
+		}
+
+		/// <summary>
+		/// The path from pPoint to pTarget in detail array is ascending
+		/// and containg this tree
+		/// </summary>
+		private bool CanReach(Vector3 pPoint, Vector3 pTarget, bool pHasToBeAscending)
+		{
+			//const float max_path_length = 2f;
+			//const float allowed_descend = 0.5f;
+			//const int min_ascending_steps = 4;
+			//const int min_descending_steps = 3;
+
+			float max_path_length = 2f;
+			max_path_length = CTreeRadiusCalculator.GetTreeRadius(this);
+
+			//these params dont have much of effect, most is decided by isLocalMax
+			float allowed_descend = CTreeManager.AllowedDescend;
+			int min_ascending_steps = CTreeManager.MinAscendSteps;
+			int min_descending_steps = CTreeManager.MinDescendSteps;
+			//todo: maybe no need to pass as params?
+			float ignoredDescend = GetTreeHeight() / 2;
+			bool isAscending = CProjectData.Points.preprocessDetailArray.
+				IsPathAscending(
+					pPoint, pTarget,
+					max_path_length, allowed_descend, min_ascending_steps,
+					min_descending_steps, ignoredDescend, this);
+
+			if(pHasToBeAscending && !isAscending)
+				return false;
+
+			float max_path_length_to_tree = max_path_length;
+			bool pathContainsTree = CProjectData.Points.treeDetailArray.PathContainsTree(pPoint, pTarget, this, max_path_length_to_tree);
+
+			return pathContainsTree;
+		}
+
+		/// <summary>
+		/// Finds the closest field to pPoint containing this tree
+		/// </summary>
+		public CTreeField GetClosestField(Vector3 pPoint)
+		{
+			List<CTreeField> fields = detailFields;
+			fields.Sort((a, b) => CUtils.Get2DDistance(pPoint, a.Center).CompareTo(CUtils.Get2DDistance(pPoint, b.Center)));
+			return fields.Count > 0 ? fields[0] : null;
+		}
+
+		private bool IsInTreeExtent(Vector3 pPoint)
+		{
+			float distToPeak2D = CUtils.Get2DDistance(pPoint, peak.Center);
+			float maxExtent = CTreeRadiusCalculator.GetTreeRadius(GetTreeHeight());
+			return distToPeak2D < maxExtent;
 		}
 
 
@@ -263,8 +399,8 @@ namespace ForestReco
 		/// </summary>
 		/*public bool CanAdd_detailArray(Vector3 pPoint)
 		{			
-			//CVegeField elemenWithPointPreprocess = CProjectData.preprocessArray.GetElementContainingPoint(pPoint);
-			CTreeField treeFieldWithPoint = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint);
+			//CVegeField elemenWithPointPreprocess = CProjectData.preprocessArray.GetFieldContainingPoint(pPoint);
+			CTreeField treeFieldWithPoint = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint);
 			if(treeFieldWithPoint.GetSingleDetectedTree() != null)
 			{
 				return treeFieldWithPoint.GetSingleDetectedTree().Equals(this);
@@ -308,34 +444,45 @@ namespace ForestReco
 			return neigbourBelongsToTheTree;
 		}*/
 
-		public void AddPoint(Vector3 pPoint)
+		public void AddPoint(Vector3 pPoint, int pPointIndex = -1)
 		{
 			if(Equals(72))
 				pPoint = pPoint;
+
+			if(CDebug.IsDebugPoint3D(pPoint))
+				CDebug.WriteLine();
+
+			//the tree might have become 'not-tree' (eg during merging)
+			//try add the point again, this tree won't be selected again
+			if(notTree)
+			{
+				CTreeManager.AddPoint(pPoint, pPointIndex);
+				return;
+			}
 
 			//if this tree is currently being merged into another tree add this 
 			//point into the target tree. see 'mergingInto' comment
 			if(mergingInto != null)
 			{
 				//CDebug.WriteLine($"{this} is being merged into {mergingInto}");
-				mergingInto.AddPoint(pPoint);
+				mergingInto.AddPoint(pPoint, pPointIndex);
 				return;
 			}
 
 			bool belongsToPeak = BelongsToPeak(pPoint);
 			if(belongsToPeak)
 			{
-				if(Equals(72))
-					pPoint = pPoint;
+				//if(Equals(72))
+				//	pPoint = pPoint;
 				peak.AddPoint(pPoint);
 			}
 			else
 			{
 				GetBranchFor(pPoint).AddPoint(pPoint);
 			}
-			CTreeField treeDetailField = CProjectData.treeDetailArray.GetElementContainingPoint(pPoint);
+			CTreeField treeDetailField = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(pPoint);
 			treeDetailField.AddDetectedTree(this, false);
-			CTreeField treeNormalField = CProjectData.treeNormalArray.GetElementContainingPoint(pPoint);
+			CTreeField treeNormalField = CProjectData.Points.treeNormalArray.GetFieldContainingPoint(pPoint);
 			treeNormalField.AddDetectedTree(this, false);
 
 			Points.Add(pPoint);
@@ -343,7 +490,7 @@ namespace ForestReco
 
 			//CTreeManager.allPoints.Add(pPoint);
 			if(!belongsToPeak && !firstNonPeakPoint)
-				OnAddFirstNonPeakPoint();
+				OnAddFirstNonPeakPoint(pPoint);
 		}
 
 		/// <summary>
@@ -361,17 +508,40 @@ namespace ForestReco
 		/// With fully formed peak we can try to add this peak to "possible" trees to which the peak points 
 		/// would not be previously assigned.
 		/// </summary>
-		private void OnAddFirstNonPeakPoint()
+		private void OnAddFirstNonPeakPoint(Vector3 pPoint)
 		{
-			//if(Equals(72))
-			//	firstNonPeakPoint = true;
-
+			//return;
 			//firstNonPeakPoint = true;
-			////return;
 
-			//if(CTreeManager.GetDetectMethod() == EDetectionMethod.AddFactor2D &&
-			//	!Equals(72))				
+			//if(!Equals(8))
+			//{
+			//	firstNonPeakPoint = true;
 			//	return;
+			//}
+			//else
+			//	CDebug.WriteLine();
+
+			if(Equals(31))
+			{
+				CDebug.WriteLine();
+			}
+
+			float heightDiffToPeak = peak.Center.Z - pPoint.Z;
+			//if the first point is too far from the peak then those processed points are
+			//probably unfiltered noise
+			//todo: even some normal trees have big heightDiffToPeak => the original peak is then 
+			//considered not-tree [ERROR] 
+			if(!CTreeManager.IsMerging && heightDiffToPeak > 3 * CPeak.MAX_PEAK_Y_DIFF)
+			{
+				if(Equals(335))
+					CDebug.WriteLine();
+
+				Points.Remove(pPoint); //shouldnt be expensive since it is the first nonpeak
+				branches.Clear();
+				CTreeManager.MarkAsNotTree(this);
+				CTreeManager.AddPoint(pPoint, CTreeManager.currentPointIndex);
+				return;
+			}
 
 			firstNonPeakPoint = true;
 
@@ -379,21 +549,29 @@ namespace ForestReco
 				return;
 
 
+			bool isLocalMaximum = IsLocalMaximum();
+			if(isLocalMaximum)
+				return;
+
 			//try add the newly formed tree peak to some close possible trees.
 			//if it fits delete this tree and merge it into the best possible.
 			//this prevents the situation when some point from newly formed peak is too far to be added to some possible tree
 			//but later added points to the peak moves the peak center closer to the possible tree and now should be merged
-			List<CTree> possibleTrees = CTreeManager.GetPossibleTreesFor(peak.Center, EPossibleTreesMethod.ClosestHigher, false, this);
-			CTree selectedTree = CTreeManager.SelectBestPossibleTree(possibleTrees, peak.Center);
+			List<CTree> possibleTrees = CTreeManager.GetPossibleTreesFor(
+				peak.Center, EPossibleTreesMethod.ClosestHigher, false, this);
+			CTree selectedTree = CTreeManager.SelectBestPossibleTree(
+				possibleTrees, peak.Center, false);
 			if(selectedTree != null)
 			{
 				CTreeManager.MergeTrees(selectedTree, this);
 				return;
 			}
 
+			return;
+
+
 			//every tree peak should be local maximum
 			//if it is not better merge it into the closest possible tree
-			bool isLocalMaximum = IsLocalMaximum();
 			if(!isLocalMaximum && possibleTrees.Count > 0)
 			{
 				//todo: na ANE2k_cut.las se 194  mergne do 189...přitom tam vůbec nesedí.
@@ -410,40 +588,77 @@ namespace ForestReco
 			}
 		}
 
+		public float GetAverageExtent()
+		{
+			float extentSum = 0;
+			int defined = 0;
+			foreach(CBranch branch in branches)
+			{
+				if(branch.furthestPointDistance > 0.2f)
+				{
+					extentSum += branch.furthestPointDistance;
+					defined++;
+				}
+			}
+			if(defined == 0)
+				return 0;
+			return extentSum / defined;
+		}
+
 		/// <summary>
 		/// If current peak is actually local maximum.
 		/// Checks all closest neighbours which do not contain any of peak points
 		/// - peak has to be higher than all of them 
 		/// </summary>
-		private bool IsLocalMaximum()
+		public bool IsLocalMaximum()
 		{
-			CVegeField peakCenterField = CProjectData.preprocessNormalArray.GetElementContainingPoint(peak.Center);
+			//CVegeField peakCenterField = CProjectData.Points.preprocessNormalArray.GetFieldContainingPoint(peak.Center);
+			CVegeField peakCenterField =
+				CProjectData.Points.preprocessDetailArray.GetFieldContainingPoint(peak.Center);
 
 			var directions = Enum.GetValues(typeof(EDirection));
 
+			if(Equals(17))
+			{
+				CDebug.WriteLine();
+			}
+			int higherCount = 0;
 			foreach(EDirection dir in directions)
 			{
 				if(dir == EDirection.None)
 					continue;
 
-				CVegeField closestNeighbourField = (CVegeField)peakCenterField.GetClosestNeighbourWithout(peak.Points, dir);				
+				CVegeField closestNeighbourField =
+					(CVegeField)peakCenterField.GetClosestNeighbourWithout(peak.Points, dir);
 
 				if(closestNeighbourField == null)
 					continue;
 
-				CTreeField debugF = CProjectData.treeNormalArray.GetElement(closestNeighbourField.indexInField);
+				//CTreeField debugF = CProjectData.Points.treeNormalArray.GetElement(closestNeighbourField.indexInField);
 
-				float maxDistanceToNeighbour = 2 * CProjectData.preprocessNormalArray.stepSize;
+				float maxDistanceToNeighbour = 2 * CPointsHolder.NORMAL_STEP;
 				float distanceToNeighbour = closestNeighbourField.GetDistanceTo(peakCenterField);
 				if(distanceToNeighbour > maxDistanceToNeighbour)
 					continue;
 
 				float? heightDiff = peak.maxHeight.Z - closestNeighbourField.MaxZ;
-				if(heightDiff < 0.2f)
-					return false;
+				//if(heightDiff == null || heightDiff > 2)
+				//{
+				//	float? neighbAvg = closestNeighbourField.GetAverageHeightFromNeighbourhood(1);
+				//	heightDiff = peak.maxHeight.Z - neighbAvg;
+				//}
+
+				//if heights are very similar then they were probably affected by max filter
+				if(heightDiff > 0.1f)
+				{
+					if(heightDiff < CTreeManager.LocalMaxHeight)
+						return false;
+					else
+						higherCount++;
+				}
 			}
 
-			return true;
+			return higherCount > 2;
 		}
 
 		//if not null then this tree is currently being merged into another tree.
@@ -468,6 +683,24 @@ namespace ForestReco
 
 			foreach(Vector3 point in pSubTree.Points)
 			{
+				//when merging 'not-tree' some points of this tree can be on fields where other tree
+				//has been detected
+				if(pSubTree.notTree)
+				{
+					CTree t = CProjectData.Points.treeDetailArray.GetFieldContainingPoint(point).GetSingleDetectedTree();
+					if(t != null)
+					{
+						t.AddPoint(point);
+						continue;
+					}
+				}
+				//the tree can become 'not-tree' during merging
+				if(notTree)
+				{
+					CTreeManager.AddPoint(point, -1);
+					continue;
+				}
+
 				AddPoint(point);
 			}
 		}
@@ -577,6 +810,11 @@ namespace ForestReco
 				angle = 360 + angle;
 			}
 			int branchIndex = (int)(angle / BRANCH_ANGLE_STEP);
+			if(branchIndex < 0 || branchIndex >= branches.Count)
+			{
+				CDebug.Error("branchIndex = " + branchIndex);
+				branchIndex = 0;
+			}
 			//CDebug.WriteLine(pPoint + " goes to branch " + branchIndex + ". angle = " + angle);
 			return branches[branchIndex];
 		}
@@ -591,7 +829,7 @@ namespace ForestReco
 			{
 				return (float)groundHeight;
 			}
-			groundHeight = CProjectData.groundArray?.GetHeightAtPoint(peak.Center);
+			groundHeight = CProjectData.Points.groundArray?.GetHeightAtPoint(peak.Center);
 			return groundHeight ?? peak.Center.Z;
 		}
 
@@ -639,6 +877,8 @@ namespace ForestReco
 		public string GetObjName()
 		{
 			string prefix = isValid ? "tree_" : "invalidTree_";
+			prefix = notTree ? "notTree_" : prefix;
+
 			string suffix = "";
 			if(!isValid)
 			{
@@ -646,6 +886,8 @@ namespace ForestReco
 					suffix += "(border)";
 				if(isAtBufferZone)
 					suffix += "(buffer)";
+				if(tooLow)
+					suffix += "(too_low)";
 			}
 			return prefix + treeIndex + suffix;
 		}
@@ -721,13 +963,26 @@ namespace ForestReco
 
 		public bool Validate(bool pRestrictive, bool pFinal = false)
 		{
-			if(Equals(67))
+			if(Equals(24))
 			{
 				CDebug.WriteLine("");
 			}
 
-			//if(IsAtBorderOf(CProjectData.groundArray))
-			isAtBorder = IsAtBorderOf(CProjectData.groundArray);
+			if(GetTreeHeight() < CParameterSetter.GetIntSettings(ESettings.minTreeHeight))
+			{
+				isValid = false;
+				tooLow = true;
+				return isValid;
+			}
+
+			isValid = ValidatePoints(true);
+			if(!isValid)
+			{
+				return isValid;
+			}
+
+			//if(IsAtBorderOf(CProjectData.Points.groundArray))
+			isAtBorder = IsAtBorder();
 			isAtBufferZone = CTreeMath.IsAtBufferZone(this);
 			if(isAtBorder || isAtBufferZone)
 			{
@@ -749,9 +1004,9 @@ namespace ForestReco
 
 			isValid = ValidateBranches(pRestrictive);
 
-			if(pFinal && !isValid && !IsAtBorderOf(CProjectData.groundArray))
+			if(pFinal && !isValid && !IsAtBorder())
 			{
-				isValid = ValidatePoints();
+				isValid = ValidatePoints(false);
 			}
 
 			if(Equals(debugTree))
@@ -808,9 +1063,14 @@ namespace ForestReco
 			return tooFarPointsCount < 6;
 		}
 
-		private bool ValidatePoints()
+		private bool ValidatePoints(bool pJustTotalCount)
 		{
 			int totalPointCount = GetBranchesPointCount();
+			if(pJustTotalCount && totalPointCount < CParameterSetter.GetIntSettings(ESettings.minTreePoints))
+			{
+				return false;
+			}
+
 			float definedHeight = Extent.Z;
 
 			//in case only few points are defined at bottom. in this case the mniddle part is almost not defined (its ok)
@@ -1132,6 +1392,10 @@ Vector3.Distance(suitablePoint, pPoint));
 			return treeIndex == t.treeIndex;
 		}
 
+		public bool IsAtBorder()
+		{
+			return IsAtBorderOf(CProjectData.Points.groundArray);
+		}
 		public bool IsAtBorderOf(CGroundArray pArray)
 		{
 			Tuple<float, bool> ret = pArray.GetDistanceAndDirectionToBorderFrom(peak.Center);
