@@ -124,14 +124,22 @@ namespace ForestReco
 			List<Tuple<EClass, Vector3>> parsedLines;
 			if(CRxpParser.IsRxp)
 			{
-				const int max_loaded_points = 3000000;
+				IntPtr handler = CRxpParser.OpenFile(pTilePath);	
+
+				const int max_loaded_points = 100000;
 				const int part_index = -1;
 
-				CRxpInfo rxpInfo = CRxpParser.ParseFile(pTilePath,
-					CParameterSetter.GetIntSettings(ESettings.minBallDistance),
-					CParameterSetter.GetIntSettings(ESettings.maxBallDistance),
+				int minDistance = CParameterSetter.GetIntSettings(ESettings.minBallDistance);
+				int maxDistance = CParameterSetter.GetIntSettings(ESettings.maxBallDistance);
+				CRxpInfo rxpInfo = CRxpParser.ParseFile(handler,
+					minDistance, maxDistance,
 					max_loaded_points, part_index);
 				parsedLines = rxpInfo.ParsedLines;
+
+				rxpInfo = CRxpParser.ParseFile(handler,
+					minDistance, maxDistance,
+					max_loaded_points, part_index);
+
 				//for now we expect only one tile in rxp processing
 				CProjectData.currentTileHeader = rxpInfo.Header;
 				CProjectData.mainHeader = rxpInfo.Header;

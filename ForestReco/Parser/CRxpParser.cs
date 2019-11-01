@@ -28,17 +28,23 @@ namespace ForestReco
 		//	return result;
 		//}
 
-		public static CRxpInfo ParseFile(string pFile, int pMinDistance, int pMaxDistance, int pMaxLoadPoints = -1, int pPartIndex = -1)
+		public static IntPtr OpenFile(string pFile)
 		{
-			int sync_to_pps = 0;
 			IntPtr h3ds = IntPtr.Zero;
-
+			int sync_to_pps = 0;
 			int opened = scanifc_point3dstream_open(pFile, ref sync_to_pps, ref h3ds);
 			Console.WriteLine($"opened = {opened}, h3ds = {h3ds}");
+			return h3ds;
+		}
 
+		public static CRxpInfo ParseFile(IntPtr pHandler, int pMinDistance, int pMaxDistance, int pMaxLoadPoints = -1, int pPartIndex = -1)
+		{
 			uint PointCount = 1;
 			int EndOfFrame = 1;
-			const uint BLOCK_SIZE = 10000;
+			//10 000 => 14s
+			//100 000 => 7s
+			//1 000 000 => 7,5s
+			const uint BLOCK_SIZE = 100000;
 			scanifc_xyz32[] BufferXYZ = new scanifc_xyz32[BLOCK_SIZE];
 			scanifc_attributes[] BufferMISC = new scanifc_attributes[BLOCK_SIZE];
 			ulong[] BufferTIME = new ulong[BLOCK_SIZE];
@@ -54,22 +60,19 @@ namespace ForestReco
 			DateTime debugStart = DateTime.Now;
 			DateTime previousDebugStart = DateTime.Now;
 
-			int maxLinesToLoad = int.MaxValue; //5000000
 			int partIndex = 0;
 			while(PointCount != 0 || EndOfFrame != 0)
 			{
-				//debug smaller batch
-				if(fileLines.Count >= maxLinesToLoad)
-					break;
-
 				if(CProjectData.backgroundWorker.CancellationPending)
 					break;
 
 				readIteration++;
-				CDebug.Progress(readIteration, int.MaxValue, 1000, ref previousDebugStart, debugStart, "Parsing Rxp file (size unknown)");
+				CDebug.Progress(readIteration, int.MaxValue, (int)(BLOCK_SIZE/10), ref previousDebugStart, debugStart, "Parsing Rxp file (size unknown)");
 				int read = scanifc_point3dstream_read(
-							h3ds, BLOCK_SIZE,
-							BufferXYZ, BufferMISC, BufferTIME,
+							pHandler, BLOCK_SIZE,
+							BufferXYZ, 
+							//BufferMISC, BufferTIME,
+							null, null, //no need for this info
 							ref PointCount, ref EndOfFrame);
 				for(int i = 0; i < PointCount; i++)
 				{
@@ -96,9 +99,11 @@ namespace ForestReco
 				}
 			}
 
+			CDebug.WriteLine($"ParseFile took {(DateTime.Now - debugStart).TotalSeconds}");
+
 			CHeaderInfo header = new CHeaderInfo(new Vector3(1, 1, 1), new Vector3(0, 0, 0), min, max);
 
-			CRxpInfo rxpInfo = new CRxpInfo(fileLines, header);
+			CRxpInfo rxpInfo = new CRxpInfo(fileLines, header);//, h3ds);
 
 			return rxpInfo;
 		}
@@ -154,11 +159,13 @@ namespace ForestReco
 	{
 		public List<Tuple<EClass, Vector3>> ParsedLines { get; private set; }
 		public CHeaderInfo Header { get; private set; }
+		//public IntPtr Handler { get; private set; }		
 
-		public CRxpInfo(List<Tuple<EClass, Vector3>> pParsedLines, CHeaderInfo pHeader)
+		public CRxpInfo(List<Tuple<EClass, Vector3>> pParsedLines, CHeaderInfo pHeader)//, IntPtr pHandler)
 		{
 			ParsedLines = pParsedLines;
 			Header = pHeader;
+			//Handler = pHandler;
 		}
 	}
 
