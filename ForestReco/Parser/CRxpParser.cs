@@ -28,7 +28,7 @@ namespace ForestReco
 		//	return result;
 		//}
 
-		public static CRxpInfo ParseFile(string pFile)
+		public static CRxpInfo ParseFile(string pFile, int pMinDistance, int pMaxDistance)
 		{
 			int sync_to_pps = 0;
 			IntPtr h3ds = IntPtr.Zero;
@@ -75,9 +75,12 @@ namespace ForestReco
 					scanifc_xyz32 xyz = BufferXYZ[i];
 					//Console.WriteLine($"BufferXYZ = {xyz.x},{xyz.y},{xyz.z}");
 
-					RefreshMinMax(xyz, ref min, ref max);
-
-					fileLines.Add(new Tuple<EClass, Vector3>(EClass.Undefined, xyz.ToVector()));
+					float distance = Vector3.Distance(Vector3.Zero, xyz.ToVector());
+					if(distance > pMinDistance && distance < pMaxDistance)
+					{
+						RefreshMinMax(xyz, ref min, ref max);
+						fileLines.Add(new Tuple<EClass, Vector3>(EClass.Undefined, xyz.ToVector()));
+					}
 				}
 			}
 

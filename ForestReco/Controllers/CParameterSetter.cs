@@ -251,5 +251,7 @@ namespace ForestReco
 		minAscendSteps,
 		minDescendSteps,
 		minTreePoints,
+		minBallDistance,
+		maxBallDistance,
 	}
 }

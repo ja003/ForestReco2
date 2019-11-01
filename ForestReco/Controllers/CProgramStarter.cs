@@ -124,7 +124,9 @@ namespace ForestReco
 			List<Tuple<EClass, Vector3>> parsedLines;
 			if(CRxpParser.IsRxp)
 			{
-				CRxpInfo rxpInfo = CRxpParser.ParseFile(pTilePath);
+				CRxpInfo rxpInfo = CRxpParser.ParseFile(pTilePath, 
+					CParameterSetter.GetIntSettings(ESettings.minBallDistance), 
+					CParameterSetter.GetIntSettings(ESettings.maxBallDistance));
 				parsedLines = rxpInfo.ParsedLines;
 				//for now we expect only one tile in rxp processing
 				CProjectData.currentTileHeader = rxpInfo.Header;

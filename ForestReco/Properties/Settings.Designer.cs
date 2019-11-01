@@ -756,5 +756,29 @@ namespace ForestReco.Properties {
                 this["minTreePoints"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int minBallDistance {
+            get {
+                return ((int)(this["minBallDistance"]));
+            }
+            set {
+                this["minBallDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int maxBallDistance {
+            get {
+                return ((int)(this["maxBallDistance"]));
+            }
+            set {
+                this["maxBallDistance"] = value;
+            }
+        }
     }
 }
