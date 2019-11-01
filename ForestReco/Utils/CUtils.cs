@@ -353,7 +353,7 @@ namespace ForestReco
 			return clonePoint;
 		}
 
-		public static List<Vector3> GetPointCross(Vector3 pCenter, float pLength = 50)
+		public static List<Vector3> GetPointCross(Vector3 pCenter, float pLength = 0.1f)
 		{
 			List<Vector3> points = new List<Vector3>();
 			points.AddRange(GetPointLine(pCenter, Vector3.UnitX, pLength));
@@ -365,13 +365,19 @@ namespace ForestReco
 			return points;
 		}
 
-		public static List<Vector3> GetPointLine(Vector3 pStart, Vector3 pDirection, float pLength = 100)
+		public static List<Vector3> GetPointLineFromTo(Vector3 pStart, Vector3 pEnd, float pFrequency = 0.005f)
 		{
-			const float DEBUG_OFFSET = 0.0005f;
+			return GetPointLine(pStart, pEnd - pStart, Vector3.Distance(pStart, pEnd), pFrequency);
+		}
+
+		public static List<Vector3> GetPointLine(Vector3 pStart, Vector3 pDirection, float pLength = 0.1f, float pFrequency = 0.005f)
+		{
+			//const float DEBUG_OFFSET = 0.0005f;
 			List<Vector3> points = new List<Vector3>();
-			for(float i = 1; i < pLength; i++)
+			Vector3 dir = Vector3.Normalize(pDirection);
+			for(float i = 0; i < pLength; i+= pFrequency)
 			{
-				points.Add(pStart + pDirection * DEBUG_OFFSET * i);
+				points.Add(pStart + dir * i);
 			}
 			return points;
 		}

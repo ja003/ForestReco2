@@ -61,6 +61,16 @@ namespace ForestReco
 
 		}
 
+		internal List<Vector3> GetArrayGridPoints()
+		{
+			List<Vector3> gridPoints = new List<Vector3>();
+			foreach(CField field in fields)
+			{
+				gridPoints.AddRange(field.GetBoundaryPoints());
+			}
+			return gridPoints;
+		}
+
 		private void SetNeighbours()
 		{
 			for(int x = 0; x < arrayXRange; x++)

@@ -32,6 +32,10 @@ namespace ForestReco
 		public readonly Tuple<int, int> indexInField;
 
 		public Vector3 Center { get; private set; }
+		public Vector3 TopLeft => Center + new Vector3(-stepSize, -stepSize, 0);
+		public Vector3 TopRight => Center + new Vector3(stepSize, -stepSize, 0);
+		public Vector3 BotLeft => Center + new Vector3(-stepSize, +stepSize, 0);
+		public Vector3 BotRight => Center + new Vector3(stepSize, stepSize, 0);
 
 		//--------------------------------------------------------------
 
@@ -66,6 +70,18 @@ namespace ForestReco
 			return true;
 		}
 
+		public List<CField> GetDefinedNeighbours(int pMaxDistance)
+		{	
+			List<CField> definedNeighbours = new List<CField>();
+			List<CField> neighbours = GetFieldsInDistance(pMaxDistance);
+			foreach(CField n in neighbours)
+			{
+				if(n.IsDefined())
+					definedNeighbours.Add(n);
+			}
+			return definedNeighbours;
+		}
+
 		public CField GetNeighbour(EDirection pNeighbour)
 		{
 			switch(pNeighbour)
@@ -81,6 +97,19 @@ namespace ForestReco
 				case EDirection.LeftBot: return Left?.Bot;
 			}
 			return null;
+		}
+
+		internal List<Vector3> GetBoundaryPoints()
+		{
+			List<Vector3> boundPoints = new List<Vector3>();
+
+			const float point_frequency = 0.05f;
+			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, TopRight, point_frequency));
+			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, BotLeft, point_frequency));
+			boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, TopRight, point_frequency));
+			boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, BotLeft, point_frequency));
+
+			return boundPoints;
 		}
 
 		public List<CField> GetPerpendicularNeighbours(EDirection pToDirection)

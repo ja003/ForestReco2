@@ -17,6 +17,8 @@ namespace ForestReco
 		Balls = 666,
 		BallsMainPoints = 667,
 		BallsCenters = 668,
-		BallsSurface = 669
+		BallsSurface = 669,
+
+		ArrayGrid = 670
 	}
 }

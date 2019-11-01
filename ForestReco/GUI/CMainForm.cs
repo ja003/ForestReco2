@@ -1963,9 +1963,9 @@ namespace ForestReco
 			this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.label20.Location = new System.Drawing.Point(570, 447);
 			this.label20.Name = "label20";
-			this.label20.Size = new System.Drawing.Size(105, 13);
+			this.label20.Size = new System.Drawing.Size(92, 13);
 			this.label20.TabIndex = 141;
-			this.label20.Text = "max ball distance";
+			this.label20.Text = "max ball height";
 			// 
 			// trackBarMinBallHeight
 			// 

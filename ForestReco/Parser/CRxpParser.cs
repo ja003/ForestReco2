@@ -28,7 +28,7 @@ namespace ForestReco
 		//	return result;
 		//}
 
-		public static CRxpInfo ParseFile(string pFile, int pMinDistance, int pMaxDistance, int pMaxLoadPoints = -1)
+		public static CRxpInfo ParseFile(string pFile, int pMinDistance, int pMaxDistance, int pMaxLoadPoints = -1, int pPartIndex = -1)
 		{
 			int sync_to_pps = 0;
 			IntPtr h3ds = IntPtr.Zero;
@@ -55,6 +55,7 @@ namespace ForestReco
 			DateTime previousDebugStart = DateTime.Now;
 
 			int maxLinesToLoad = int.MaxValue; //5000000
+			int partIndex = 0;
 			while(PointCount != 0 || EndOfFrame != 0)
 			{
 				//debug smaller batch
@@ -84,7 +85,15 @@ namespace ForestReco
 				}
 
 				if(pMaxLoadPoints > 0 && fileLines.Count > pMaxLoadPoints)
+				{
+					if(pPartIndex > 0 && pPartIndex != partIndex)
+					{
+						partIndex++;
+						fileLines.Clear();
+						continue;
+					}
 					break;
+				}
 			}
 
 			CHeaderInfo header = new CHeaderInfo(new Vector3(1, 1, 1), new Vector3(0, 0, 0), min, max);

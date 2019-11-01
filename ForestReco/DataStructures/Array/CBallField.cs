@@ -55,6 +55,60 @@ namespace ForestReco
 			}
 		}
 
+		internal int FilterFieldsWithDefinedNeighbours()
+		{
+			if(Equals(26, 9))
+				CDebug.WriteLine();
+
+			if(!IsDefined())
+				return 0;
+
+			List<CField> definedNeighbours = GetDefinedNeighbours(3);
+
+			int filteredSum = 0;
+
+			if(definedNeighbours.Count > 4)
+			{
+				filteredSum += FilterOutAllDefinedNeighbours();
+				//foreach(CBallField n in GetNeighbours(true))
+				//{
+				//	n.filteredOut.AddRange(n.points);
+				//	n.points.Clear();
+				//}
+			}
+
+			//if(AreAllNeighboursDefined())
+			//{				
+			//	foreach(CBallField n in GetNeighbours(true))
+			//	{
+			//		n.filteredOut.AddRange(n.points);
+			//		n.points.Clear();
+			//	}
+			//	return true;
+			//}
+			return filteredSum;
+		}
+
+		private int FilterOutAllDefinedNeighbours()
+		{
+			if(!IsDefined())
+				return 0;
+			FilterOut();
+
+			int filteredSum = 1;
+			foreach(CBallField n in GetNeighbours())
+			{
+				filteredSum += n.FilterOutAllDefinedNeighbours();
+			}
+			return filteredSum;
+		}
+
+		private void FilterOut()
+		{
+			filteredOut.AddRange(points);
+			points.Clear();
+		}
+
 		public override void AddPoint(Vector3 pPoint)
 		{
 			base.AddPoint(pPoint);
@@ -73,9 +127,10 @@ namespace ForestReco
 			if(IsBallInNeigbhourhood())
 				return;
 
-			List<Vector3> processPoints = points;
-			if(processPoints.Count == 0)
+			if(!IsDefined())
 				return;
+
+			List<Vector3> processPoints = points;
 
 			//part of ball can be in neighbours
 			//we take into consideration only 4 neighbours:
@@ -85,9 +140,12 @@ namespace ForestReco
 			processPoints.AddRange(Bot.points);
 			processPoints.AddRange(Bot.Right.points);
 
-			ball = new CBall(processPoints, 
-				CParameterSetter.GetFloatSettings(ESettings.minBallHeight),
-				CParameterSetter.GetFloatSettings(ESettings.maxBallHeight));
+			const int min_ball_points = 100;
+			if(processPoints.Count < min_ball_points)
+				return;
+
+
+			ball = new CBall(processPoints);
 
 		}
 

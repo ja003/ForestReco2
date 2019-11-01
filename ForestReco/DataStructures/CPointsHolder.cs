@@ -14,7 +14,7 @@ namespace ForestReco
 		//step sizes for arrays
 		public const float NORMAL_STEP = 1f;
 		public const float DETAIL_STEP = 0.2f;
-		public const float DETAIL_STEP_BALLS = 0.17f;
+		public const float DETAIL_STEP_BALLS = 0.15f; //ball diameter = 0.145
 
 		public List<Vector3> unassigned = new List<Vector3>(); //1
 		public List<Vector3> ground = new List<Vector3>(); //2
@@ -25,6 +25,7 @@ namespace ForestReco
 		public List<Vector3> ballsMainPoints = new List<Vector3>();
 		public List<Vector3> ballsCenters = new List<Vector3>();
 		public List<Vector3> ballsSurface = new List<Vector3>();
+		public List<Vector3> arrayGrid = new List<Vector3>();		
 
 
 		//main arrays
@@ -68,7 +69,7 @@ namespace ForestReco
 				case EClass.Unassigned:
 					//points has been filtered out in fields only
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
-						return ballArray.GetPoints();
+						return ballDetailArray.GetPoints();
 					return unassigned;
 				case EClass.Balls:
 					return ballPoints;
@@ -78,6 +79,9 @@ namespace ForestReco
 					return ballsCenters;
 				case EClass.BallsSurface:
 					return ballsSurface;
+				case EClass.ArrayGrid:
+					return arrayGrid;
+
 
 				case EClass.Ground:
 					return ground;
@@ -406,10 +410,15 @@ namespace ForestReco
 			{
 				//unassignedArray.FillArray(); //doesnt make sense
 
-				const bool filterBasedOnheight = false;
+				const bool filterBasedOnheight = true;
 				//balls are expected to be in this height above ground
 				if(filterBasedOnheight)
-					ballArray.FilterPointsAtHeight(1.8f, 2.7f);
+				{
+					ballArray.FilterPointsAtHeight(
+						  CParameterSetter.GetFloatSettings(ESettings.minBallHeight),
+						  CParameterSetter.GetFloatSettings(ESettings.maxBallHeight));
+				}
+
 
 				//add filtered points to detail array
 				List<Vector3> filteredPoints = ballArray.GetPoints();
@@ -420,6 +429,11 @@ namespace ForestReco
 
 					ballDetailArray.AddPointInField(point);
 				}
+				arrayGrid = ballDetailArray.GetArrayGridPoints();
+
+				//int filteredOutCount = ballDetailArray.FilterFieldsWithNeighbours();
+				//CDebug.WriteLine($"Filtered out {filteredOutCount} fields");
+
 
 				List<CBallField> ballFields = new List<CBallField>();
 
@@ -432,6 +446,9 @@ namespace ForestReco
 				sortedFields.OrderBy(a => a.indexInField.Item1).ThenBy(a => a.indexInField.Item2);
 
 				//List<Vector3> mainPoints = new List<Vector3>();
+
+				//ballDetailArray.FilterPointsAtHeight
+
 
 				debugStart = DateTime.Now;
 				previousDebugStart = DateTime.Now;

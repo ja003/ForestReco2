@@ -40,5 +40,17 @@ namespace ForestReco
 				f.FilterPointsAtHeight(pMinHeight, pMaxHeight);
 			}
 		}
+
+		internal int FilterFieldsWithNeighbours()
+		{
+			int filteredCount = 0;
+			foreach(CBallField f in fields)
+			{
+				filteredCount += f.FilterFieldsWithDefinedNeighbours();
+			}
+			return filteredCount;
+		}
+
+		
 	}
 }
