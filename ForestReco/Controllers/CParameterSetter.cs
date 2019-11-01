@@ -253,5 +253,7 @@ namespace ForestReco
 		minTreePoints,
 		minBallDistance,
 		maxBallDistance,
+		minBallHeight,
+		maxBallHeight,
 	}
 }

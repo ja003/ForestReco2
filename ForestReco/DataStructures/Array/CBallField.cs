@@ -73,16 +73,21 @@ namespace ForestReco
 			if(IsBallInNeigbhourhood())
 				return;
 
-			//todo: explain
 			List<Vector3> processPoints = points;
 			if(processPoints.Count == 0)
 				return;
 
+			//part of ball can be in neighbours
+			//we take into consideration only 4 neighbours:
+			//this, right, bot and bot-right
+			//ball shouldnt span over more fields than 4
 			processPoints.AddRange(Right.points);
 			processPoints.AddRange(Bot.points);
 			processPoints.AddRange(Bot.Right.points);
 
-			ball = new CBall(processPoints);
+			ball = new CBall(processPoints, 
+				CParameterSetter.GetFloatSettings(ESettings.minBallHeight),
+				CParameterSetter.GetFloatSettings(ESettings.maxBallHeight));
 
 		}
 

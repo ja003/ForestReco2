@@ -27,9 +27,18 @@ namespace ForestReco
 		public bool isValid = true;
 		public Vector3 center { get; private set; }
 
-		public CBall(List<Vector3> pPoints)
+		public CBall(List<Vector3> pPoints, float pMinHeight, float pMaxHeight)
 		{
+			//sort descending => last point is the groudn point 
+			//todo: maybe calculate from more points?
 			pPoints.Sort((a, b) => b.Z.CompareTo(a.Z));
+
+			//filter points that are not in expected height			
+			FilterPoints(ref pPoints, pPoints.Last(), pMinHeight, pMaxHeight);
+
+			const int min_ball_points = 100;
+			if(pPoints.Count < min_ball_points)
+				return;
 
 			//todo: make balltop a list of points and get avg
 			ballTop = pPoints[0];
@@ -96,6 +105,16 @@ namespace ForestReco
 
 			if(isValid)
 				center = CalculateCenter();
+		}
+
+		private void FilterPoints(ref List<Vector3> pPoints, Vector3 pGroundPoint, float pMinHeight, float pMaxHeight)
+		{
+			for(int i = pPoints.Count - 1; i >= 0; i--)
+			{
+				float diff = pPoints[i].Z - pGroundPoint.Z;
+				if(diff < pMinHeight || diff > pMaxHeight)
+					pPoints.RemoveAt(i);
+			}
 		}
 
 		private bool HasValidMainPoints()

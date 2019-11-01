@@ -442,7 +442,7 @@ namespace ForestReco
 						return;
 					CDebug.Progress(i, sortedFields.Count, 100000, ref previousDebugStart, debugStart, "Detecting balls");
 
-					CBallField field = (CBallField)sortedFields[i];
+					CBallField field = sortedFields[i];
 					field.Detect();
 					if(field.ball != null && field.ball.isValid)
 					{

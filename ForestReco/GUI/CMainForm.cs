@@ -151,6 +151,12 @@ namespace ForestReco
 		public TrackBar trackBarMaxBallDistance;
 		private TextBox textMaxBallDistance;
 		private Label label19;
+		public TrackBar trackBarMaxBallHeight;
+		private TextBox textMaxBallHeight;
+		private Label label20;
+		public TrackBar trackBarMinBallHeight;
+		private TextBox textMinBallHeight;
+		private Label label21;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -265,6 +271,14 @@ namespace ForestReco
 			int maxBallDist = CParameterSetter.GetIntSettings(ESettings.maxBallDistance);
 			trackBarMaxBallDistance.Value = maxBallDist;
 			trackBarMaxBallDistance_Scroll(trackBarMaxBallDistance.Value, EventArgs.Empty);
+
+			float minBallHeight = CParameterSetter.GetFloatSettings(ESettings.minBallHeight);
+			trackBarMinBallHeight.Value = (int)(minBallHeight * 10f);
+			trackBarMinBallHeight_Scroll(trackBarMinBallHeight.Value, EventArgs.Empty);
+
+			float maxBallHeight = CParameterSetter.GetFloatSettings(ESettings.maxBallHeight);
+			trackBarMaxBallHeight.Value = (int)(maxBallHeight * 10f);
+			trackBarMaxBallHeight_Scroll(trackBarMaxBallHeight.Value, EventArgs.Empty);
 
 
 			//bools
@@ -545,6 +559,12 @@ namespace ForestReco
 			this.trackBarMaxBallDistance = new System.Windows.Forms.TrackBar();
 			this.textMaxBallDistance = new System.Windows.Forms.TextBox();
 			this.label19 = new System.Windows.Forms.Label();
+			this.trackBarMaxBallHeight = new System.Windows.Forms.TrackBar();
+			this.textMaxBallHeight = new System.Windows.Forms.TextBox();
+			this.label20 = new System.Windows.Forms.Label();
+			this.trackBarMinBallHeight = new System.Windows.Forms.TrackBar();
+			this.textMinBallHeight = new System.Windows.Forms.TextBox();
+			this.label21 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -563,6 +583,8 @@ namespace ForestReco
 			((System.ComponentModel.ISupportInitialize)(this.trackBarMinTreePoints)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarMinBallDistance)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarMaxBallDistance)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarMaxBallHeight)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarMinBallHeight)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnSellectForest
@@ -1912,10 +1934,81 @@ namespace ForestReco
 			this.label19.TabIndex = 135;
 			this.label19.Text = "max ball distance";
 			// 
+			// trackBarMaxBallHeight
+			// 
+			this.trackBarMaxBallHeight.AutoSize = false;
+			this.trackBarMaxBallHeight.LargeChange = 1;
+			this.trackBarMaxBallHeight.Location = new System.Drawing.Point(563, 471);
+			this.trackBarMaxBallHeight.Maximum = 40;
+			this.trackBarMaxBallHeight.Minimum = 1;
+			this.trackBarMaxBallHeight.Name = "trackBarMaxBallHeight";
+			this.trackBarMaxBallHeight.Size = new System.Drawing.Size(159, 30);
+			this.trackBarMaxBallHeight.TabIndex = 143;
+			this.trackBarMaxBallHeight.TickFrequency = 5;
+			this.trackBarMaxBallHeight.Value = 5;
+			this.trackBarMaxBallHeight.Scroll += new System.EventHandler(this.trackBarMaxBallHeight_Scroll);
+			// 
+			// textMaxBallHeight
+			// 
+			this.textMaxBallHeight.Location = new System.Drawing.Point(682, 446);
+			this.textMaxBallHeight.Name = "textMaxBallHeight";
+			this.textMaxBallHeight.ReadOnly = true;
+			this.textMaxBallHeight.Size = new System.Drawing.Size(40, 20);
+			this.textMaxBallHeight.TabIndex = 142;
+			this.textMaxBallHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			// 
+			// label20
+			// 
+			this.label20.AutoSize = true;
+			this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.label20.Location = new System.Drawing.Point(570, 447);
+			this.label20.Name = "label20";
+			this.label20.Size = new System.Drawing.Size(105, 13);
+			this.label20.TabIndex = 141;
+			this.label20.Text = "max ball distance";
+			// 
+			// trackBarMinBallHeight
+			// 
+			this.trackBarMinBallHeight.AutoSize = false;
+			this.trackBarMinBallHeight.LargeChange = 1;
+			this.trackBarMinBallHeight.Location = new System.Drawing.Point(377, 469);
+			this.trackBarMinBallHeight.Maximum = 30;
+			this.trackBarMinBallHeight.Name = "trackBarMinBallHeight";
+			this.trackBarMinBallHeight.Size = new System.Drawing.Size(159, 30);
+			this.trackBarMinBallHeight.TabIndex = 140;
+			this.trackBarMinBallHeight.TickFrequency = 5;
+			this.trackBarMinBallHeight.Value = 2;
+			this.trackBarMinBallHeight.Scroll += new System.EventHandler(this.trackBarMinBallHeight_Scroll);
+			// 
+			// textMinBallHeight
+			// 
+			this.textMinBallHeight.Location = new System.Drawing.Point(496, 444);
+			this.textMinBallHeight.Name = "textMinBallHeight";
+			this.textMinBallHeight.ReadOnly = true;
+			this.textMinBallHeight.Size = new System.Drawing.Size(40, 20);
+			this.textMinBallHeight.TabIndex = 139;
+			this.textMinBallHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			// 
+			// label21
+			// 
+			this.label21.AutoSize = true;
+			this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.label21.Location = new System.Drawing.Point(384, 445);
+			this.label21.Name = "label21";
+			this.label21.Size = new System.Drawing.Size(89, 13);
+			this.label21.TabIndex = 138;
+			this.label21.Text = "min ball height";
+			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
 			this.ClientSize = new System.Drawing.Size(1182, 861);
+			this.Controls.Add(this.trackBarMaxBallHeight);
+			this.Controls.Add(this.textMaxBallHeight);
+			this.Controls.Add(this.label20);
+			this.Controls.Add(this.trackBarMinBallHeight);
+			this.Controls.Add(this.textMinBallHeight);
+			this.Controls.Add(this.label21);
 			this.Controls.Add(this.trackBarMaxBallDistance);
 			this.Controls.Add(this.textMaxBallDistance);
 			this.Controls.Add(this.label19);
@@ -2066,6 +2159,8 @@ namespace ForestReco
 			((System.ComponentModel.ISupportInitialize)(this.trackBarMinTreePoints)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarMinBallDistance)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarMaxBallDistance)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarMaxBallHeight)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarMinBallHeight)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -2939,6 +3034,18 @@ namespace ForestReco
 		{
 			RefreshTrackBarValue(trackBarMaxBallDistance, textMaxBallDistance,
 				ESettings.maxBallDistance, false);
+		}
+
+		private void trackBarMinBallHeight_Scroll(object sender, EventArgs e)
+		{
+			RefreshTrackBarValue(trackBarMinBallHeight, textMinBallHeight,
+				ESettings.minBallHeight, true);
+		}
+
+		private void trackBarMaxBallHeight_Scroll(object sender, EventArgs e)
+		{
+			RefreshTrackBarValue(trackBarMaxBallHeight, textMaxBallHeight,
+							ESettings.maxBallHeight, true);
 		}
 	}
 }

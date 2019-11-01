@@ -780,5 +780,29 @@ namespace ForestReco.Properties {
                 this["maxBallDistance"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public float minBallHeight {
+            get {
+                return ((float)(this["minBallHeight"]));
+            }
+            set {
+                this["minBallHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public float maxBallHeight {
+            get {
+                return ((float)(this["maxBallHeight"]));
+            }
+            set {
+                this["maxBallHeight"] = value;
+            }
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace ForestReco
 
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 			{
-				AddPointsTo(ref output, EClass.BallsSurface, ref start);
+				//AddPointsTo(ref output, EClass.BallsSurface, ref start);
 				AddPointsTo(ref output, EClass.Balls, ref start);
 				AddPointsTo(ref output, EClass.BallsMainPoints, ref start);
 				AddPointsTo(ref output, EClass.BallsCenters, ref start);

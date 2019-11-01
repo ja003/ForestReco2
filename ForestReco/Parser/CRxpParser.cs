@@ -28,7 +28,7 @@ namespace ForestReco
 		//	return result;
 		//}
 
-		public static CRxpInfo ParseFile(string pFile, int pMinDistance, int pMaxDistance)
+		public static CRxpInfo ParseFile(string pFile, int pMinDistance, int pMaxDistance, int pMaxLoadPoints = -1)
 		{
 			int sync_to_pps = 0;
 			IntPtr h3ds = IntPtr.Zero;
@@ -38,7 +38,7 @@ namespace ForestReco
 
 			uint PointCount = 1;
 			int EndOfFrame = 1;
-			const uint BLOCK_SIZE = 1000;
+			const uint BLOCK_SIZE = 10000;
 			scanifc_xyz32[] BufferXYZ = new scanifc_xyz32[BLOCK_SIZE];
 			scanifc_attributes[] BufferMISC = new scanifc_attributes[BLOCK_SIZE];
 			ulong[] BufferTIME = new ulong[BLOCK_SIZE];
@@ -82,6 +82,9 @@ namespace ForestReco
 						fileLines.Add(new Tuple<EClass, Vector3>(EClass.Undefined, xyz.ToVector()));
 					}
 				}
+
+				if(pMaxLoadPoints > 0 && fileLines.Count > pMaxLoadPoints)
+					break;
 			}
 
 			CHeaderInfo header = new CHeaderInfo(new Vector3(1, 1, 1), new Vector3(0, 0, 0), min, max);
