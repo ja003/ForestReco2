@@ -22,6 +22,7 @@ namespace ForestReco
 
 		public float? SmoothHeight;
 		public float? MaxFilledHeight;
+		public float? MinFilledHeight;
 
 		public float? MinZ; //height = Z
 		public float? MaxZ;
@@ -226,6 +227,30 @@ namespace ForestReco
 			return neighbours;
 		}
 
+		public List<CField> GetNeighbours(int pNeighbourhoodSize, bool pIncludeThis = false)
+		{
+			List<CField> neighbours = new List<CField>();
+			for(int x = -pNeighbourhoodSize; x <= pNeighbourhoodSize; x++)
+			{
+				for(int y = -pNeighbourhoodSize; y <= pNeighbourhoodSize; y++)
+				{
+					int xIndex = indexInField.Item1 + x;
+					int yIndex = indexInField.Item2 + y;
+					CField el = GetFieldWithOffset(x, y);
+					if(el != null)
+					{
+						if(el.Equals(this) && !pIncludeThis)
+							continue;
+
+						neighbours.Add(el);
+					}
+				}
+			}
+
+			return neighbours;
+		}
+
+
 		/// <summary>
 		/// Finds the closest neighbour in given direction which doesnt contain any of the given points
 		/// </summary>
@@ -355,10 +380,10 @@ namespace ForestReco
 		/// <summary>
 		/// 1 = max, 5 = median, 9 = min
 		/// </summary>
-		public float? GetKRankHeightFromNeigbourhood(int pK)
+		public float? GetKRankHeightFromNeigbourhood(int pK, int pNeighbourhoodSize)
 		{
 			List<float> heights = new List<float>(); 
-			foreach(CField field in GetNeighbours(true))
+			foreach(CField field in GetNeighbours(pNeighbourhoodSize, true))
 			{
 				float? neighbourHeight = field.GetHeight();
 				if(neighbourHeight != null)
@@ -374,7 +399,7 @@ namespace ForestReco
 			return heights[index-1];
 		}
 
-		public float? GetAverageHeightFromNeighbourhood(int pKernelSizeMultiplier)
+		public float? GetAverageHeightFromNeighbourhood(int pKernelSizeMultiplier, EHeight pType = EHeight.Smooth)
 		{
 			int pKernelSize = CGroundArray.GetKernelSize();
 			pKernelSize *= pKernelSizeMultiplier;
@@ -391,7 +416,7 @@ namespace ForestReco
 					if(el != null && el.IsDefined())
 					{
 						defined++;
-						heightSum += (float)el.GetHeight();
+						heightSum += (float)el.GetHeight(pType);
 					}
 				}
 			}

@@ -18,26 +18,39 @@ namespace ForestReco
 		{
 		}
 		
-		public override void FillMissingHeight(EFillMethod pMethod, int pKernelMultiplier)
+		public override void FillMissingHeight(EFillMethod pMethod, int pParam)
 		{
-			if(MinZ != null)
-			{
-				ExpectedGroundZ = (float)MinZ;
+			if(heightFilled)
 				return;
-			}
 
-			int maxSteps = 1;
-			switch(pMethod)
+			float? minNeighbourAvg = GetAverageHeightFromNeighbourhood(1, EHeight.MinZ);
+			float? minNeighbour = GetKRankHeightFromNeigbourhood(9, 3);
+			
+			if(minNeighbour != null && minNeighbourAvg != null)
 			{
-				case EFillMethod.ClosestDefined:
-					float? avgMinZ = GetAverageHeightFromClosestDefined(10 * maxSteps, false, EHeight.MinZ);
-					if(avgMinZ != null)
-						ExpectedGroundZ = (float)avgMinZ;
+				if(Math.Abs((float)minNeighbour - (float)minNeighbourAvg) > 0.5f)
+				{
+					CDebug.WriteLine();
+				}
 
-					break;
-				case EFillMethod.FromNeighbourhood:
-					CDebug.Error("Unsupported method");
-					break;
+				MinFilledHeight = Math.Min((float)minNeighbour, (float)minNeighbourAvg);
+			}
+		}
+
+		public override void ApplyFillMissingHeight()
+		{
+			if(heightFilled) return;
+			if(MinFilledHeight == null) { return; }
+
+			Vector3 filledPoint = Center;
+			filledPoint.Z = (float)MinFilledHeight;
+			AddPoint(filledPoint);
+			heightFilled = true;
+
+			float? minNeighbourAvg = GetAverageHeightFromNeighbourhood(1, EHeight.MinZ);
+			if(Math.Abs((float)MinFilledHeight - (float)minNeighbourAvg) > 0.5f)
+			{
+				heightFilled = false;
 			}
 		}
 
@@ -158,5 +171,7 @@ namespace ForestReco
 			}
 			return false;
 		}
+		
+		
 	}
 }

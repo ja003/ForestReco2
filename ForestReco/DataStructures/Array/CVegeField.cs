@@ -48,7 +48,7 @@ namespace ForestReco
 			{
 				case EFillMethod.FromNeighbourhood:
 					//MaxFilledHeight = GetAverageHeightFromNeighbourhood(pKernelMultiplier);
-					MaxFilledHeight = GetKRankHeightFromNeigbourhood(pParam);
+					MaxFilledHeight = GetKRankHeightFromNeigbourhood(pParam, 1);
 					break;
 			}
 		}

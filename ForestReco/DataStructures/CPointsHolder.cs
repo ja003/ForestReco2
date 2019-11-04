@@ -409,6 +409,7 @@ namespace ForestReco
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 			{
 				//unassignedArray.FillArray(); //doesnt make sense
+				//ballArray.FillArray(); 
 
 				const bool filterBasedOnheight = true;
 				//balls are expected to be in this height above ground
@@ -429,7 +430,7 @@ namespace ForestReco
 
 					ballDetailArray.AddPointInField(point);
 				}
-				arrayGrid = ballDetailArray.GetArrayGridPoints();
+				//arrayGrid = ballDetailArray.GetArrayGridPoints();
 
 				//int filteredOutCount = ballDetailArray.FilterFieldsWithNeighbours();
 				//CDebug.WriteLine($"Filtered out {filteredOutCount} fields");
