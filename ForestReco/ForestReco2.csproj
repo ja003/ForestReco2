@@ -109,7 +109,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\CBallsTransformator.cs" />
+    <Compile Include="Controllers\Balls\CBallsManager.cs" />
+    <Compile Include="Controllers\Balls\CBallsTransformator.cs" />
     <Compile Include="Controllers\CBiomassController.cs" />
     <Compile Include="Controllers\CBitmapExporter.cs" />
     <Compile Include="Controllers\CCmdController.cs" />

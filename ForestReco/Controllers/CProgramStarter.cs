@@ -41,6 +41,7 @@ namespace ForestReco
 			CTreeRadiusCalculator.Init();
 			CShpController.Init();
 			CReftreeManager.Init();
+			CBallsManager.Init();
 
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
@@ -121,28 +122,40 @@ namespace ForestReco
 			currentTileIndex = pTileIndex;
 					
 
-			List<Tuple<EClass, Vector3>> parsedLines;
+			List<Tuple<EClass, Vector3>> parsedLines = new List<Tuple<EClass, Vector3>>();
 			if(CRxpParser.IsRxp)
 			{
 				IntPtr handler = CRxpParser.OpenFile(pTilePath);	
 
 				const int max_loaded_points = 100000;
 				const int part_index = -1;
-
+				const int maxFileParse = 10;
 				int minDistance = CParameterSetter.GetIntSettings(ESettings.minBallDistance);
 				int maxDistance = CParameterSetter.GetIntSettings(ESettings.maxBallDistance);
-				CRxpInfo rxpInfo = CRxpParser.ParseFile(handler,
-					minDistance, maxDistance,
-					max_loaded_points, part_index);
-				parsedLines = rxpInfo.ParsedLines;
 
-				rxpInfo = CRxpParser.ParseFile(handler,
-					minDistance, maxDistance,
-					max_loaded_points, part_index);
+				int fileParseCount = 0;
+				CRxpInfo rxpInfo = new CRxpInfo();
+				CBallsManager.InitTile(pTileIndex);
+				//todo: 
+				//1) save detected ball posiitons
+				//2) define processed area (ideally not by point count) - areas need to overlap
+				//3) process multiple files
+				while(!rxpInfo.ReadFinished && fileParseCount < maxFileParse)
+				{
+					rxpInfo = CRxpParser.ParseFile(handler,
+						minDistance, maxDistance,
+						max_loaded_points, part_index);
 
-				//for now we expect only one tile in rxp processing
-				CProjectData.currentTileHeader = rxpInfo.Header;
-				CProjectData.mainHeader = rxpInfo.Header;
+					//for now we expect only one tile in rxp processing
+					CProjectData.currentTileHeader = rxpInfo.Header;
+					CProjectData.mainHeader = rxpInfo.Header;
+					CProjectData.ReInit(pTileIndex); 
+
+					CProgramLoader.ProcessParsedLines(rxpInfo.ParsedLines);
+					CLasExporter.ExportTile("_" + fileParseCount);
+					fileParseCount++;
+				}
+				return EProcessResult.Done;
 			}
 			else
 			{

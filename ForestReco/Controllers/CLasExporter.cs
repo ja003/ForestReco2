@@ -43,7 +43,7 @@ namespace ForestReco
 			exportedTiles = new List<string>();
 		}
 
-		public static void ExportTile()
+		public static void ExportTile(string pDebug = "")
 		{
 			if(!export)
 				return;
@@ -78,9 +78,10 @@ namespace ForestReco
 				CDebug.Warning($"CLasExporter: no output created on tile {CProgramStarter.currentTileIndex}");
 				return;
 			}
-			
+
 			//1. Create the text file 
-			string txtOutputPath = tileFilePath + ".txt";
+			string fileFullPath = tileFilePath + pDebug;
+			string txtOutputPath = fileFullPath + ".txt";
 			WriteToFile(output, txtOutputPath);
 			//2. save output path for the main file export
 			exportedTiles.Add(txtOutputPath);
@@ -88,7 +89,7 @@ namespace ForestReco
 			//3. Convert the txt to las using LasTools
 			//format: x, y, z, class, user comment (id), R, G, B
 			string cmd = $"{txt2lasCmd} {txtOutputPath}";
-			CCmdController.RunLasToolsCmd(cmd, tileFilePath + ".las");
+			CCmdController.RunLasToolsCmd(cmd, fileFullPath + ".las");
 
 			CAnalytics.lasExportDuration = CAnalytics.GetDuration(exportStart);
 		}

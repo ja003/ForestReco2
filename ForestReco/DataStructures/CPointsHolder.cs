@@ -460,16 +460,16 @@ namespace ForestReco
 					CDebug.Progress(i, sortedFields.Count, 100000, ref previousDebugStart, debugStart, "Detecting balls");
 
 					CBallField field = sortedFields[i];
-					field.Detect();
-					if(field.ball != null && field.ball.isValid)
+					CBall detectedBall = CBallsManager.Process(field);
+					if(detectedBall != null && detectedBall.isValid)
 					{
 						ballFields.Add(field);
-						ballsMainPoints.AddRange(field.ball.GetMainPoints(true));
+						ballsMainPoints.AddRange(detectedBall.GetMainPoints(true));
 
-						ballsCenters.Add(field.ball.center);
-						ballsCenters.AddRange(CUtils.GetPointCross(field.ball.center));
+						ballsCenters.Add(detectedBall.center);
+						ballsCenters.AddRange(CUtils.GetPointCross(detectedBall.center));
 						//return;
-						ballsSurface.AddRange(field.ball.GetSurfacePoints());
+						//ballsSurface.AddRange(detectedBall.GetSurfacePoints());
 					}
 				}
 

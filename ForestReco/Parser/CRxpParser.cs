@@ -103,7 +103,8 @@ namespace ForestReco
 
 			CHeaderInfo header = new CHeaderInfo(new Vector3(1, 1, 1), new Vector3(0, 0, 0), min, max);
 
-			CRxpInfo rxpInfo = new CRxpInfo(fileLines, header);//, h3ds);
+			bool readFinished = PointCount == 0 && EndOfFrame == 0;
+			CRxpInfo rxpInfo = new CRxpInfo(fileLines, header, readFinished);
 
 			return rxpInfo;
 		}
@@ -157,15 +158,21 @@ namespace ForestReco
 
 	public class CRxpInfo
 	{
+		public bool ReadFinished = false;
+
 		public List<Tuple<EClass, Vector3>> ParsedLines { get; private set; }
 		public CHeaderInfo Header { get; private set; }
-		//public IntPtr Handler { get; private set; }		
 
-		public CRxpInfo(List<Tuple<EClass, Vector3>> pParsedLines, CHeaderInfo pHeader)//, IntPtr pHandler)
+		public CRxpInfo()
+		{
+
+		}
+
+		public CRxpInfo(List<Tuple<EClass, Vector3>> pParsedLines, CHeaderInfo pHeader, bool pReadFinished)
 		{
 			ParsedLines = pParsedLines;
 			Header = pHeader;
-			//Handler = pHandler;
+			ReadFinished = pReadFinished;
 		}
 	}
 
