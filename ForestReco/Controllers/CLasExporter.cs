@@ -82,7 +82,7 @@ namespace ForestReco
 			//1. Create the text file 
 			string fileFullPath = tileFilePath + pDebug;
 			string txtOutputPath = fileFullPath + ".txt";
-			WriteToFile(output, txtOutputPath);
+			CUtils.WriteToFile(output, txtOutputPath);
 			//2. save output path for the main file export
 			exportedTiles.Add(txtOutputPath);
 
@@ -110,7 +110,7 @@ namespace ForestReco
 			{
 				//copy content of all exported tile files to one
 				StringBuilder fileContent = new StringBuilder(File.ReadAllText(filePath));
-				WriteToFile(fileContent, mainTxtFilePath);
+				CUtils.WriteToFile(fileContent, mainTxtFilePath);
 			}
 
 			//convert to las
@@ -228,32 +228,5 @@ namespace ForestReco
 			return output;
 		}
 
-
-		/// <summary>
-		/// todo: create file manager and use this approach (passing SB and writing by buffers)
-		/// </summary>
-		private static void WriteToFile(StringBuilder pTextSB, string pFilePath)
-		{
-			//if file exists, append the text to it
-			using(var writer = new StreamWriter(pFilePath, true))
-			{
-				const int maxStringLength = 1000000;
-				char[] buffer = new char[maxStringLength];
-				for(int i = 0; i < pTextSB.Length; i += maxStringLength)
-				{
-					int count = maxStringLength;
-					if(i + maxStringLength > pTextSB.Length)
-					{
-						count = pTextSB.Length - i;
-						//reinit buffer to not copy last unassigned values
-						//this happens only once at the end
-						buffer = new char[count];
-					}
-
-					pTextSB.CopyTo(i, buffer, 0, count);
-					writer.Write(new string(buffer));
-				}
-			}
-		}
 	}
 }

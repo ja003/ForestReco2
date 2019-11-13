@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
+using System.Text;
 
 namespace ForestReco
 {
@@ -87,6 +89,51 @@ namespace ForestReco
 			return CProgramLoader.GetFileLines(pOutputFilePath, HEADER_FILE_LINES);
 		}
 
+		/// <summary>
+		/// Parse rxp file (handled in CRxpParser)
+		/// Write xyz coordinates in txt file in format: x y z c (class = 0)
+		/// Txt2Las
+		/// </summary>
+		public static string ConvertRxpToLas()
+		{
+			IntPtr handler = CRxpParser.OpenFile(forestFilePath);
+
+			string convertedFilePath = currentTmpFolder + forestFileName + ".las";
+			if(File.Exists(convertedFilePath))
+				return convertedFilePath;
+
+			string parsedFilePath = currentTmpFolder + forestFileName + ".txt";
+
+			const int maxFileParse = 10;
+
+			int fileParseCount = 0;
+			CRxpInfo rxpInfo = new CRxpInfo();
+			while(!rxpInfo.ReadFinished && fileParseCount < maxFileParse)
+			{
+				rxpInfo = CRxpParser.ParseFile(handler);
+				
+				StringBuilder sb = new StringBuilder();
+				foreach(Tuple<EClass, Vector3> xyz in rxpInfo.ParsedLines)
+				{
+					sb.AppendLine(GetPointLine(xyz.Item2));
+				}
+				CUtils.WriteToFile(sb, parsedFilePath);
+			}
+
+			Txt2Las(parsedFilePath, convertedFilePath);
+			
+			return convertedFilePath;
+		}
+
+		private const string NUM_FORMAT = "0.00";
+		private static string GetPointLine(Vector3 pPoint)
+		{
+			//todo: make string method
+			string output = $"{pPoint.X.ToString(NUM_FORMAT)} {pPoint.Y.ToString(NUM_FORMAT)} {pPoint.Z.ToString(NUM_FORMAT)} ";//x y z (swap Y Z)
+			output += $"0"; //class
+			return output;
+		}
+
 		//private static string classifyFileName => forestFileName + "_c" + LAZ;
 
 		private static string preprocessedFilePath => currentTmpFolder + forestFileName + "_preprocessed" + LAZ;
@@ -135,7 +182,7 @@ namespace ForestReco
 
 			//forest file is already processed
 			bool preprocess = CParameterSetter.GetBoolSettings(ESettings.preprocess);
-			if(!preprocess || CRxpParser.IsRxp)
+			if(!preprocess)
 			{
 				return forestFilePath;
 			}
@@ -479,5 +526,22 @@ namespace ForestReco
 
 			return txtFilePath;
 		}
+
+		internal static string Txt2Las(string pTxtFilePath, string pOutputFilePath)// string pOutputFolder)
+		{
+			string outputFileName = CUtils.GetFileName(pTxtFilePath);
+			//string lasFilePath = pOutputFolder + outputFileName;
+
+			string toLas =
+				"txt2las -i " +
+				pTxtFilePath +
+				" -o " +
+				pOutputFilePath +
+				" -parse xyzc";
+			CCmdController.RunLasToolsCmd(toLas, pOutputFilePath);
+
+			return pOutputFilePath;
+		}
+
 	}
 }

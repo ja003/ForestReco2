@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace ForestReco
 {
@@ -407,6 +408,35 @@ namespace ForestReco
 			pSet.CopyTo(setAorig);
 			List<Vector3> setAorigV = setAorig.ToList();
 			return setAorigV;
+		}
+
+
+
+		/// <summary>
+		/// todo: create file manager and use this approach (passing SB and writing by buffers)
+		/// </summary>
+		public static void WriteToFile(StringBuilder pTextSB, string pFilePath)
+		{
+			//if file exists, append the text to it
+			using(var writer = new StreamWriter(pFilePath, true))
+			{
+				const int maxStringLength = 1000000;
+				char[] buffer = new char[maxStringLength];
+				for(int i = 0; i < pTextSB.Length; i += maxStringLength)
+				{
+					int count = maxStringLength;
+					if(i + maxStringLength > pTextSB.Length)
+					{
+						count = pTextSB.Length - i;
+						//reinit buffer to not copy last unassigned values
+						//this happens only once at the end
+						buffer = new char[count];
+					}
+
+					pTextSB.CopyTo(i, buffer, 0, count);
+					writer.Write(new string(buffer));
+				}
+			}
 		}
 
 	}

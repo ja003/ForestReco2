@@ -411,7 +411,7 @@ namespace ForestReco
 				//unassignedArray.FillArray(); //doesnt make sense
 				//ballArray.FillArray(); 
 
-				const bool filterBasedOnheight = true;
+				const bool filterBasedOnheight = false;
 				//balls are expected to be in this height above ground
 				if(filterBasedOnheight)
 				{

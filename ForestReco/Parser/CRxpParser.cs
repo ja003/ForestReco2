@@ -37,7 +37,11 @@ namespace ForestReco
 			return h3ds;
 		}
 
-		public static CRxpInfo ParseFile(IntPtr pHandler, int pMinDistance, int pMaxDistance, int pMaxLoadPoints = -1, int pPartIndex = -1)
+		//TODO: remove all choosable arguments, move filtering to separate logic
+		public static CRxpInfo ParseFile(IntPtr pHandler, 
+			int pMinDistance = int.MinValue, int pMaxDistance = int.MaxValue,
+			int pMinAngle = int.MinValue, int pMaxAngle = int.MaxValue,
+			int pMaxLoadPoints = -1, int pPartIndex = -1)
 		{
 			uint PointCount = 1;
 			int EndOfFrame = 1;
@@ -84,7 +88,12 @@ namespace ForestReco
 					{
 						RefreshMinMax(xyz, ref min, ref max);
 						fileLines.Add(new Tuple<EClass, Vector3>(EClass.Undefined, xyz.ToVector()));
+						
 					}
+				}
+				if(fileLines.Count > 0 && !IsInAngle(fileLines.Last().Item2, pMinAngle, pMaxAngle))
+				{
+					break;
 				}
 
 				if(pMaxLoadPoints > 0 && fileLines.Count > pMaxLoadPoints)
@@ -107,6 +116,12 @@ namespace ForestReco
 			CRxpInfo rxpInfo = new CRxpInfo(fileLines, header, readFinished);
 
 			return rxpInfo;
+		}
+
+		private static bool IsInAngle(Vector3 pPoint, int pMinAngle, int pMaxAngle)
+		{
+			float angle = CUtils.GetAngle(Vector2.UnitX, new Vector2(pPoint.X, pPoint.Y));
+			return angle >= pMinAngle && angle < pMaxAngle;
 		}
 
 		private static void RefreshMinMax(scanifc_xyz32 pXYZ, ref Vector3 pMin, ref Vector3 pMax)

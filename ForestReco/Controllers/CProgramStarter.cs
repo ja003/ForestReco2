@@ -123,12 +123,14 @@ namespace ForestReco
 					
 
 			List<Tuple<EClass, Vector3>> parsedLines = new List<Tuple<EClass, Vector3>>();
+
+			//TODO: dont implement extra processing for RXP?
 			if(CRxpParser.IsRxp)
 			{
-				IntPtr handler = CRxpParser.OpenFile(pTilePath);	
+				/*IntPtr handler = CRxpParser.OpenFile(pTilePath);	
 
-				const int max_loaded_points = 100000;
-				const int part_index = -1;
+				//const int max_loaded_points = 100000;
+				//const int part_index = -1;
 				const int maxFileParse = 10;
 				int minDistance = CParameterSetter.GetIntSettings(ESettings.minBallDistance);
 				int maxDistance = CParameterSetter.GetIntSettings(ESettings.maxBallDistance);
@@ -140,11 +142,21 @@ namespace ForestReco
 				//1) save detected ball posiitons
 				//2) define processed area (ideally not by point count) - areas need to overlap
 				//3) process multiple files
+				//todo: 
+				//	- angleMax - angle_step, angleMax not working
+				//	-- actually it works, read block is just too high for sparse file
+				//	- cache the tiles somehow?
+				int angleMax = 0;
+				const int angle_step = 10;
 				while(!rxpInfo.ReadFinished && fileParseCount < maxFileParse)
 				{
 					rxpInfo = CRxpParser.ParseFile(handler,
 						minDistance, maxDistance,
-						max_loaded_points, part_index);
+						angleMax - angle_step, angleMax);
+					//max_loaded_points, part_index);
+
+					if(rxpInfo.ReadFinished)
+						break;
 
 					//for now we expect only one tile in rxp processing
 					CProjectData.currentTileHeader = rxpInfo.Header;
@@ -154,8 +166,9 @@ namespace ForestReco
 					CProgramLoader.ProcessParsedLines(rxpInfo.ParsedLines);
 					CLasExporter.ExportTile("_" + fileParseCount);
 					fileParseCount++;
+					angleMax -= angle_step;
 				}
-				return EProcessResult.Done;
+				return EProcessResult.Done;*/
 			}
 			else
 			{

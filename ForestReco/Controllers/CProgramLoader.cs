@@ -15,11 +15,6 @@ namespace ForestReco
 
 			SetMainHeader(preprocessedFilePath);
 
-			if(CRxpParser.IsRxp)
-			{
-				return new List<string>() { preprocessedFilePath };
-			}
-
 			CDebug.Step(EProgramStep.Pre_LasToTxt);
 			//split into tiles and convert to txt
 			return CPreprocessController.GetTxtFilesPaths(preprocessedFilePath);
@@ -54,7 +49,7 @@ namespace ForestReco
 		public static string[] GetFileLines(string pPreprocessedFilePath)
 		{
 			CDebug.Step(EProgramStep.LoadLines);
-			
+
 			string[] lines = File.ReadAllLines(pPreprocessedFilePath);
 			CDebug.Action("load", pPreprocessedFilePath);
 
@@ -68,12 +63,14 @@ namespace ForestReco
 
 			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
 
-			string classifyFilePath = CPreprocessController.GetClassifiedFilePath();
-
 			if(CRxpParser.IsRxp)
 			{
-				return classifyFilePath;
+				string convertedFilePath = CPreprocessController.ConvertRxpToLas();
+				//set as processed file
+				CParameterSetter.SetParameter(ESettings.forestFileFullName, convertedFilePath);
 			}
+
+			string classifyFilePath = CPreprocessController.GetClassifiedFilePath();
 
 			/////// lassplit //////////
 
@@ -118,7 +115,7 @@ namespace ForestReco
 
 			return lines;
 		}
-			   
+
 		/// <summary>
 		/// Reads parsed lines and loads class and point list.
 		/// Result is sorted in descending order.
@@ -215,9 +212,9 @@ namespace ForestReco
 			CDebug.Step(EProgramStep.MergeTrees1);
 			//try merge all (even valid)
 			EDetectionMethod detectionMethod = CTreeManager.GetDetectMethod();
-			if((detectionMethod == EDetectionMethod.AddFactor 
+			if((detectionMethod == EDetectionMethod.AddFactor
 				|| detectionMethod == EDetectionMethod.Detection2D
-				) 
+				)
 				&& CProjectData.tryMergeTrees)
 			{
 				CTreeManager.TryMergeAllTrees(false);
@@ -285,6 +282,6 @@ namespace ForestReco
 			{
 				CObjPartition.AddTrees(false);
 			}
-		}				
+		}
 	}
 }
