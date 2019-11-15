@@ -192,6 +192,21 @@ namespace ForestReco
 			textLasTools.Text = CParameterSetter.GetStringSettings(ESettings.lasToolsFolderPath);
 			textTmpFolder.Text = CParameterSetter.GetStringSettings(ESettings.tmpFilesFolderPath);
 
+			int rangeXmin = CParameterSetter.GetIntSettings(ESettings.rangeXmin);
+			trackBarRangeXmin.Value = rangeXmin;
+			int rangeXmax = CParameterSetter.GetIntSettings(ESettings.rangeXmax);
+			trackBarRangeXmax.Value = rangeXmax;
+			//scroll has to be called after both min and max are set
+			trackBarRangeXmin_Scroll(null, null);
+			trackBarRangeXmax_Scroll(null, null);
+
+			int rangeYmin = CParameterSetter.GetIntSettings(ESettings.rangeYmin);
+			trackBarRangeYmin.Value = rangeYmin;
+			int rangeYmax = CParameterSetter.GetIntSettings(ESettings.rangeYmax);
+			trackBarRangeYmax.Value = rangeYmax;
+			trackBarRangeYmin_Scroll(null, null);
+			trackBarRangeYmax_Scroll(null, null);
+
 
 			//partition
 			trackBarPartition.Value = CParameterSetter.GetIntSettings(ESettings.partitionStep);
@@ -1395,7 +1410,6 @@ namespace ForestReco
 			this.textRangeXmax.Size = new System.Drawing.Size(85, 20);
 			this.textRangeXmax.TabIndex = 101;
 			this.textRangeXmax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-			this.textRangeXmax.TextChanged += new System.EventHandler(this.textRangeXmax_TextChanged);
 			this.textRangeXmax.LostFocus += new System.EventHandler(this.textRangeXmax_LostFocus);
 			// 
 			// label3
@@ -2820,12 +2834,7 @@ namespace ForestReco
 			textTileSize.Text = trackBarTileSize.Value + " m";
 			CParameterSetter.SetParameter(ESettings.tileSize, trackBarTileSize.Value);
 		}
-
-		private void textRangeXmax_TextChanged(object sender, EventArgs e)
-		{
-
-		}
-
+		
 		private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			CParameterSetter.SetParameter(ESettings.ExportBMHeightmap,

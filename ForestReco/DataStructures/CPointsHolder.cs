@@ -47,6 +47,8 @@ namespace ForestReco
 		public float lowestHeight { private set; get; }
 		public float highestHeight { private set; get; }
 
+		private static bool forceApplied = false;//debug
+
 		public void ReInit()
 		{
 			lowestHeight = int.MaxValue;
@@ -60,6 +62,8 @@ namespace ForestReco
 			building.Clear();
 
 			InitArrays();
+
+			forceApplied = false;
 		}
 
 		public List<Vector3> GetPoints(EClass pClass)
@@ -501,9 +505,17 @@ namespace ForestReco
 					CDebug.Progress(i, sortedFields.Count, 100000, ref previousDebugStart, debugStart, "Detecting balls");
 
 					CBallField field = sortedFields[i];
-					CBall detectedBall = CBallsManager.Process(field);
+					//debug - apply force only once
+					bool force = !forceApplied;
+					if(force)
+					{
+						CDebug.WriteLine();
+					}
+
+					CBall detectedBall = CBallsManager.Process(field, force);
 					if(detectedBall != null && detectedBall.isValid)
 					{
+						forceApplied = true;
 						ballFields.Add(field);
 						ballsMainPoints.AddRange(detectedBall.GetMainPoints(true));
 

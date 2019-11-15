@@ -27,11 +27,20 @@ namespace ForestReco
 		public bool isValid = true;
 		public Vector3 center { get; private set; }
 
-		public CBall(List<Vector3> pPoints)
+		public CBall(List<Vector3> pPoints, bool pForce)
 		{
 			//sort descending => last point is the groudn point 
 			//todo: maybe calculate from more points?
 			pPoints.Sort((a, b) => b.Z.CompareTo(a.Z));
+
+			//force detection - just DEBUG
+			if(pForce)
+			{
+				isValid = true;
+				ballTop = pPoints.First();
+				UpdateFurthestPoints(ballTop);
+				return;
+			}
 
 			//filter points that are not in expected height			
 			//FilterPoints(ref pPoints, pPoints.Last(), pMinHeight, pMaxHeight);

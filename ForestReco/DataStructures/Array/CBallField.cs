@@ -166,7 +166,7 @@ namespace ForestReco
 
 		public CBall ball;
 
-		public void Detect()
+		public void Detect(bool pForce)
 		{
 			if(!HasAllNeighbours())
 				return;
@@ -195,7 +195,7 @@ namespace ForestReco
 				return;
 
 
-			ball = new CBall(processPoints);
+			ball = new CBall(processPoints, pForce);
 
 		}
 

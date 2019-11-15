@@ -23,9 +23,9 @@ namespace ForestReco
 			ballSets.Add(new CBallSet());
 		}
 
-		internal static CBall Process(CBallField pField)
+		internal static CBall Process(CBallField pField, bool pForce)
 		{
-			pField.Detect();
+			pField.Detect(pForce);
 			if(pField.ball != null && pField.ball.isValid)
 			{
 				AddBall(pField.ball);

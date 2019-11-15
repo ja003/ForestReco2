@@ -34,6 +34,10 @@ namespace ForestReco
 		{
 			get
 			{
+				//rxp file is expected to be very dense
+				if(CRxpParser.IsRxp)
+					return 1;
+
 				int tileSize = CParameterSetter.GetIntSettings(ESettings.tileSize);
 				if(tileSize > 10)
 					return 10;
