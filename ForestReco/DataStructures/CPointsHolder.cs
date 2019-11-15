@@ -103,8 +103,9 @@ namespace ForestReco
 		/// Classify each point into its according points list.
 		/// Then adds it to its array.
 		/// </summary>
-		public void AddPointsFromLines(List<Tuple<EClass, Vector3>> pParsedLines)
+		public bool AddPointsFromLines(List<Tuple<EClass, Vector3>> pParsedLines)
 		{
+			bool result = true;
 			ClassifyPoints(pParsedLines);
 
 			DateTime processStartTime = DateTime.Now;
@@ -118,7 +119,7 @@ namespace ForestReco
 				ProcessGroundPoints();
 
 			CDebug.Step(EProgramStep.ProcessUnassignedPoints);
-			ProcessUnassignedPoints();
+			result = ProcessUnassignedPoints();
 			CDebug.Step(EProgramStep.ProcessBuildingPoints);
 			ProcessBuildingPoints();
 
@@ -131,6 +132,7 @@ namespace ForestReco
 			SetAnalytics();
 
 			CDebug.Duration("All points added", processStartTime);
+			return result;
 		}
 
 		private void ClassifyPoints(List<Tuple<EClass, Vector3>> pParsedLines)
@@ -397,18 +399,22 @@ namespace ForestReco
 			groundArray?.SmoothenArray(1);
 		}
 
-		private void ProcessUnassignedPoints()
+		/// <summary>
+		/// If detect method is BALLS it returns true if the ball was detected
+		/// </summary>
+		private bool ProcessUnassignedPoints()
 		{
+			bool result = true;
 			DateTime debugStart = DateTime.Now;
 			DateTime previousDebugStart = DateTime.Now;
 			for(int i = 0; i < unassigned.Count; i++)
 			{
 				if(CProjectData.backgroundWorker.CancellationPending)
-					return;
+					return true;
 				CDebug.Progress(i, unassigned.Count, 100000, ref previousDebugStart, debugStart, "ProcessUnassignedPoints");
 
 				if(CProjectData.backgroundWorker.CancellationPending)
-					return;
+					return true;
 
 				Vector3 point = unassigned[i];
 				unassignedArray.AddPointInField(point);
@@ -453,7 +459,7 @@ namespace ForestReco
 				foreach(Vector3 point in filteredPoints)
 				{
 					if(CProjectData.backgroundWorker.CancellationPending)
-						return;
+						return true;
 
 					ballDetailArray.AddPointInField(point);
 				}
@@ -486,10 +492,12 @@ namespace ForestReco
 				//process
 				int count = ballDetailArray.GetPoints().Count;
 
+				//result is false until a ball is detected
+				result = false;
 				for(int i = 0; i < sortedFields.Count; i++)
 				{
 					if(CProjectData.backgroundWorker.CancellationPending)
-						return;
+						return true;
 					CDebug.Progress(i, sortedFields.Count, 100000, ref previousDebugStart, debugStart, "Detecting balls");
 
 					CBallField field = sortedFields[i];
@@ -501,6 +509,7 @@ namespace ForestReco
 
 						ballsCenters.Add(detectedBall.center);
 						ballsCenters.AddRange(CUtils.GetPointCross(detectedBall.center));
+						result = true;
 						//return;
 						//ballsSurface.AddRange(detectedBall.GetSurfacePoints());
 					}
@@ -517,8 +526,9 @@ namespace ForestReco
 				{
 					ballPoints.AddRange(field.points);
 				}
-			}
 
+			}
+			return result;
 		}
 
 		private void ProcessBuildingPoints()

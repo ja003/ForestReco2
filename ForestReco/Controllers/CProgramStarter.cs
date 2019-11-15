@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Numerics;
 using System.Threading;
 
@@ -147,7 +148,14 @@ namespace ForestReco
 			if(CProjectData.backgroundWorker.CancellationPending)
 				return EProcessResult.Cancelled;
 
-			CProgramLoader.ProcessParsedLines(parsedLines);
+			bool result = CProgramLoader.ProcessParsedLines(parsedLines);
+			if(CRxpParser.IsRxp && !result)
+			{
+				//no ball was detected => delete folder and continue
+				Directory.Delete(CProjectData.outputTileSubfolder);
+				CDebug.WriteLine("No ball detected in tile " + pTileIndex);
+				return EProcessResult.Done;
+			}
 
 			if(CProjectData.backgroundWorker.CancellationPending)
 				return EProcessResult.Cancelled;

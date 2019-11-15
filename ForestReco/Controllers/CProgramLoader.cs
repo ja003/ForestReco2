@@ -168,10 +168,10 @@ namespace ForestReco
 			return parsedLines;
 		}
 
-		public static void ProcessParsedLines(List<Tuple<EClass, Vector3>> parsedLines)
+		public static bool ProcessParsedLines(List<Tuple<EClass, Vector3>> parsedLines)
 		{
 			CAnalytics.loadedPoints = parsedLines.Count;
-			CProjectData.Points.AddPointsFromLines(parsedLines);
+			bool result = CProjectData.Points.AddPointsFromLines(parsedLines);
 
 			CObjPartition.AddGroundArrayObj();
 
@@ -282,6 +282,8 @@ namespace ForestReco
 			{
 				CObjPartition.AddTrees(false);
 			}
+
+			return result;
 		}
 	}
 }
