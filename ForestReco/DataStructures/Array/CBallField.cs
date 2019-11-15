@@ -10,7 +10,7 @@ namespace ForestReco
 	public class CBallField : CField
 	{
 
-		public float ExpectedGroundZ = int.MaxValue;
+		//public float ExpectedGroundZ = int.MaxValue;
 		public List<Vector3> filteredOut = new List<Vector3>();
 
 		public CBallField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) : 
@@ -54,12 +54,30 @@ namespace ForestReco
 			}
 		}
 
+		internal void FilterPointsAtDistance(float pMinDistance, float pMaxDistance)
+		{
+			for(int i = points.Count - 1; i >= 0; i--)
+			{
+				Vector3 p = points[i];
+				float distance = CUtils.Get2DDistance(Vector3.Zero, p);
+				if(distance < pMinDistance || distance > pMaxDistance)
+				{
+					points.RemoveAt(i);
+					filteredOut.Add(p);
+				}
+			}
+		}
+
 		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
 		{
 			for(int i = points.Count - 1; i >= 0; i--)
 			{
 				Vector3 p = points[i];
-				float height = p.Z - ExpectedGroundZ;
+
+				//todo: right now we cant rely on ground being defined everywhere - fix and use
+				CGroundField groundField = CProjectData.Points.groundArray.GetFieldContainingPoint(p);
+				float? height = p.Z - groundField.GetHeight();
+				//float height = p.Z - ExpectedGroundZ;
 				if(height < pMinHeight || height > pMaxHeight)
 				{
 					points.RemoveAt(i);
@@ -67,6 +85,7 @@ namespace ForestReco
 				}
 			}
 		}
+
 
 		internal int FilterFieldsWithDefinedNeighbours()
 		{
@@ -122,13 +141,13 @@ namespace ForestReco
 			points.Clear();
 		}
 
-		public override void AddPoint(Vector3 pPoint)
+		/*public override void AddPoint(Vector3 pPoint)
 		{
 			base.AddPoint(pPoint);
 
 			if(MinZ < ExpectedGroundZ)
 				ExpectedGroundZ = (float)MinZ;
-		}
+		}*/
 
 		public CBall ball;
 
@@ -143,7 +162,10 @@ namespace ForestReco
 			if(!IsDefined())
 				return;
 
-			List<Vector3> processPoints = points;
+			//we need to make a copy in order not to modify the points
+			Vector3[] _processPoints = new Vector3[points.Count];
+			points.CopyTo(_processPoints);
+			List<Vector3> processPoints = _processPoints.ToList();
 
 			//part of ball can be in neighbours
 			//we take into consideration only 4 neighbours:

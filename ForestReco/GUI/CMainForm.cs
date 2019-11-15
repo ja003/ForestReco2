@@ -1228,14 +1228,13 @@ namespace ForestReco
 			this.trackBarRangeXmin.AutoSize = false;
 			this.trackBarRangeXmin.LargeChange = 10;
 			this.trackBarRangeXmin.Location = new System.Drawing.Point(970, 368);
-			this.trackBarRangeXmin.Maximum = 30;
-			this.trackBarRangeXmin.Minimum = 5;
+			this.trackBarRangeXmin.Maximum = 1000;
+			this.trackBarRangeXmin.Minimum = -1000;
 			this.trackBarRangeXmin.Name = "trackBarRangeXmin";
 			this.trackBarRangeXmin.Size = new System.Drawing.Size(92, 30);
 			this.trackBarRangeXmin.SmallChange = 5;
 			this.trackBarRangeXmin.TabIndex = 63;
 			this.trackBarRangeXmin.TickFrequency = 5;
-			this.trackBarRangeXmin.Value = 10;
 			this.trackBarRangeXmin.Scroll += new System.EventHandler(this.trackBarRangeXmin_Scroll);
 			// 
 			// textRangeXmin
@@ -1261,14 +1260,13 @@ namespace ForestReco
 			this.trackBarRangeXmax.AutoSize = false;
 			this.trackBarRangeXmax.LargeChange = 10;
 			this.trackBarRangeXmax.Location = new System.Drawing.Point(1075, 368);
-			this.trackBarRangeXmax.Maximum = 30;
-			this.trackBarRangeXmax.Minimum = 5;
+			this.trackBarRangeXmax.Maximum = 1000;
+			this.trackBarRangeXmax.Minimum = -1000;
 			this.trackBarRangeXmax.Name = "trackBarRangeXmax";
 			this.trackBarRangeXmax.Size = new System.Drawing.Size(92, 30);
 			this.trackBarRangeXmax.SmallChange = 5;
 			this.trackBarRangeXmax.TabIndex = 64;
 			this.trackBarRangeXmax.TickFrequency = 5;
-			this.trackBarRangeXmax.Value = 10;
 			this.trackBarRangeXmax.Scroll += new System.EventHandler(this.trackBarRangeXmax_Scroll);
 			// 
 			// trackBarRangeYmax
@@ -1276,14 +1274,13 @@ namespace ForestReco
 			this.trackBarRangeYmax.AutoSize = false;
 			this.trackBarRangeYmax.LargeChange = 10;
 			this.trackBarRangeYmax.Location = new System.Drawing.Point(1075, 441);
-			this.trackBarRangeYmax.Maximum = 30;
-			this.trackBarRangeYmax.Minimum = 5;
+			this.trackBarRangeYmax.Maximum = 1000;
+			this.trackBarRangeYmax.Minimum = -1000;
 			this.trackBarRangeYmax.Name = "trackBarRangeYmax";
 			this.trackBarRangeYmax.Size = new System.Drawing.Size(92, 30);
 			this.trackBarRangeYmax.SmallChange = 5;
 			this.trackBarRangeYmax.TabIndex = 68;
 			this.trackBarRangeYmax.TickFrequency = 5;
-			this.trackBarRangeYmax.Value = 10;
 			this.trackBarRangeYmax.Scroll += new System.EventHandler(this.trackBarRangeYmax_Scroll);
 			// 
 			// trackBarRangeYmin
@@ -1291,14 +1288,13 @@ namespace ForestReco
 			this.trackBarRangeYmin.AutoSize = false;
 			this.trackBarRangeYmin.LargeChange = 10;
 			this.trackBarRangeYmin.Location = new System.Drawing.Point(970, 441);
-			this.trackBarRangeYmin.Maximum = 30;
-			this.trackBarRangeYmin.Minimum = 5;
+			this.trackBarRangeYmin.Maximum = 1000;
+			this.trackBarRangeYmin.Minimum = -1000;
 			this.trackBarRangeYmin.Name = "trackBarRangeYmin";
 			this.trackBarRangeYmin.Size = new System.Drawing.Size(92, 30);
 			this.trackBarRangeYmin.SmallChange = 5;
 			this.trackBarRangeYmin.TabIndex = 67;
 			this.trackBarRangeYmin.TickFrequency = 5;
-			this.trackBarRangeYmin.Value = 10;
 			this.trackBarRangeYmin.Scroll += new System.EventHandler(this.trackBarRangeYmin_Scroll);
 			// 
 			// textRangeYmin
@@ -1484,7 +1480,7 @@ namespace ForestReco
 			this.trackBarTileSize.LargeChange = 10;
 			this.trackBarTileSize.Location = new System.Drawing.Point(884, 196);
 			this.trackBarTileSize.Maximum = 250;
-			this.trackBarTileSize.Minimum = 20;
+			this.trackBarTileSize.Minimum = 5;
 			this.trackBarTileSize.Name = "trackBarTileSize";
 			this.trackBarTileSize.Size = new System.Drawing.Size(140, 30);
 			this.trackBarTileSize.SmallChange = 5;

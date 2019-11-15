@@ -36,6 +36,12 @@ namespace ForestReco
 
 		private static void AddBall(CBall pBall)
 		{
+			if(currentIndex < 0 || currentIndex >= ballSets.Count)
+			{
+				CDebug.Error("Ball OOR");
+				return;
+			}
+
 			ballSets[currentIndex].balls.Add(pBall);
 		}
 	}

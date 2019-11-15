@@ -51,6 +51,12 @@ namespace ForestReco
 			return filteredCount;
 		}
 
-		
+		internal void FilterPointsAtDistance(float pMinDistance, float pMaxDistance)
+		{
+			foreach(CBallField f in fields)
+			{
+				f.FilterPointsAtDistance(pMinDistance, pMaxDistance);
+			}
+		}
 	}
 }

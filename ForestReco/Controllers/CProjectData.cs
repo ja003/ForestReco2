@@ -29,7 +29,17 @@ namespace ForestReco
 
 		public static bool useMaterial;
 
-		public const int bufferSize = 10;
+		//buffer size has to be smaller than tile size
+		public static int bufferSize
+		{
+			get
+			{
+				int tileSize = CParameterSetter.GetIntSettings(ESettings.tileSize);
+				if(tileSize > 10)
+					return 10;
+				return tileSize - 1;
+			}
+		}
 
 		public static void Init()
 		{

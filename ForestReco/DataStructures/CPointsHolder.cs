@@ -25,7 +25,7 @@ namespace ForestReco
 		public List<Vector3> ballsMainPoints = new List<Vector3>();
 		public List<Vector3> ballsCenters = new List<Vector3>();
 		public List<Vector3> ballsSurface = new List<Vector3>();
-		public List<Vector3> arrayGrid = new List<Vector3>();		
+		public List<Vector3> arrayGrid = new List<Vector3>();
 
 
 		//main arrays
@@ -107,13 +107,17 @@ namespace ForestReco
 
 			//TODO: unite processing all points
 
+			//first we need to fill ground array
+			CDebug.Step(EProgramStep.ProcessGroundPoints);
+			if(!CRxpParser.IsRxp)
+				ProcessGroundPoints();
+
 			CDebug.Step(EProgramStep.ProcessUnassignedPoints);
 			ProcessUnassignedPoints();
 			CDebug.Step(EProgramStep.ProcessBuildingPoints);
 			ProcessBuildingPoints();
 
-			CDebug.Step(EProgramStep.ProcessGroundPoints);
-			ProcessGroundPoints();
+
 			CDebug.Step(EProgramStep.PreprocessVegePoints);
 			PreprocessVegePoints();
 			CDebug.Step(EProgramStep.ProcessVegePoints);
@@ -131,6 +135,10 @@ namespace ForestReco
 			for(int i = 0; i < Math.Min(pParsedLines.Count, pointsToAddCount); i++)
 			{
 				Tuple<EClass, Vector3> parsedLine = pParsedLines[i];
+
+				if(CRxpParser.IsRxp && parsedLine.Item1 != EClass.Ground)
+					parsedLine = new Tuple<EClass, Vector3>(EClass.Unassigned, parsedLine.Item2);
+
 				AddPoint(parsedLine);
 			}
 		}
@@ -358,8 +366,8 @@ namespace ForestReco
 		/// </summary>
 		private void ProcessGroundPoints()
 		{
-			if(CRxpParser.IsRxp)
-				return;
+			//if(CRxpParser.IsRxp)
+			//	return;
 
 			for(int i = 0; i < ground.Count; i++)
 			{
@@ -412,12 +420,24 @@ namespace ForestReco
 				//ballArray.FillArray(); 
 
 				const bool filterBasedOnheight = false;
+				//we cant rely on ground to be filled everywhere
+				//in many locations it is not defined at all
+				//and processed tiles has to be pretty small in dense sets
+				float minHeight = CParameterSetter.GetFloatSettings(ESettings.minBallHeight);
+				float maxHeight = CParameterSetter.GetFloatSettings(ESettings.maxBallHeight);
+
 				//balls are expected to be in this height above ground
 				if(filterBasedOnheight)
 				{
-					ballArray.FilterPointsAtHeight(
-						  CParameterSetter.GetFloatSettings(ESettings.minBallHeight),
-						  CParameterSetter.GetFloatSettings(ESettings.maxBallHeight));
+					ballArray.FilterPointsAtHeight(minHeight, maxHeight);
+				}
+
+				const bool filterBasedOnDistance = true;
+				int minDistance = CParameterSetter.GetIntSettings(ESettings.minBallDistance);
+				int maxDistance = CParameterSetter.GetIntSettings(ESettings.maxBallDistance);
+				if(filterBasedOnDistance)
+				{
+					ballArray.FilterPointsAtDistance(minDistance, maxDistance);
 				}
 
 
@@ -430,6 +450,8 @@ namespace ForestReco
 
 					ballDetailArray.AddPointInField(point);
 				}
+
+				//array grid points - for result debug (increases file size)
 				//arrayGrid = ballDetailArray.GetArrayGridPoints();
 
 				//int filteredOutCount = ballDetailArray.FilterFieldsWithNeighbours();
@@ -454,6 +476,8 @@ namespace ForestReco
 				debugStart = DateTime.Now;
 				previousDebugStart = DateTime.Now;
 				//process
+				int count = ballDetailArray.GetPoints().Count;
+
 				for(int i = 0; i < sortedFields.Count; i++)
 				{
 					if(CProjectData.backgroundWorker.CancellationPending)
@@ -472,7 +496,14 @@ namespace ForestReco
 						//return;
 						//ballsSurface.AddRange(detectedBall.GetSurfacePoints());
 					}
+
+					/*if(count != ballDetailArray.GetPoints().Count)
+					{
+						CDebug.WriteLine();
+
+					}*/
 				}
+				CDebug.WriteLine();
 
 				foreach(CBallField field in ballFields)
 				{
@@ -494,13 +525,4 @@ namespace ForestReco
 			}
 		}
 	}
-
-	//public enum EArray
-	//{
-	//	Unassigned,
-	//	Ground,
-	//	Vege,
-	//	Building,
-	//	Tree
-	//}
 }

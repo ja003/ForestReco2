@@ -111,7 +111,7 @@ namespace ForestReco
 			while(!rxpInfo.ReadFinished && fileParseCount < maxFileParse)
 			{
 				rxpInfo = CRxpParser.ParseFile(handler);
-				
+
 				StringBuilder sb = new StringBuilder();
 				foreach(Tuple<EClass, Vector3> xyz in rxpInfo.ParsedLines)
 				{
@@ -120,8 +120,8 @@ namespace ForestReco
 				CUtils.WriteToFile(sb, parsedFilePath);
 			}
 
-			Txt2Las(parsedFilePath, convertedFilePath);
-			
+			Txt2Las(parsedFilePath, convertedFilePath, Vector3.Zero);
+
 			return convertedFilePath;
 		}
 
@@ -527,17 +527,17 @@ namespace ForestReco
 			return txtFilePath;
 		}
 
-		internal static string Txt2Las(string pTxtFilePath, string pOutputFilePath)// string pOutputFolder)
+		internal static string Txt2Las(string pTxtFilePath, string pOutputFilePath, Vector3 pOffset)
 		{
-			string outputFileName = CUtils.GetFileName(pTxtFilePath);
-			//string lasFilePath = pOutputFolder + outputFileName;
-
 			string toLas =
 				"txt2las -i " +
 				pTxtFilePath +
 				" -o " +
 				pOutputFilePath +
-				" -parse xyzc";
+				" -parse xyzc " +
+				"-set_offset " +
+				$"{pOffset.X} {pOffset.Y} {pOffset.Z}";
+
 			CCmdController.RunLasToolsCmd(toLas, pOutputFilePath);
 
 			return pOutputFilePath;
