@@ -225,12 +225,14 @@ namespace ForestReco
 
 			//tree extent
 			float treeExtent = CParameterSetter.GetFloatSettings(ESettings.treeExtent);
-			trackBarTreeExtent.Value = (int)(treeExtent * 10f);
+			if(treeExtent > 0)
+				trackBarTreeExtent.Value = (int)(treeExtent * 10f);
 			textTreeExtent.Text = treeExtent.ToString("0.0") + " m";
 
 			//tree extent multiply
 			float treeExtentMultiply = CParameterSetter.GetFloatSettings(ESettings.treeExtentMultiply);
-			trackBarTreeExtentMultiply.Value = (int)(treeExtentMultiply * 10f);
+			if(treeExtentMultiply > 0)
+				trackBarTreeExtentMultiply.Value = (int)(treeExtentMultiply * 10f);
 			textTreeExtentMultiply.Text = treeExtentMultiply.ToString("0.0");
 
 			//average tree height

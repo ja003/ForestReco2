@@ -4,11 +4,21 @@ using System.Linq;
 
 namespace ForestReco
 {
+	/// <summary>
+	/// NormalF format:
+	/// path
+	/// avg tree height
+	/// tree extent
+	/// extent multiply
+	/// 
+	/// RXP format:
+	/// path
+	/// </summary>
 	public static class CSequenceController
 	{
 		public const string SEQ_EXTENSION = ".seq";
 
-		private const int oneSequenceLength = 5;
+		private static int oneSequenceLength = 5;
 
 		public static List<SSequenceConfig> configs;
 
@@ -48,6 +58,9 @@ namespace ForestReco
 			currentConfigIndex = 0;
 			if (!IsSequence()) { return; }
 
+			oneSequenceLength = CTreeManager.GetDetectMethod() == EDetectionMethod.Balls ?
+				1 : 5;
+
 			lastSequenceFile = CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
 
 			string[] lines = File.ReadAllLines(lastSequenceFile);
@@ -55,10 +68,10 @@ namespace ForestReco
 			for (int i = 0; i < lines.Length; i += oneSequenceLength)
 			{
 				string[] configLines = new string[oneSequenceLength];
-				configLines[0] = lines[i];
-				configLines[1] = lines[i + 1];
-				configLines[2] = lines[i + 2];
-				configLines[3] = lines[i + 3];
+				for(int j = 0; j < oneSequenceLength; j++)
+				{
+					configLines[j] = lines[i + j];
+				}
 				SSequenceConfig config = GetConfig(configLines);
 				configs.Add(config);
 			}
@@ -68,6 +81,16 @@ namespace ForestReco
 		{
 			SSequenceConfig config = new SSequenceConfig();
 			config.path = GetValue(pLines[0]);
+			if(pLines.Length == 1)
+			{
+				config.treeHeight = 
+					CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh);
+				config.treeExtent = 
+					CParameterSetter.GetFloatSettings(ESettings.treeExtent);
+				config.treeExtentMultiply = 
+					CParameterSetter.GetFloatSettings(ESettings.treeExtentMultiply);
+				return config;
+			}
 			config.treeHeight = int.Parse(GetValue(pLines[1]));
 			config.treeExtent = float.Parse(GetValue(pLines[2]));
 			config.treeExtentMultiply = float.Parse(GetValue(pLines[3]));
@@ -83,7 +106,7 @@ namespace ForestReco
 
 		public static bool IsSequence()
 		{
-			string mainFile = CParameterSetter.GetStringSettings(ESettings.forestFileName);
+			string mainFile = CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
 			if (!File.Exists(mainFile)) { return false; }
 			return Path.GetExtension(mainFile) == SEQ_EXTENSION;
 		}
