@@ -71,6 +71,11 @@ namespace ForestReco
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 						return ballDetailArray.GetPoints();
 					return unassigned;
+				case EClass.FilteredOut:
+					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+						return ballArray.GetFilteredOutPoints();
+					return new List<Vector3>();
+
 				case EClass.Balls:
 					return ballPoints;
 				case EClass.BallsMainPoints:
@@ -419,7 +424,9 @@ namespace ForestReco
 				//unassignedArray.FillArray(); //doesnt make sense
 				//ballArray.FillArray(); 
 
-				const bool filterBasedOnheight = false;
+				//TODO: check that this approach works - seems fine now
+				const bool filterBasedOnheight = true;
+				// ===> ??? <===
 				//we cant rely on ground to be filled everywhere
 				//in many locations it is not defined at all
 				//and processed tiles has to be pretty small in dense sets
@@ -452,6 +459,7 @@ namespace ForestReco
 				}
 
 				//array grid points - for result debug (increases file size)
+				arrayGrid = ballArray.GetArrayGridPoints();
 				//arrayGrid = ballDetailArray.GetArrayGridPoints();
 
 				//int filteredOutCount = ballDetailArray.FilterFieldsWithNeighbours();

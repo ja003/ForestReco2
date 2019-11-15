@@ -19,6 +19,7 @@ namespace ForestReco
 		BallsCenters = 668,
 		BallsSurface = 669,
 
-		ArrayGrid = 670
+		ArrayGrid = 670,
+		FilteredOut = 671
 	}
 }

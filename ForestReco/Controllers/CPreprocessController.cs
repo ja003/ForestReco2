@@ -375,7 +375,8 @@ namespace ForestReco
 					"lasheight -i " +
 					pGroundFilePath +
 					" -o " +
-					heightFilePath;
+					heightFilePath +
+					" -replace_z"; //Z = height (relative to ground)
 			CCmdController.RunLasToolsCmd(height, heightFilePath);
 
 			return heightFilePath;
@@ -522,6 +523,8 @@ namespace ForestReco
 				" -o " +
 				txtFilePath +
 				" -parse xyzc -sep tab -header percent";
+			//" -parse xyzcu -sep tab -header percent"; //user data - height
+			//-> no need, height is stored in Z (see lasHeight)
 			CCmdController.RunLasToolsCmd(toTxt, txtFilePath);
 
 			return txtFilePath;

@@ -58,5 +58,15 @@ namespace ForestReco
 				f.FilterPointsAtDistance(pMinDistance, pMaxDistance);
 			}
 		}
+
+		internal List<Vector3> GetFilteredOutPoints()
+		{
+			List<Vector3> filteredOutPoints = new List<Vector3>();
+			foreach(CBallField f in fields)
+			{
+				filteredOutPoints.AddRange(f.filteredOut);
+			}
+			return filteredOutPoints;
+		}
 	}
 }

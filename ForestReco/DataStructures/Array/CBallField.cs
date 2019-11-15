@@ -70,14 +70,20 @@ namespace ForestReco
 
 		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
 		{
+			if(Equals(9, 0))
+			{
+				CDebug.WriteLine();
+			}
 			for(int i = points.Count - 1; i >= 0; i--)
 			{
 				Vector3 p = points[i];
 
-				//todo: right now we cant rely on ground being defined everywhere - fix and use
-				CGroundField groundField = CProjectData.Points.groundArray.GetFieldContainingPoint(p);
-				float? height = p.Z - groundField.GetHeight();
+				//float? groundHeight = GetGroundHeight();
+				//float? height = p.Z - groundHeight;
+
 				//float height = p.Z - ExpectedGroundZ;
+
+				float height = p.Z;
 				if(height < pMinHeight || height > pMaxHeight)
 				{
 					points.RemoveAt(i);
@@ -85,6 +91,15 @@ namespace ForestReco
 				}
 			}
 		}
+
+		/*private float? GetGroundHeight()
+		{
+			CGroundField groundField = CProjectData.Points.groundArray.GetFieldContainingPoint(Center);
+			float? groundFieldHeight = groundField.GetHeight();
+			if(groundFieldHeight == null)
+				return null;
+			return Math.Min((float)groundFieldHeight, ExpectedGroundZ);
+		}*/
 
 
 		internal int FilterFieldsWithDefinedNeighbours()

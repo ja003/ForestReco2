@@ -18,15 +18,16 @@ namespace ForestReco
 		private static string mainFileName = tileFileName + "_main";
 
 		private static string mainFilePath => CProjectData.outputFolder + mainFileName;
-		
+
 		private static bool export => CParameterSetter.GetBoolSettings(ESettings.exportLas);
 
 		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i";
-		private const string BALLS_COLOR = "255 0 0"; 
+		private const string BALLS_COLOR = "255 0 0";
 		private const string BALLS_MP_COLOR = "0 255 0";
 		private const string BALLS_CENTER_COLOR = "255 0 255";
 		private const string BALLS_SURFACE_COLOR = "255 255 0";
 		private const string ARRAY_GRID_COLOR = "255 20 147"; //deep pink
+		private const string FILTERED_OUT_COLOR = "0 0 180"; //dark blue
 
 		//deep pink: 255 20 147
 
@@ -63,6 +64,7 @@ namespace ForestReco
 			{
 				//AddPointsTo(ref output, EClass.BallsSurface, ref start);
 				AddPointsTo(ref output, EClass.Balls, ref start);
+				AddPointsTo(ref output, EClass.FilteredOut, ref start);
 				AddPointsTo(ref output, EClass.BallsMainPoints, ref start);
 				AddPointsTo(ref output, EClass.BallsCenters, ref start);
 				AddPointsTo(ref output, EClass.ArrayGrid, ref start);
@@ -166,6 +168,9 @@ namespace ForestReco
 					return BALLS_CENTER_COLOR;
 				case EClass.BallsSurface:
 					return BALLS_SURFACE_COLOR;
+
+				case EClass.FilteredOut:
+					return FILTERED_OUT_COLOR;
 
 				case EClass.ArrayGrid:
 					return ARRAY_GRID_COLOR;
