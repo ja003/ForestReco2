@@ -299,10 +299,16 @@ namespace ForestReco
 				outputFolderPath, tileSize, CProjectData.bufferSize);
 			}
 
+			DateTime debugStart = DateTime.Now;
+			DateTime previousDebugStart = DateTime.Now;
+
 			for(int i = 0; i < tiles.Length; i++)
 			{
 				string txtFile = Las2Txt(tiles[i].FullName, outputFolderPath);
 				result.Add(txtFile);
+				CDebug.Progress(i, tiles.Length, 1, 
+					ref previousDebugStart, debugStart,
+					$"Las2Txt tile");
 			}
 			return result;
 		}

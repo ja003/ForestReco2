@@ -63,7 +63,8 @@ namespace ForestReco
 
 			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
 
-			if(CRxpParser.IsRxp)
+			bool debug_skip_preprocess = true;
+			if(CRxpParser.IsRxp && !debug_skip_preprocess)
 			{
 				string convertedFilePath = CPreprocessController.ConvertRxpToLas();
 				//set as processed file

@@ -14,6 +14,9 @@ namespace ForestReco
 			CParameterSetter.GetStringSettings(ESettings.forestFileExtension) == ".rxp" ||
 			CTreeManager.GetDetectMethod() == EDetectionMethod.Balls;
 
+		//10 000 => 14s
+		//100 000 => 7s
+		//1 000 000 => 7,5s
 		public const uint READ_BLOCK_SIZE = 100000;
 		public const int EXPECTED_RXP_FILE_LENGTH = 1000 * (int)READ_BLOCK_SIZE;
 		//private const int EXPECTED_PARSE_ITERATIONS = (int)(EXPECTED_RXP_FILE_LENGTH / READ_BLOCK_SIZE);
@@ -50,9 +53,7 @@ namespace ForestReco
 		{
 			uint PointCount = 1;
 			int EndOfFrame = 1;
-			//10 000 => 14s
-			//100 000 => 7s
-			//1 000 000 => 7,5s
+			
 			scanifc_xyz32[] BufferXYZ = new scanifc_xyz32[READ_BLOCK_SIZE];
 			scanifc_attributes[] BufferMISC = new scanifc_attributes[READ_BLOCK_SIZE];
 			ulong[] BufferTIME = new ulong[READ_BLOCK_SIZE];

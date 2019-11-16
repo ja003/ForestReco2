@@ -257,6 +257,8 @@ namespace ForestReco
 					return "_2d";
 				case EDetectionMethod.AddFactor2D:
 					return "_af2d";
+				case EDetectionMethod.Balls:
+					return "_balls";
 			}
 			return "_noMethod";
 		}
