@@ -96,7 +96,9 @@ namespace ForestReco
 		/// </summary>
 		public static string ConvertRxpToLas()
 		{
+			DateTime start = DateTime.Now; 
 			IntPtr handler = CRxpParser.OpenFile(forestFilePath);
+			string currentFileName = CUtils.GetFileName(forestFilePath);
 
 			string convertedFilePath = currentTmpFolder + forestFileName + ".las";
 			if(File.Exists(convertedFilePath))
@@ -108,18 +110,31 @@ namespace ForestReco
 
 			int fileParseCount = 0;
 			CRxpInfo rxpInfo = new CRxpInfo();
+			DateTime debugStart = DateTime.Now;
+			DateTime previousDebugStart = DateTime.Now;
+
+			const int read_lines_size = (int)CRxpParser.READ_BLOCK_SIZE * 10;
+			int linesParsed = 0;
 			while(!rxpInfo.ReadFinished && fileParseCount < maxFileParse)
 			{
-				rxpInfo = CRxpParser.ParseFile(handler);
+				rxpInfo = CRxpParser.ParseFile(handler, read_lines_size);
+				CDebug.Progress(linesParsed, CRxpParser.EXPECTED_RXP_FILE_LENGTH, 10, ref previousDebugStart, debugStart,
+					$"Parsing Rxp file {currentFileName} (size unknown). ");
 
+				int iteration = 0;
 				StringBuilder sb = new StringBuilder();
+				linesParsed += rxpInfo.ParsedLines.Count;
 				foreach(Tuple<EClass, Vector3> xyz in rxpInfo.ParsedLines)
 				{
+					iteration++;
 					sb.AppendLine(GetPointLine(xyz.Item2));
 				}
 				CUtils.WriteToFile(sb, parsedFilePath);
+				if(CProjectData.backgroundWorker.CancellationPending)
+					break;				
 			}
 
+			CDebug.Progress(3, 3, 1, ref start, start, $"Converting txt to las");
 			Txt2Las(parsedFilePath, convertedFilePath, Vector3.Zero);
 
 			return convertedFilePath;

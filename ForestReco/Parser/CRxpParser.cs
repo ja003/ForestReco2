@@ -10,9 +10,13 @@ namespace ForestReco
 {
 	public static class CRxpParser
 	{
-		public static bool IsRxp => 
-			CParameterSetter.GetStringSettings(ESettings.forestFileExtension) == ".rxp" || 
+		public static bool IsRxp =>
+			CParameterSetter.GetStringSettings(ESettings.forestFileExtension) == ".rxp" ||
 			CTreeManager.GetDetectMethod() == EDetectionMethod.Balls;
+
+		public const uint READ_BLOCK_SIZE = 100000;
+		public const int EXPECTED_RXP_FILE_LENGTH = 1000 * (int)READ_BLOCK_SIZE;
+		//private const int EXPECTED_PARSE_ITERATIONS = (int)(EXPECTED_RXP_FILE_LENGTH / READ_BLOCK_SIZE);
 
 		//public static string[] GetDebugHeaderLines()
 		//{
@@ -30,9 +34,11 @@ namespace ForestReco
 		//	return result;
 		//}
 
+		static string currentFilePath;
 		public static IntPtr OpenFile(string pFile)
 		{
 			IntPtr h3ds = IntPtr.Zero;
+			currentFilePath = pFile;
 			int sync_to_pps = 0;
 			int opened = scanifc_point3dstream_open(pFile, ref sync_to_pps, ref h3ds);
 			Console.WriteLine($"opened = {opened}, h3ds = {h3ds}");
@@ -40,20 +46,16 @@ namespace ForestReco
 		}
 
 		//TODO: remove all choosable arguments, move filtering to separate logic
-		public static CRxpInfo ParseFile(IntPtr pHandler, 
-			int pMinDistance = int.MinValue, int pMaxDistance = int.MaxValue,
-			int pMinAngle = int.MinValue, int pMaxAngle = int.MaxValue,
-			int pMaxLoadPoints = -1, int pPartIndex = -1)
+		public static CRxpInfo ParseFile(IntPtr pHandler, int pMaxLoadPoints = -1)
 		{
 			uint PointCount = 1;
 			int EndOfFrame = 1;
 			//10 000 => 14s
 			//100 000 => 7s
 			//1 000 000 => 7,5s
-			const uint BLOCK_SIZE = 100000;
-			scanifc_xyz32[] BufferXYZ = new scanifc_xyz32[BLOCK_SIZE];
-			scanifc_attributes[] BufferMISC = new scanifc_attributes[BLOCK_SIZE];
-			ulong[] BufferTIME = new ulong[BLOCK_SIZE];
+			scanifc_xyz32[] BufferXYZ = new scanifc_xyz32[READ_BLOCK_SIZE];
+			scanifc_attributes[] BufferMISC = new scanifc_attributes[READ_BLOCK_SIZE];
+			ulong[] BufferTIME = new ulong[READ_BLOCK_SIZE];
 
 			List<Tuple<EClass, Vector3>> fileLines = new List<Tuple<EClass, Vector3>>();
 
@@ -64,48 +66,32 @@ namespace ForestReco
 
 			int readIteration = 0;
 			DateTime debugStart = DateTime.Now;
-			DateTime previousDebugStart = DateTime.Now;
 
 			int partIndex = 0;
+			int iteration = 0;
 			while(PointCount != 0 || EndOfFrame != 0)
 			{
 				if(CProjectData.backgroundWorker.CancellationPending)
 					break;
 
 				readIteration++;
-				CDebug.Progress(readIteration, int.MaxValue, (int)(BLOCK_SIZE/10), ref previousDebugStart, debugStart, "Parsing Rxp file (size unknown)");
 				int read = scanifc_point3dstream_read(
-							pHandler, BLOCK_SIZE,
-							BufferXYZ, 
+							pHandler, READ_BLOCK_SIZE,
+							BufferXYZ,
 							//BufferMISC, BufferTIME,
 							null, null, //no need for this info
 							ref PointCount, ref EndOfFrame);
 				for(int i = 0; i < PointCount; i++)
 				{
 					scanifc_xyz32 xyz = BufferXYZ[i];
+					fileLines.Add(new Tuple<EClass, Vector3>(EClass.Undefined, xyz.ToVector()));
 					//Console.WriteLine($"BufferXYZ = {xyz.x},{xyz.y},{xyz.z}");
+				}
 
-					float distance = Vector3.Distance(Vector3.Zero, xyz.ToVector());
-					if(distance > pMinDistance && distance < pMaxDistance)
-					{
-						RefreshMinMax(xyz, ref min, ref max);
-						fileLines.Add(new Tuple<EClass, Vector3>(EClass.Undefined, xyz.ToVector()));
-						
-					}
-				}
-				if(fileLines.Count > 0 && !IsInAngle(fileLines.Last().Item2, pMinAngle, pMaxAngle))
-				{
-					break;
-				}
+				iteration++;
 
 				if(pMaxLoadPoints > 0 && fileLines.Count > pMaxLoadPoints)
 				{
-					if(pPartIndex > 0 && pPartIndex != partIndex)
-					{
-						partIndex++;
-						fileLines.Clear();
-						continue;
-					}
 					break;
 				}
 			}
@@ -178,7 +164,7 @@ namespace ForestReco
 		public bool ReadFinished = false;
 
 		public List<Tuple<EClass, Vector3>> ParsedLines { get; private set; }
-		public CHeaderInfo Header { get; private set; }
+		public CHeaderInfo Header { get; private set; } //not used now - todo: remove?
 
 		public CRxpInfo()
 		{

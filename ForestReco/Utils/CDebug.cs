@@ -278,6 +278,7 @@ namespace ForestReco
 			return true;
 		}
 
+		const string TIME_LEFT_UNKNOWN = "(time left unknown)";
 		private static string GetStepString(EProgramStep pStep)
 		{
 			string text;
@@ -355,31 +356,31 @@ namespace ForestReco
 
 
 				case EProgramStep.Pre_Tile:
-					text = PREPROCESS + "creating tiles";
+					text = PREPROCESS + "creating tiles " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_Noise:
-					text = PREPROCESS + "removing noise";
+					text = PREPROCESS + "removing noise " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_LasGround:
-					text = PREPROCESS + "detecting ground";
+					text = PREPROCESS + "detecting ground " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_LasHeight:
-					text = PREPROCESS + "calculating heights";
+					text = PREPROCESS + "calculating heights " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_LasClassify:
-					text = PREPROCESS + "classifying points";
+					text = PREPROCESS + "classifying points " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_LasReverseTile:
-					text = PREPROCESS + "applying reverse tiling";
+					text = PREPROCESS + "applying reverse tiling " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_DeleteTmp:
-					text = PREPROCESS + "deleting temporary files";
+					text = PREPROCESS + "deleting temporary files " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_Split:
-					text = PREPROCESS + "splitting file";
+					text = PREPROCESS + "splitting file " + TIME_LEFT_UNKNOWN;
 					break;
 				case EProgramStep.Pre_LasToTxt:
-					text = PREPROCESS + "converting from laz to txt";
+					text = PREPROCESS + "converting from laz to txt " + TIME_LEFT_UNKNOWN;
 					break;
 
 
