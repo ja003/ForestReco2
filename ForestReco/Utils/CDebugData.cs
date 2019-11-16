@@ -52,6 +52,47 @@ namespace ForestReco
 			return pointTuples;
 		}
 
+		internal static void OnPrepareSequence()
+		{
+			index = -1;
+		}
+
+		internal static void Init()
+		{
+			index++;
+			debugDone = false;
+		}
+
+		//implemented for balls detection debug
+		private const bool use_debug_data = true;
+		public static bool debugDone = false;
+		public static int index = -1;
+
+		/// <summary>
+		/// Return false if debug is not processed.
+		/// </summary>
+		public static bool BallsDebug()
+		{
+			if(!CRxpParser.IsRxp || !use_debug_data)
+				return false;
+			if(debugDone)
+				return true;
+
+			switch(index)
+			{
+				case 0:
+					CBallsManager.DebugAddBall(new CBall(new Vector3(0, 0, 0)));
+					CBallsManager.DebugAddBall(new CBall(new Vector3(1, 0, 0)));
+					break;
+				case 1:
+					CBallsManager.DebugAddBall(new CBall(new Vector3(0, 0, 0)));
+					CBallsManager.DebugAddBall(new CBall(new Vector3(0, 1, 0)));
+					break;
+			}
+			debugDone = true;
+			return true;
+		}
+
 		//public static void DefineArray(bool pConstantHeight, float pHeight)
 		//{
 		//	CDebug.WriteLine("Define debug array");

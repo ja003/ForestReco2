@@ -19,6 +19,7 @@ namespace ForestReco
 		public Vector3 furthestPointMinusY;
 
 		const float BALL_DIAMETER = 0.145f;
+		
 		private float BALL_RADIUS => BALL_DIAMETER / 2;
 
 		const float DEBUG_OFFSET = 0.0005f;
@@ -26,6 +27,12 @@ namespace ForestReco
 
 		public bool isValid = true;
 		public Vector3 center { get; private set; }
+
+		//Debug
+		public CBall(Vector3 pCenter)
+		{
+			center = pCenter;
+		}
 
 		public CBall(List<Vector3> pPoints, bool pForce)
 		{

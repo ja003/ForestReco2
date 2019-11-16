@@ -23,6 +23,8 @@ namespace ForestReco
 		public static void PrepareSequence()
 		{
 			CSequenceController.Init();
+			CBallsManager.OnPrepareSequence();
+			CDebugData.OnPrepareSequence();
 		}
 
 		public static EProcessResult Start()
@@ -43,6 +45,7 @@ namespace ForestReco
 			CShpController.Init();
 			CReftreeManager.Init();
 			CBallsManager.Init();
+			CDebugData.Init();
 
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
@@ -107,6 +110,7 @@ namespace ForestReco
 			if(CSequenceController.IsLastSequence())
 			{
 				CSequenceController.OnLastSequenceEnd();
+				CBallsManager.OnLastSequenceDone();
 				return EProcessResult.Done;
 			}
 
@@ -121,10 +125,11 @@ namespace ForestReco
 
 			DateTime startTime = DateTime.Now;
 			currentTileIndex = pTileIndex;
-			
-			List<Tuple<EClass, Vector3>> parsedLines = new List<Tuple<EClass, Vector3>>();
 
-			CBallsManager.InitTile(pTileIndex);
+			if(CDebugData.BallsDebug())
+				return EProcessResult.Done;
+
+			List<Tuple<EClass, Vector3>> parsedLines = new List<Tuple<EClass, Vector3>>();
 
 			string[] lines = CProgramLoader.GetFileLines(pTilePath);
 			bool linesOk = lines != null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]);

@@ -15,17 +15,18 @@ namespace ForestReco
 	{
 		public const float MAX_OFFSET = 0.001F;
 
+		//TODO: check if functionality not broken and remove
 		/// <summary>
 		/// Calculates rigid transformations between all permutations of pSetA and pSetB
 		/// and returns the best one (having the smallest offset).
 		/// This is done due to the expected indexing in function CalculateRigidTransform
 		/// </summary>
-		public static CRigidTransform GetRigidTransform(List<Vector3> pSetA, List<Vector3> pSetB)
+		/*public static CRigidTransform GetRigidTransform(List<Vector3> pSetA, List<Vector3> pSetOrig)
 		{
-			CDebug.WriteLine($"GetRigidTransform from set : {CDebug.GetString(pSetA)} to {CDebug.GetString(pSetB)}");
-			if(pSetA.Count != pSetB.Count)
+			CDebug.WriteLine($"GetRigidTransform from set : {CDebug.GetString(pSetA)} to {CDebug.GetString(pSetOrig)}");
+			if(pSetA.Count != pSetOrig.Count)
 			{
-				CDebug.Error("Sets copunt dont match");
+				CDebug.Error("Sets count dont match");
 				return null;
 			}
 
@@ -33,7 +34,7 @@ namespace ForestReco
 			List<CRigidTransform> rigTransforms = new List<CRigidTransform>();
 			foreach(var permutation in setApermutations)
 			{
-				CRigidTransform rigTransform = CalculateRigidTransform(permutation.ToList(), pSetB);
+				CRigidTransform rigTransform = CalculateRigidTransform(permutation.ToList(), pSetOrig);
 				rigTransforms.Add(rigTransform);
 				//CDebug.WriteLine($"{rigTransform}");
 				if(rigTransform.offset < MAX_OFFSET)
@@ -45,22 +46,67 @@ namespace ForestReco
 
 			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
 			return minOffsetRigTransform;
+		}*/
+
+		internal static CRigidTransform GetRigidTransform(List<CBall> pBalls1, List<CBall> pBallsOrig)
+		{
+			List<Vector3> centers1 = pBalls1.Select(a => a.center).ToList();
+			List<Vector3> centersOrig = pBallsOrig.Select(a => a.center).ToList();
+
+			return GetRigidTransform(centers1, centersOrig);
 		}
-		
+
+		/// <summary>
+		/// Calculates rigid transformations between all permutations of larger set
+		/// from pCenters and pCentersOrig and the smaller one.
+		/// Sets have to have the same points count so we need o try all permutations of the 
+		/// larger set.
+		/// 
+		/// Returns the best transformation (having the smallest offset).
+		/// Permutating needs to be done also due to the expected 
+		/// indexing in function CalculateRigidTransform 
+		/// e.g. input (a,b,c), (a',b',c') = OK, but (a,b,c), (b',a',c') = NOK
+		/// </summary>
+		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		{
+			bool isOrigLarger = pCentersOrig.Count > pCenters.Count;
+			IEnumerable<IEnumerable<Vector3>> largerSetPermutations = isOrigLarger ? pCentersOrig.Permute() : pCenters.Permute();
+			List<Vector3> smallerSet = isOrigLarger ? pCenters : pCentersOrig;
+
+			List<CRigidTransform> rigTransforms = new List<CRigidTransform>();
+			foreach(var permutation in largerSetPermutations)
+			{
+				CRigidTransform rigTransform = CalculateRigidTransform(
+					isOrigLarger ? smallerSet : permutation.ToList(),
+					isOrigLarger ? permutation.ToList() : smallerSet);
+				rigTransforms.Add(rigTransform);
+				//CDebug.WriteLine($"{rigTransform}");
+				if(rigTransform.offset < MAX_OFFSET)
+					break;
+			}
+
+			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
+			(curMin, x) => x.offset < curMin.offset ? x : curMin);
+
+			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
+			return minOffsetRigTransform;
+
+		}
+
 		/// <summary>
 		/// Calculates a rotation and translation that needs to be applied
-		/// on pSetA to match pSetB.
+		/// on pSetA to match pSetOrig.
 		/// The process expects the matching points from sets having the same index.
 		/// </summary>
-		private static CRigidTransform CalculateRigidTransform(List<Vector3> pSetA, List<Vector3> pSetB)
-		{		
+		private static CRigidTransform CalculateRigidTransform(List<Vector3> pSetA, List<Vector3> pSetOrig)
+		{
 			//prevent modification of the input parameters
 			List<Vector3> setA = CUtils.GetCopy(pSetA);
-			List<Vector3> setB = CUtils.GetCopy(pSetB);
+			List<Vector3> setB = CUtils.GetCopy(pSetOrig);
 
 			//setA and setB will be modified
 			List<Vector3> setAorig = CUtils.GetCopy(pSetA);
-			List<Vector3> setBorig = CUtils.GetCopy(pSetB);
+			List<Vector3> setBorig = CUtils.GetCopy(pSetOrig);
 
 			Vector3 centroid_A = CUtils.GetAverage(setA);
 			Vector3 centroid_B = CUtils.GetAverage(setB);
@@ -128,7 +174,7 @@ namespace ForestReco
 			return new CRigidTransform(rotation, translation, offset);
 		}
 
-		
+
 
 
 		/// <summary>
