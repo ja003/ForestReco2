@@ -33,10 +33,10 @@ namespace ForestReco
 		public readonly Tuple<int, int> indexInField;
 
 		public Vector3 Center { get; private set; }
-		public Vector3 TopLeft => Center + new Vector3(-stepSize, -stepSize, 0);
-		public Vector3 TopRight => Center + new Vector3(stepSize, -stepSize, 0);
-		public Vector3 BotLeft => Center + new Vector3(-stepSize, +stepSize, 0);
-		public Vector3 BotRight => Center + new Vector3(stepSize, stepSize, 0);
+		public Vector3 TopLeft => Center + new Vector3(-stepSize, -stepSize, 0) / 2;
+		public Vector3 TopRight => Center + new Vector3(stepSize, -stepSize, 0) / 2;
+		public Vector3 BotLeft => Center + new Vector3(-stepSize, stepSize, 0) / 2;
+		public Vector3 BotRight => Center + new Vector3(stepSize, stepSize, 0) / 2;
 
 		//--------------------------------------------------------------
 
@@ -72,7 +72,7 @@ namespace ForestReco
 		}
 
 		public List<CField> GetDefinedNeighbours(int pMaxDistance)
-		{	
+		{
 			List<CField> definedNeighbours = new List<CField>();
 			List<CField> neighbours = GetFieldsInDistance(pMaxDistance);
 			foreach(CField n in neighbours)
@@ -102,9 +102,11 @@ namespace ForestReco
 
 		internal List<Vector3> GetBoundaryPoints()
 		{
+			//TODO: result boundary zdá se nesedí...viz output las
+
 			List<Vector3> boundPoints = new List<Vector3>();
 
-			const float point_frequency = 0.05f;
+			float point_frequency = IsDetail ? 0.01f : 0.05f;
 			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, TopRight, point_frequency));
 			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, BotLeft, point_frequency));
 			boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, TopRight, point_frequency));
@@ -182,7 +184,7 @@ namespace ForestReco
 					}
 				}
 			}
-			fields.Sort((a, b) => 
+			fields.Sort((a, b) =>
 				CUtils.Get2DDistance(Center, a.Center).CompareTo(
 				CUtils.Get2DDistance(Center, b.Center)));
 
@@ -382,7 +384,7 @@ namespace ForestReco
 		/// </summary>
 		public float? GetKRankHeightFromNeigbourhood(int pK, int pNeighbourhoodSize)
 		{
-			List<float> heights = new List<float>(); 
+			List<float> heights = new List<float>();
 			foreach(CField field in GetNeighbours(pNeighbourhoodSize, true))
 			{
 				float? neighbourHeight = field.GetHeight();
@@ -396,7 +398,7 @@ namespace ForestReco
 			heights.Sort(); //ascending
 			heights.Reverse(); //descending => 0 = max
 			int index = Math.Min(heights.Count, pK);
-			return heights[index-1];
+			return heights[index - 1];
 		}
 
 		public float? GetAverageHeightFromNeighbourhood(int pKernelSizeMultiplier, EHeight pType = EHeight.Smooth)
