@@ -102,11 +102,9 @@ namespace ForestReco
 
 		internal List<Vector3> GetBoundaryPoints()
 		{
-			//TODO: result boundary zdá se nesedí...viz output las
-
 			List<Vector3> boundPoints = new List<Vector3>();
 
-			float point_frequency = IsDetail ? 0.01f : 0.05f;
+			float point_frequency = IsDetail ? 0.02f : 0.05f;
 			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, TopRight, point_frequency));
 			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, BotLeft, point_frequency));
 			boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, TopRight, point_frequency));

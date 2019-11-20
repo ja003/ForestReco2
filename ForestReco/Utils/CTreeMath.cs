@@ -136,10 +136,11 @@ namespace ForestReco
 			float distanceFromCurrentTileBorder = CUtils.GetDistanceFromBorder(pPoint, tileBotLeft, tileTopRight);
 
 			//is close at tile border
-			if(distanceFromCurrentTileBorder < CProjectData.bufferSize)
+			int bufferSize = CProjectData.GetBufferSize();
+			if(distanceFromCurrentTileBorder < bufferSize)
 			{
 				//is close at whole forest border - only corners are considered a buffer zone
-				if(distanceFromWholeForestBorder < CProjectData.bufferSize)
+				if(distanceFromWholeForestBorder < bufferSize)
 				{
 					float distanceXFromCurrentTileBorder =
 						CUtils.GetDistanceFromBorderX(pPoint, tileBotLeft, tileTopRight);
@@ -151,11 +152,11 @@ namespace ForestReco
 					float distanceYFromForest =
 						CUtils.GetDistanceFromBorderY(pPoint, mainBotLeft, mainTopRight);
 
-					bool isAtTileCorner = distanceXFromCurrentTileBorder < CProjectData.bufferSize &&
-						distanceYFromCurrentTileBorder < CProjectData.bufferSize;
+					bool isAtTileCorner = distanceXFromCurrentTileBorder < bufferSize &&
+						distanceYFromCurrentTileBorder < bufferSize;
 
-					bool isNotAtForestCorner = distanceXFromForest > CProjectData.bufferSize ||
-						distanceYFromForest > CProjectData.bufferSize;
+					bool isNotAtForestCorner = distanceXFromForest > bufferSize ||
+						distanceYFromForest > bufferSize;
 
 					return isAtTileCorner && isNotAtForestCorner;
 				}

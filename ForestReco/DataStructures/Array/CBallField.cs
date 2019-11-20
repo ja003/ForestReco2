@@ -9,15 +9,13 @@ namespace ForestReco
 {
 	public class CBallField : CField
 	{
-
-		//public float ExpectedGroundZ = int.MaxValue;
 		public List<Vector3> filteredOut = new List<Vector3>();
 
-		public CBallField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) : 
+		public CBallField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) :
 			base(pIndexInField, pCenter, pStepSize, pDetail)
 		{
 		}
-		
+
 		public override void FillMissingHeight(EFillMethod pMethod, int pParam)
 		{
 			if(heightFilled)
@@ -25,7 +23,7 @@ namespace ForestReco
 
 			float? minNeighbourAvg = GetAverageHeightFromNeighbourhood(1, EHeight.MinZ);
 			float? minNeighbour = GetKRankHeightFromNeigbourhood(9, 3);
-			
+
 			if(minNeighbour != null && minNeighbourAvg != null)
 			{
 				if(Math.Abs((float)minNeighbour - (float)minNeighbourAvg) > 0.5f)
@@ -68,6 +66,7 @@ namespace ForestReco
 			}
 		}
 
+
 		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
 		{
 			if(Equals(9, 0))
@@ -78,11 +77,6 @@ namespace ForestReco
 			{
 				Vector3 p = points[i];
 
-				//float? groundHeight = GetGroundHeight();
-				//float? height = p.Z - groundHeight;
-
-				//float height = p.Z - ExpectedGroundZ;
-
 				float height = p.Z;
 				if(height < pMinHeight || height > pMaxHeight)
 				{
@@ -92,15 +86,12 @@ namespace ForestReco
 			}
 		}
 
-		/*private float? GetGroundHeight()
+		public float GetDefinedHeight()
 		{
-			CGroundField groundField = CProjectData.Points.groundArray.GetFieldContainingPoint(Center);
-			float? groundFieldHeight = groundField.GetHeight();
-			if(groundFieldHeight == null)
-				return null;
-			return Math.Min((float)groundFieldHeight, ExpectedGroundZ);
-		}*/
-
+			if(points.Count == 0)
+				return 0;
+			return points[0].Z;
+		}
 
 		internal int FilterFieldsWithDefinedNeighbours()
 		{
@@ -156,14 +147,6 @@ namespace ForestReco
 			points.Clear();
 		}
 
-		/*public override void AddPoint(Vector3 pPoint)
-		{
-			base.AddPoint(pPoint);
-
-			if(MinZ < ExpectedGroundZ)
-				ExpectedGroundZ = (float)MinZ;
-		}*/
-
 		public CBall ball;
 
 		public void Detect(bool pForce)
@@ -175,6 +158,23 @@ namespace ForestReco
 				return;
 
 			if(!IsDefined())
+				return;
+
+			//not processed neighbours shouldnt have similar height as the processed field
+			//if some of the does => there is some object in the potential ball height =>
+			//the ball cant be here
+			float leftDiff = Math.Abs(((CBallField)Left).GetDefinedHeight() - GetDefinedHeight());
+			float topDiff = Math.Abs(((CBallField)Top).GetDefinedHeight() - GetDefinedHeight());
+			float topRightDiff = Math.Abs(((CBallField)Top.Right).GetDefinedHeight() - GetDefinedHeight());
+			float leftTopDiff = Math.Abs(((CBallField)Left.Top).GetDefinedHeight() - GetDefinedHeight());
+			float leftBotDiff = Math.Abs(((CBallField)Left.Bot).GetDefinedHeight() - GetDefinedHeight());
+
+			const float min_neighbour_height_diff = 0.5f;
+			if(leftBotDiff < min_neighbour_height_diff ||
+				leftDiff < min_neighbour_height_diff ||
+				leftTopDiff < min_neighbour_height_diff ||
+				topDiff < min_neighbour_height_diff ||
+				topRightDiff < min_neighbour_height_diff)
 				return;
 
 			//we need to make a copy in order not to modify the points
@@ -194,9 +194,7 @@ namespace ForestReco
 			if(processPoints.Count < min_ball_points)
 				return;
 
-
 			ball = new CBall(processPoints, pForce);
-
 		}
 
 		private bool IsBallInNeigbhourhood()
@@ -208,7 +206,5 @@ namespace ForestReco
 			}
 			return false;
 		}
-		
-		
 	}
 }

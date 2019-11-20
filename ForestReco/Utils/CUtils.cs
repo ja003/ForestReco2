@@ -441,5 +441,23 @@ namespace ForestReco
 			}
 		}
 
+		/// <summary>
+		/// Returns copy of pPoints filtered by pFrequency
+		/// - each pFrequency-th point will get into the result
+		/// pFrequency = 0 => returns the pPoints
+		/// </summary>
+		public static List<Vector3> GetPoints(List<Vector3> pPoints, int pFrequency)
+		{
+			if(pFrequency == 0)
+				return pPoints;
+
+			List<Vector3> pointsCopy = new List<Vector3>();
+			for(int i = 0; i < pPoints.Count; i += pFrequency)
+			{
+				pointsCopy.Add(pPoints[i]);
+			}
+			return pointsCopy;
+		}
+
 	}
 }

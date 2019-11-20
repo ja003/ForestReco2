@@ -69,6 +69,9 @@ namespace ForestReco
 		/// </summary>
 		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
 		{
+			if(pCenters.Count == 0 || pCentersOrig.Count == 0)
+				return null;
+
 			bool isOrigLarger = pCentersOrig.Count > pCenters.Count;
 			IEnumerable<IEnumerable<Vector3>> largerSetPermutations = isOrigLarger ? pCentersOrig.Permute() : pCenters.Permute();
 			List<Vector3> smallerSet = isOrigLarger ? pCenters : pCentersOrig;

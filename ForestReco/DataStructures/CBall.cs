@@ -10,6 +10,7 @@ namespace ForestReco
 	public class CBall
 	{
 		public Vector3 ballTop;
+		public List<Vector3> ballTopPoints;
 		public Vector3? ballBot;
 		public Vector3 furthestPoint2D;
 
@@ -19,7 +20,7 @@ namespace ForestReco
 		public Vector3 furthestPointMinusY;
 
 		const float BALL_DIAMETER = 0.145f;
-		
+
 		private float BALL_RADIUS => BALL_DIAMETER / 2;
 
 		const float DEBUG_OFFSET = 0.0005f;
@@ -32,6 +33,26 @@ namespace ForestReco
 		public CBall(Vector3 pCenter)
 		{
 			center = pCenter;
+		}
+
+		/// <summary>
+		/// Ball top is defined as an average from set of points in very close
+		/// distance to the very first processed points.
+		/// The Z value is kept as the very first point's Z value
+		/// </summary>
+		private void RefreshBallTop(Vector3 pPoint)
+		{
+			float origZ = ballTop.Z;
+			float zDiff = origZ - pPoint.Z;
+			if(zDiff < 0.02)
+			{
+				ballTopPoints.Add(pPoint);
+				ballTop =
+					new Vector3(ballTopPoints.Average(a => a.X),
+						ballTopPoints.Average(a => a.Y),
+						origZ
+						);
+			}
 		}
 
 		public CBall(List<Vector3> pPoints, bool pForce)
@@ -52,9 +73,12 @@ namespace ForestReco
 			//filter points that are not in expected height			
 			//FilterPoints(ref pPoints, pPoints.Last(), pMinHeight, pMaxHeight);
 
-			
+
 			//todo: make balltop a list of points and get avg
 			ballTop = pPoints[0];
+			ballTopPoints = new List<Vector3>();
+
+
 			furthestPoint2D = ballTop;
 			furthestPointPlusX = ballTop;
 			furthestPointMinusX = ballTop;
@@ -67,6 +91,8 @@ namespace ForestReco
 
 				if(zDiff > GetMaxPointsDist(1))
 					break;
+
+				RefreshBallTop(point);
 
 				bool isInBallExtent = Vector3.Distance(point, ballTop) > GetMaxPointsDist(1);
 				float dist2D = CUtils.Get2DDistance(point, ballTop);
@@ -194,7 +220,7 @@ namespace ForestReco
 			}
 			return points;
 		}
-			   
+
 		private bool IsValidMainPoint(Vector3 pPoint)
 		{
 			return Vector3.Distance(ballTop, pPoint) > DIST_TOLLERANCE &&

@@ -63,8 +63,7 @@ namespace ForestReco
 
 			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
 
-			bool debug_skip_preprocess = true;
-			if(CRxpParser.IsRxp && !debug_skip_preprocess)
+			if(CRxpParser.IsRxp)
 			{
 				string convertedFilePath = CPreprocessController.ConvertRxpToLas();
 				//set as processed file
@@ -133,6 +132,9 @@ namespace ForestReco
 
 			int linesToRead = lines.Length;
 
+			DateTime start = DateTime.Now;
+			DateTime previousDebug = DateTime.Now;
+
 			//todo: check that "classic" processed files work correctly without using default class
 			//bool classesCorect = true;
 			List<Tuple<EClass, Vector3>> parsedLines = new List<Tuple<EClass, Vector3>>();
@@ -150,20 +152,11 @@ namespace ForestReco
 					if(c == null)
 						continue;
 
-					//some files have different class counting. we are interested only in classes in EClass
-					//if(c.Item1 == EClass.Other)
-					//{
-					//	c = new Tuple<EClass, Vector3>(EClass.Vege, c.Item2);
-					//	classesCorect = false;
-					//}
+					CDebug.Progress(i, linesToRead, 10000, ref previousDebug, start, "Parsing lines");
 					parsedLines.Add(c);
 				}
 			}
 
-			//if(!classesCorect)
-			//{
-			//	CDebug.WriteLine("classes not correct. using default class");
-			//}
 			CDebug.Count("parsedLines", parsedLines.Count);
 
 			return parsedLines;

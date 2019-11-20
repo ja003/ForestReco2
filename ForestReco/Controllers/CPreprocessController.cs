@@ -13,6 +13,7 @@ namespace ForestReco
 		private const string GROUND_EXT = "_g";
 		private const string HEIGHT_EXT = "_h";
 		private const string CLASSIFY_EXT = "_c";
+		private const string NOISE_EXT = "_n";
 		private const string SPLIT_EXT = "_s";
 
 		//this number can very based on current lastool version...better to pick bigger
@@ -96,7 +97,7 @@ namespace ForestReco
 		/// </summary>
 		public static string ConvertRxpToLas()
 		{
-			DateTime start = DateTime.Now; 
+			DateTime start = DateTime.Now;
 			IntPtr handler = CRxpParser.OpenFile(forestFilePath);
 			string currentFileName = CUtils.GetFileName(forestFilePath);
 
@@ -131,7 +132,7 @@ namespace ForestReco
 				}
 				CUtils.WriteToFile(sb, parsedFilePath);
 				if(CProjectData.backgroundWorker.CancellationPending)
-					break;				
+					break;
 			}
 
 			CDebug.Progress(3, 3, 1, ref start, start, $"Converting txt to las");
@@ -206,10 +207,26 @@ namespace ForestReco
 
 			CDebug.Step(EProgramStep.Pre_Tile);
 
-			//takes long time for large files but cant meassure process
-			FileInfo[] tiledFiles = GetTiledFiles(forestFilePath, tmpTiledFilesFolder,
-				PREPROCESS_TILE_SIZE, CProjectData.bufferSize);
-
+			//Split file into smaller and preprocess separately.
+			//There is some limitation in lastools on max points being processed.
+			//Takes long time for large files but cant meassure process
+			FileInfo[] tiledFiles;
+			if(CRxpParser.IsRxp)
+			{
+				//Rxp file can be splitted into tiles as ground is not defined very well
+				//It resulted in incorrect height calculation (using lasheight)
+				//TODO: if multithreading is not used we might actually skip the 
+				//tiling process even for classic detection
+				//The limitation (mentioned above) concerns only unlicenced lasTools
+				tiledFiles = new FileInfo[1];
+				tiledFiles[0] = new FileInfo(forestFilePath);
+			}
+			else
+			{
+				tiledFiles = GetTiledFiles(forestFilePath, tmpTiledFilesFolder,
+					PREPROCESS_TILE_SIZE, CProjectData.GetBufferSize(true));
+			}
+			
 			List<string> classifyFilePaths = new List<string>();
 			tilesCount = tiledFiles.Length;
 			for(int i = 0; i < tiledFiles.Length; i++)
@@ -222,7 +239,9 @@ namespace ForestReco
 				/////// lasnoise //////////
 
 				CDebug.Step(EProgramStep.Pre_Noise);
-				string noiseFilePath = LasNoise(fi.FullName);
+				//dont filter noise when processing rxp, we might lose some info
+				string noiseFilePath =
+					CRxpParser.IsRxp ? fi.FullName : LasNoise(fi.FullName);
 
 				/////// lasground //////////
 
@@ -237,7 +256,9 @@ namespace ForestReco
 				/////// lasclassify //////////
 
 				CDebug.Step(EProgramStep.Pre_LasClassify);
-				string classifyFilePath = LasClassify(heightFilePath);
+				//no need for classification in rxp (doesnt produce correct result anyway)
+				string classifyFilePath =
+					CRxpParser.IsRxp ? heightFilePath : LasClassify(heightFilePath);
 
 				classifyFilePaths.Add(classifyFilePath);
 			}
@@ -245,10 +266,23 @@ namespace ForestReco
 			/////// lasmerge //////////
 			//LasMerge(classifyFilePaths);
 
-			CDebug.Step(EProgramStep.Pre_LasReverseTile);
 
 			/////// reverse lastile //////////
-			LasReverseTiles(classifyFilePaths);
+			CDebug.Step(EProgramStep.Pre_LasReverseTile);
+			if(CRxpParser.IsRxp)
+			{
+				if(classifyFilePaths.Count == 0 || classifyFilePaths.Count > 1)
+				{
+					CDebug.Error("Incorrect RXP preprocess");
+				}
+				//classification is skipped but we use this file as the final one
+				//rename it instead of applying reverse tiling only on 1 file
+				File.Move(classifyFilePaths[0], preprocessedFilePath);
+			}
+			else
+			{
+				LasReverseTiles(classifyFilePaths);
+			}
 
 			/////// delete unnecessary tmp files //////////
 
@@ -296,7 +330,7 @@ namespace ForestReco
 			else
 			{
 				tiles = GetTiledFiles(pPreprocessedFilePath,
-				outputFolderPath, tileSize, CProjectData.bufferSize);
+					outputFolderPath, tileSize, CProjectData.GetBufferSize());
 			}
 
 			DateTime debugStart = DateTime.Now;
@@ -306,7 +340,7 @@ namespace ForestReco
 			{
 				string txtFile = Las2Txt(tiles[i].FullName, outputFolderPath);
 				result.Add(txtFile);
-				CDebug.Progress(i, tiles.Length, 1, 
+				CDebug.Progress(i, tiles.Length, 1,
 					ref previousDebugStart, debugStart,
 					$"Las2Txt tile");
 			}
@@ -316,8 +350,12 @@ namespace ForestReco
 		private static bool IsTmpFile(FileInfo fi)
 		{
 			string name = fi.Name;
-			return name.Contains(GROUND_EXT + LAZ) || name.Contains(HEIGHT_EXT + LAZ) ||
-				name.Contains(GROUND_EXT + LAZ) || name.Contains(CLASSIFY_EXT + LAZ);
+			return name.Contains(GROUND_EXT + LAZ) ||
+				name.Contains(HEIGHT_EXT + LAZ) ||
+				name.Contains(GROUND_EXT + LAZ) ||
+				name.Contains(NOISE_EXT + LAZ)
+				//||name.Contains(CLASSIFY_EXT + LAZ) //leave classify file for debug
+				;
 		}
 
 		private static FileInfo[] GetTiledFiles(string pSourceFilePath, string pOutputFolderPath, int pTileSize, int pBufferSize)

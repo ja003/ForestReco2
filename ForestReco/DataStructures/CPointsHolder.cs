@@ -68,16 +68,20 @@ namespace ForestReco
 
 		public List<Vector3> GetPoints(EClass pClass)
 		{
+			const int filter_frequency = 100;
 			switch(pClass)
 			{
 				case EClass.Unassigned:
 					//points has been filtered out in fields only
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
-						return ballDetailArray.GetPoints();
+					{
+						return CUtils.GetPoints(ballDetailArray.GetPoints(), filter_frequency);
+					}
+
 					return unassigned;
 				case EClass.FilteredOut:
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
-						return ballArray.GetFilteredOutPoints();
+						return CUtils.GetPoints(ballArray.GetFilteredOutPoints(), filter_frequency);
 					return new List<Vector3>();
 
 				case EClass.Balls:
@@ -93,6 +97,8 @@ namespace ForestReco
 
 
 				case EClass.Ground:
+					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
+						return CUtils.GetPoints(ground, filter_frequency);
 					return ground;
 				case EClass.Vege:
 					return vege;
@@ -469,8 +475,8 @@ namespace ForestReco
 				}
 
 				//array grid points - for result debug (increases file size)
-				arrayGrid = ballArray.GetArrayGridPoints();
-				//arrayGrid = ballDetailArray.GetArrayGridPoints();
+				//arrayGrid = ballArray.GetArrayGridPoints();
+				arrayGrid = ballDetailArray.GetArrayGridPoints();
 
 				//int filteredOutCount = ballDetailArray.FilterFieldsWithNeighbours();
 				//CDebug.WriteLine($"Filtered out {filteredOutCount} fields");
@@ -507,10 +513,12 @@ namespace ForestReco
 					CBallField field = sortedFields[i];
 					//debug - apply force only once
 					bool force = !forceApplied;
-					if(force)
-					{
-						CDebug.WriteLine();
-					}
+					force = false;
+					//if(force || field.Equals(3,3))
+					//{
+					//	CDebug.WriteLine();
+					//	force = true;
+					//}
 
 					CBall detectedBall = CBallsManager.Process(field, force);
 					if(detectedBall != null && detectedBall.isValid)
@@ -523,7 +531,7 @@ namespace ForestReco
 						ballsCenters.AddRange(CUtils.GetPointCross(detectedBall.center));
 						result = true;
 						//return;
-						//ballsSurface.AddRange(detectedBall.GetSurfacePoints());
+						ballsSurface.AddRange(detectedBall.GetSurfacePoints());
 					}
 
 					/*if(count != ballDetailArray.GetPoints().Count)

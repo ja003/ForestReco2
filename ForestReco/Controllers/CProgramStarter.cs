@@ -154,7 +154,10 @@ namespace ForestReco
 				return EProcessResult.Cancelled;
 
 			bool result = CProgramLoader.ProcessParsedLines(parsedLines);
-			if(CRxpParser.IsRxp && !result)
+			//we export only fitlered points so the output is not that big anymore
+			//todo: mark detected ball in name of the folder
+			bool debug_allowExport = true;
+			 if(CRxpParser.IsRxp && !result && !debug_allowExport)
 			{
 				//no ball was detected => delete folder and continue
 				Directory.Delete(CProjectData.outputTileSubfolder);

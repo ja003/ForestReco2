@@ -64,7 +64,7 @@ namespace ForestReco
 		}
 
 		//implemented for balls detection debug
-		private const bool use_debug_data = true;
+		private const bool use_debug_data = false;
 		public static bool debugDone = false;
 		public static int index = -1;
 

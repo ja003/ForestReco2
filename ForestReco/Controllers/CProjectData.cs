@@ -29,20 +29,30 @@ namespace ForestReco
 
 		public static bool useMaterial;
 
-		//buffer size has to be smaller than tile size
-		public static int bufferSize
+		/// <summary>
+		/// Returns buffer size for tiling.
+		/// Buffer size has to be smaller than tile size.
+		/// In Rxp process the data is expected to be very dense and tiles will be small
+		/// so we need to always return 1.
+		/// pBig parameter is used when spliting large file during preprocess.
+		/// The size has to be big enough otherwise splitted tiles wont be preprocessed
+		/// correctly (lasheight doesnt compute values well etc) - todo: check
+		/// - result: larger buffer size did not help, tiling had to be canceled
+		/// completely in RXP preprocess. However these values can be used
+		/// </summary>
+		public static int GetBufferSize(bool pBig = false)
 		{
-			get
-			{
-				//rxp file is expected to be very dense
-				if(CRxpParser.IsRxp)
-					return 1;
+			if(pBig)
+				return 25;
 
-				int tileSize = CParameterSetter.GetIntSettings(ESettings.tileSize);
-				if(tileSize > 10)
-					return 10;
-				return tileSize - 1;
-			}
+			//rxp file is expected to be very dense
+			if(CRxpParser.IsRxp)
+				return 1;
+
+			int tileSize = CParameterSetter.GetIntSettings(ESettings.tileSize);
+			if(tileSize > 10)
+				return 10;
+			return tileSize - 1;
 		}
 
 		public static void Init()

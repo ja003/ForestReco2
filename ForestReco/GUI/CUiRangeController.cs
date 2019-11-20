@@ -126,13 +126,20 @@ namespace ForestReco
 
 			bool parsed;
 
-
-			bool hasSign = textRangeValue[0] == '+' || textRangeValue[0] == '-';
+			//first char:
+			//'' = normal input value
+			//'-' = normal input value
+			//'--' = minus sign to the other value
+			//'+' = plus sign to the other value
+			bool hasSign = textRangeValue[0] == '+' ||
+				(textRangeValue.Length > 1 && 
+					textRangeValue[0] == '-' && textRangeValue[1] == '-');
 			if(hasSign)
 			{
 				int sign = textRangeValue[0] == '-' ? -1 : +1;
-
-				parsed = float.TryParse(textRangeValue.Substring(1, textRangeValue.Length - 1), out value);
+				int startIndex = sign == 1 ? 1 : 2;
+				string valueString = textRangeValue.Substring(startIndex);
+				parsed = float.TryParse(valueString, out value);
 				if(!parsed)
 					return;
 
