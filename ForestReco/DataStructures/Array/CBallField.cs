@@ -151,6 +151,9 @@ namespace ForestReco
 
 		public void Detect(bool pForce)
 		{
+			if(Equals(3, 7))
+				CDebug.WriteLine();
+
 			if(!HasAllNeighbours())
 				return;
 

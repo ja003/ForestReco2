@@ -106,9 +106,9 @@ namespace ForestReco
 					ballBot = point;
 				}
 
-				if(dist2D > GetMaxPointsDist(3) / 2)
+				if(dist2D > GetMaxPointsDist(3) / 2 && zDiff < GetMaxPointsDist(3) / 2)
 				{
-					isValid = false;
+					SetValid(false);
 					return;
 				}
 
@@ -117,7 +117,7 @@ namespace ForestReco
 					bool isUnderBallTop = dist2D < 0.1f;
 					if(!isUnderBallTop)
 					{
-						isValid = false;
+						SetValid(false);
 						return;
 					}
 				}
@@ -129,7 +129,7 @@ namespace ForestReco
 				//if bot is too close then it is probably not a ball
 				if(topBotDiffZ < GetMaxPointsDist(2) / 2)
 				{
-					isValid = false;
+					SetValid(false);
 					return;
 				}
 			}
@@ -138,7 +138,7 @@ namespace ForestReco
 			float maxDist = GetMaxPointsDist(-3) / 2;
 			if(furthestDist2D < maxDist)
 			{
-				isValid = false;
+				SetValid(false);
 				return;
 			}
 
@@ -147,6 +147,11 @@ namespace ForestReco
 
 			if(isValid)
 				center = CalculateCenter();
+		}
+
+		private void SetValid(bool pValue)
+		{
+			isValid = pValue;
 		}
 
 		//private void FilterPoints(ref List<Vector3> pPoints, Vector3 pGroundPoint, float pMinHeight, float pMaxHeight)

@@ -39,8 +39,9 @@ namespace ForestReco
 			pField.Detect(pForce);
 			if(pField.ball != null && pField.ball.isValid)
 			{
-				AddBall(pField.ball);
-				return pField.ball;
+				bool result = AddBall(pField.ball);
+				if(result)
+					return pField.ball;
 			}
 			return null;
 		}
@@ -50,24 +51,37 @@ namespace ForestReco
 			AddBall(pBall);
 		}
 
-		private static void AddBall(CBall pBall)
+		/// <summary>
+		/// Checks if ball hasnt been detected yet (tiles overlap by ~1 meter)
+		/// Balls should be at least 1m away from each other.
+		/// Returns true if the ball was successfully added.
+		/// </summary>
+		private static bool AddBall(CBall pBall)
 		{
 			if(currentBallSetIndex < 0 || currentBallSetIndex >= ballSets.Count)
 			{
 				CDebug.Error("Ball OOR");
-				return;
+				return false;
 			}
 
 			foreach(CBall ball in ballSets[currentBallSetIndex].balls)
 			{
-				if(Vector3.Distance(ball.center, pBall.center) < CBallsTransformator.MAX_OFFSET)
+				float dist = Vector3.Distance(ball.center, pBall.center);
+				if(dist < CBallsTransformator.MAX_OFFSET)
 				{
 					CDebug.Warning($"Ball { ball} already in ballset {currentBallSetIndex}");
-					return;
+					return false;
+				}
+				if(dist < 1)
+				{
+					CDebug.Error("Balls are too close to each other!");
+					//todo: calculate average center?
+					return false;
 				}
 			}
 
 			ballSets[currentBallSetIndex].balls.Add(pBall);
+			return true;
 		}
 
 		private const string transformationFileName = "transform.txt";
