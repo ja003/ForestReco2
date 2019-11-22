@@ -26,7 +26,8 @@ namespace ForestReco
 
 		internal static void Init()
 		{
-			ballSets.Add(new CBallSet());
+			ballSets.Add(new CBallSet(
+				CParameterSetter.GetStringSettings(ESettings.forestFileFullName)));
 			currentBallSetIndex = ballSets.Count - 1;
 		}
 
@@ -81,6 +82,18 @@ namespace ForestReco
 			CDebug.WriteLine("TODO: calculate tranformations");
 			StringBuilder output = new StringBuilder();
 
+			//write detected balls
+			foreach(CBallSet ballSet in ballSets)
+			{
+				output.AppendLine(ballSet.sourceFile);
+				foreach(CBall ball in ballSet.balls)
+				{
+					output.AppendLine(ball.ToString());
+				}
+				output.AppendLine("==============");
+			}
+
+			//write transformations
 			for(int i = 1; i < ballSets.Count; i++)
 			{
 				ballSets[i].transform = CBallsTransformator.GetRigidTransform(
@@ -98,9 +111,11 @@ namespace ForestReco
 	{
 		public List<CBall> balls;
 		public CRigidTransform transform;
+		public string sourceFile;
 
-		public CBallSet()
+		public CBallSet(string pSourceFile)
 		{
+			sourceFile = pSourceFile;
 			balls = new List<CBall>();
 		}
 	}

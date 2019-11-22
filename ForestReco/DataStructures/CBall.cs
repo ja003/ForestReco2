@@ -29,6 +29,8 @@ namespace ForestReco
 		public bool isValid = true;
 		public Vector3 center { get; private set; }
 
+		public int tileIndex;
+
 		//Debug
 		public CBall(Vector3 pCenter)
 		{
@@ -57,6 +59,7 @@ namespace ForestReco
 
 		public CBall(List<Vector3> pPoints, bool pForce)
 		{
+			tileIndex = CProgramStarter.currentTileIndex;
 			//sort descending => last point is the groudn point 
 			//todo: maybe calculate from more points?
 			pPoints.Sort((a, b) => b.Z.CompareTo(a.Z));
@@ -511,7 +514,7 @@ namespace ForestReco
 
 		public override string ToString()
 		{
-			return $"Ball[{isValid}], center = {center}, ballTop = {ballTop}";
+			return $"Ball[{isValid}], center = {center}, ballTop = {ballTop}, Tile = {tileIndex}";
 		}
 	}
 }

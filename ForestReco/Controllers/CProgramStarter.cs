@@ -154,15 +154,25 @@ namespace ForestReco
 				return EProcessResult.Cancelled;
 
 			bool result = CProgramLoader.ProcessParsedLines(parsedLines);
-			//we export only fitlered points so the output is not that big anymore
-			//todo: mark detected ball in name of the folder
 			bool debug_allowExport = true;
-			 if(CRxpParser.IsRxp && !result && !debug_allowExport)
+			if(CRxpParser.IsRxp)
 			{
-				//no ball was detected => delete folder and continue
-				Directory.Delete(CProjectData.outputTileSubfolder);
-				CDebug.WriteLine("No ball detected in tile " + pTileIndex);
-				return EProcessResult.Done;
+				//cant rename folder while it is being used
+				/*if(result)
+				{
+					const string ball_ext = "_ball";
+					Directory.Move(CProjectData.outputTileSubfolder, CProjectData.outputTileSubfolder + ball_ext);
+					CProjectData.outputTileSubfolder += ball_ext;
+				}
+				else */
+				//dont export tile where no ball was detected
+				if(!result && !debug_allowExport)
+				{
+					//no ball was detected => delete folder and continue
+					Directory.Delete(CProjectData.outputTileSubfolder);
+					CDebug.WriteLine("No ball detected in tile " + pTileIndex);
+					return EProcessResult.Done;
+				}
 			}
 
 			if(CProjectData.backgroundWorker.CancellationPending)
@@ -201,7 +211,7 @@ namespace ForestReco
 
 			CDebug.Step(EProgramStep.Analytics);
 			CAnalytics.Write(true);
-
+			
 			return EProcessResult.Done;
 		}
 
