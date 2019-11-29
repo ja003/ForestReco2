@@ -195,6 +195,7 @@
     <Compile Include="Utils\CDebug.cs" />
     <Compile Include="Utils\CDebugData.cs" />
     <Compile Include="Controllers\CProgramLoader.cs" />
+    <Compile Include="Utils\CircumcentreSolver.cs" />
     <Compile Include="Utils\CTreeMath.cs" />
     <Compile Include="Utils\CUtils.cs" />
   </ItemGroup>
