@@ -31,6 +31,10 @@ namespace ForestReco
 
 		public int tileIndex;
 
+		CBallField processedField;
+
+		public List<Vector3> points = new List<Vector3>();
+
 		//Debug
 		public CBall(Vector3 pCenter)
 		{
@@ -57,8 +61,9 @@ namespace ForestReco
 			}
 		}
 
-		public CBall(List<Vector3> pPoints, bool pForce)
+		public CBall(List<Vector3> pPoints, bool pForce, CBallField pField)
 		{
+			processedField = pField;
 			tileIndex = CProgramStarter.currentTileIndex;
 			//sort descending => last point is the groudn point 
 			//todo: maybe calculate from more points?
@@ -88,6 +93,9 @@ namespace ForestReco
 			furthestPointPlusY = ballTop;
 			furthestPointMinusY = ballTop;
 
+			float maxDist3D = GetMaxPointsDist(1);
+
+			//check if points in expected ball extent break any criteria
 			foreach(Vector3 point in pPoints)
 			{
 				float zDiff = ballTop.Z - point.Z;
@@ -95,9 +103,11 @@ namespace ForestReco
 				if(zDiff > GetMaxPointsDist(1))
 					break;
 
+				points.Add(point);
 				RefreshBallTop(point);
 
-				bool isInBallExtent = Vector3.Distance(point, ballTop) > GetMaxPointsDist(1);
+				float dist3D = Vector3.Distance(point, ballTop);
+				bool isInBallExtent = dist3D < maxDist3D;
 				float dist2D = CUtils.Get2DDistance(point, ballTop);
 				UpdateFurthestPoints(point);
 
@@ -106,7 +116,9 @@ namespace ForestReco
 					ballBot = point;
 				}
 
-				if(dist2D > GetMaxPointsDist(3) / 2 && zDiff < GetMaxPointsDist(3) / 2)
+				//point is too far (2D) from the top but is cca in ball Z extent
+				float max2dDist = GetMaxPointsDist(-3);
+				if(dist2D > max2dDist && zDiff < GetMaxPointsDist(3) / 2)
 				{
 					SetValid(false);
 					return;
@@ -115,7 +127,7 @@ namespace ForestReco
 				if(!isInBallExtent)
 				{
 					bool isUnderBallTop = dist2D < 0.1f;
-					if(!isUnderBallTop)
+					if(!isUnderBallTop && zDiff < GetMaxPointsDist(3) / 2)
 					{
 						SetValid(false);
 						return;
@@ -142,11 +154,98 @@ namespace ForestReco
 				return;
 			}
 
+			if(CDebug.IsDebugField(processedField))
+				CDebug.WriteLine();
 
 			isValid = HasValidMainPoints();
 
+			//todo: validate based on point count? at least 1000?
+
 			if(isValid)
-				center = CalculateCenter();
+			{
+				//calculate center
+				Vector3? bestCenter = CalculateCenterJS();
+				bool check = bestCenter != null;
+
+				if(check)
+				{
+					center = (Vector3)bestCenter;
+					//check if distance to all points is valid
+					check = CheckCenter(center);
+				}
+
+				if(!check)
+				{
+					SetValid(false);
+					return;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Every point belonging to the ball needs to be in the same
+		/// distance from the center = BALL_RADIUS
+		/// </summary>
+		//private void CheckPoints()
+		//{
+		//	foreach(Vector3 point in points)
+		//	{
+		//		float dist = Vector3.Distance(center, point);
+		//		float diff = Math.Abs(BALL_RADIUS - dist);
+
+		//		//todo: center should be re-approximated better if diff is too big
+		//		if(diff > 4 * DIST_TOLLERANCE)
+		//		{
+		//			CDebug.Error("Some point in detected ball is too fart from calculatyed center! INVALIDATE");
+		//			SetValid(false);
+		//			return;
+		//		}
+		//	}
+		//}
+
+		/// <summary>
+		/// Every point belonging to the ball needs to be in the same
+		/// distance from the center = BALL_RADIUS.
+		/// There is some disturbance involved so some tollerance
+		/// needs to be allowed.
+		/// </summary>
+		private bool CheckCenter(Vector3 pCenter)
+		{
+			int highDiffCount = 0;
+			float diffSum = 0;
+			//float diffMax = int.MinValue;
+			//float diffMin = int.MaxValue;
+			foreach(Vector3 point in points)
+			{
+				float dist = Vector3.Distance(pCenter, point);
+				float diff = Math.Abs(BALL_RADIUS - dist);
+
+				if(diff > 4 * DIST_TOLLERANCE)
+				{
+					diffSum += diff;
+					highDiffCount++;
+				}
+
+				//todo: center should be re-approximated better if diff is too big
+				if(diff > 10 * DIST_TOLLERANCE || highDiffCount > 100)
+				{
+					return false;
+				}
+
+				/*if(diff > DIST_TOLLERANCE)
+				{
+					diffSum += diff;
+					highdiffCount++;
+				}
+				if(diff > diffMax)
+					diffMax = diff;
+				if(diff < diffMin)
+					diffMin = diff;*/
+			}
+
+			float avgDiff = diffSum / highDiffCount;
+
+			return true;
 		}
 
 		private void SetValid(bool pValue)
@@ -182,7 +281,7 @@ namespace ForestReco
 			return false;
 		}
 
-		public List<Vector3> GetMainPoints(bool pAddDebugLine)
+		public List<Vector3> GetMainPoints(bool pAddDebugLine = false)
 		{
 			List<Vector3> points = new List<Vector3>();
 			points.Add(ballTop);
@@ -231,8 +330,8 @@ namespace ForestReco
 
 		private bool IsValidMainPoint(Vector3 pPoint)
 		{
-			return Vector3.Distance(ballTop, pPoint) > DIST_TOLLERANCE &&
-				IsAtMainPointZDistance(pPoint);
+			float dist = Vector3.Distance(ballTop, pPoint);
+			return dist > DIST_TOLLERANCE && IsAtMainPointZDistance(pPoint);
 		}
 
 		private float GetFurthestPointDist2D()
@@ -260,7 +359,7 @@ namespace ForestReco
 
 			float diff;
 
-			if(diffY < DIST_TOLLERANCE)
+			//if(diffY < DIST_TOLLERANCE)
 			{
 				if(pPoint.X > ballTop.X)
 				{
@@ -276,7 +375,7 @@ namespace ForestReco
 				}
 			}
 
-			if(diffX < DIST_TOLLERANCE)
+			//if(diffX < DIST_TOLLERANCE)
 			{
 				if(pPoint.Y > ballTop.Y)
 				{
@@ -306,7 +405,7 @@ namespace ForestReco
 			return BALL_DIAMETER + pTolleranceMultiply * DIST_TOLLERANCE;
 		}
 
-		private float GetApproxPointCenterDist(int pTolleranceMultiply = 0)
+		private float GetBallRadius(int pTolleranceMultiply = 0)
 		{
 			return BALL_RADIUS + pTolleranceMultiply * DIST_TOLLERANCE;
 		}
@@ -373,25 +472,136 @@ namespace ForestReco
 		/// to distance-to-mainPoints function
 		/// </summary>
 		/// <returns></returns>
-		private Vector3 CalculateCenter()
+		private Vector3? CalculateCenter()
 		{
 			CDebug.WriteLine($"Ball = {this}");
 
 			List<Vector3> possibleCenters = GetPossibleCenters();
-			Vector3 center = SelectBestCenter(possibleCenters);
-			CDebug.WriteLine($"center = {center}");
+			Vector3? bestCenter = SelectBestCenter(possibleCenters);
+			if(bestCenter != null)
+			{
+				center = (Vector3)bestCenter;
+				CDebug.WriteLine($"center = {center}");
+				//return center;
+			}
+			else
+			{
+				return null;
+			}
 
-			possibleCenters = GetPointsInRadius(center, 0.01f, 0.001f);
-			center = SelectBestCenter(possibleCenters);
-			CDebug.WriteLine($"new center = {center}");
+			//increase precision
+			//todo: doesnt SelectBestCenter => FIX!
+			//possibleCenters = GetPointsInRadius(center, 0.01f, 0.001f);
+			//center = (Vector3)SelectBestCenter(possibleCenters);
+			//CDebug.WriteLine($"new center = {center}");
 
 			return center;
+		}
+
+		private Vector3? CalculateCenterJS()
+		{
+			//first try calculate center only from main points
+			List<Vector3> mainPoints = GetMainPoints();
+			CircumcentreSolver solver = CircumcentreSolver.Create(mainPoints);
+			Vector3 center = new Vector3(
+					(float)solver.Centre[0],
+					(float)solver.Centre[1],
+					(float)solver.Centre[2]);
+			if(CheckCenter(center))
+			{
+				return center;
+			}
+
+
+			List<Vector3> aproximatedCenters = new List<Vector3>();
+			for(int i = 0; i < 5; i++)
+			{
+				//random points are hard to debug
+				//List<Vector3> randomBallPoints = GetRandomPoints(4, 5 * DIST_TOLLERANCE);
+				//solver = CircumcentreSolver.Create(randomBallPoints);
+
+				//get 4 points at different height and calculate their sphere center
+				List<Vector3> evenlyDistributedPoints = GetEvenlyDistributedPoints(4, i * 10);
+				solver = CircumcentreSolver.Create(evenlyDistributedPoints);
+
+				center = new Vector3(
+					(float)solver.Centre[0],
+					(float)solver.Centre[1],
+					(float)solver.Centre[2]);
+
+				//sometimes calculated center is out of ball extent
+				float distToTop = Vector3.Distance(ballTop, center);
+				if(distToTop > BALL_DIAMETER)
+				{
+					CDebug.Error("Center calculated out of ball extent");
+					continue;
+				}
+
+				aproximatedCenters.Add(center);
+			}
+
+			//use average of calculated centers
+			Vector3 sumCenters = Vector3.Zero;
+			foreach(Vector3 c in aproximatedCenters)
+			{
+				sumCenters += c;
+			}
+			Vector3 avgCenter = sumCenters / aproximatedCenters.Count;
+
+			return avgCenter;
+		}
+
+		private List<Vector3> GetEvenlyDistributedPoints(int pCount, int pOffset)
+		{
+			List<Vector3> evenPoints = new List<Vector3>();
+			int totalCount = points.Count;
+			int step = totalCount / (pCount - 1);
+			for(int i = 0; i < pCount; i++)
+			{
+				int index = i * step + pOffset;
+				if(index >= totalCount)
+					index -= 2 * pOffset;
+
+				index = Math.Max(0, index);
+				index = Math.Min(totalCount - 1, index);
+
+				evenPoints.Add(points[index]);
+			}
+			return evenPoints;
+		}
+
+		private List<Vector3> GetRandomPoints(int pCount, float pMinDistance)
+		{
+			List<Vector3> randomPoints = new List<Vector3>();
+			if(points.Count < pCount)
+				return points;
+
+			for(int i = 0; i < pCount; i++)
+			{
+				int randomIndex = new Random().Next(0, points.Count);
+				Vector3 point = points[randomIndex];
+				bool isTooClose = false;
+				foreach(Vector3 randPoint in randomPoints)
+				{
+					float dist = Vector3.Distance(randPoint, point);
+					if(dist < DIST_TOLLERANCE * 5)
+					{
+						isTooClose = true;
+						i--;
+						break;
+					}
+				}
+				if(!isTooClose)
+					randomPoints.Add(point);
+			}
+
+			return randomPoints;
 		}
 
 		/// <summary>
 		/// Returns the center which has the most equal distance to all of the main points.
 		/// </summary>
-		private Vector3 SelectBestCenter(List<Vector3> pPossibleCenters)
+		private Vector3? SelectBestCenter(List<Vector3> pPossibleCenters)
 		{
 			Dictionary<float, Vector3> diffCeters = new Dictionary<float, Vector3>();
 			List<Vector3> mainPoints = GetMainPoints(false);
@@ -415,6 +625,17 @@ namespace ForestReco
 
 			var tmp = diffCeters.OrderBy(key => key.Key);
 			var orderedDiffCenters = tmp.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
+
+			int maxCheckCount = Math.Min(10, orderedDiffCenters.Count);
+			for(int i = 0; i < maxCheckCount; i++)
+			{
+				Vector3 c = orderedDiffCenters.ElementAt(i).Value;
+				if(CheckCenter(c))
+					return c;
+
+			}
+
+			return null;
 
 			Vector3 center = orderedDiffCenters.First().Value;
 			return center;
@@ -443,11 +664,11 @@ namespace ForestReco
 			{
 				for(float y = -BALL_RADIUS; y < BALL_RADIUS; y += step)
 				{
-					for(float z = GetApproxPointCenterDist(-5); z < GetApproxPointCenterDist(5); z += step)
+					for(float z = GetBallRadius(-5); z < GetBallRadius(5); z += step)
 					{
 						Vector3 possibleCenter = ballTop + new Vector3(x, y, -z);
 						float dist = Vector3.Distance(ballTop, possibleCenter);
-						if(dist < GetApproxPointCenterDist(2))
+						if(dist < GetBallRadius(2))
 						{
 							centers.Add(possibleCenter);
 						}
@@ -507,7 +728,7 @@ namespace ForestReco
 					{
 						Vector3 point = center + new Vector3(x, y, z);
 						float dist = Vector3.Distance(center, point);
-						if(Math.Abs(dist - GetApproxPointCenterDist()) < step)
+						if(Math.Abs(dist - GetBallRadius()) < step)
 						{
 							points.Add(point);
 						}

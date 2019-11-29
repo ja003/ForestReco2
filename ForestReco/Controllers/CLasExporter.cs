@@ -56,15 +56,23 @@ namespace ForestReco
 			DateTime start = DateTime.Now;
 			DateTime lastDebug = DateTime.Now;
 
+			const bool export_surface = false;
+			const bool export_filteredOut = false;
+			const bool export_ground = false;
+
 			AddPointsTo(ref output, EClass.Unassigned, ref start);
-			AddPointsTo(ref output, EClass.Ground, ref start);
+			if(export_ground)
+				AddPointsTo(ref output, EClass.Ground, ref start);
 			AddPointsTo(ref output, EClass.Building, ref start);
 
+			
 			if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 			{
-				//AddPointsTo(ref output, EClass.BallsSurface, ref start);
+				if(export_surface)
+					AddPointsTo(ref output, EClass.BallsSurface, ref start);
 				AddPointsTo(ref output, EClass.Balls, ref start);
-				AddPointsTo(ref output, EClass.FilteredOut, ref start);
+				if(export_filteredOut)
+					AddPointsTo(ref output, EClass.FilteredOut, ref start);
 				AddPointsTo(ref output, EClass.BallsMainPoints, ref start);
 				AddPointsTo(ref output, EClass.BallsCenters, ref start);
 				AddPointsTo(ref output, EClass.ArrayGrid, ref start);

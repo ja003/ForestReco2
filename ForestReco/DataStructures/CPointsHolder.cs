@@ -68,7 +68,9 @@ namespace ForestReco
 
 		public List<Vector3> GetPoints(EClass pClass)
 		{
-			const int filter_frequency = 100;
+			const int filter_frequency = 0;// 100;
+			
+
 			switch(pClass)
 			{
 				case EClass.Unassigned:
@@ -79,7 +81,7 @@ namespace ForestReco
 					}
 
 					return unassigned;
-				case EClass.FilteredOut:
+				case EClass.FilteredOut:					
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 						return CUtils.GetPoints(ballArray.GetFilteredOutPoints(), filter_frequency);
 					return new List<Vector3>();
@@ -519,6 +521,7 @@ namespace ForestReco
 					//	CDebug.WriteLine();
 					//	force = true;
 					//}
+					
 
 					CBall detectedBall = CBallsManager.Process(field, force);
 					if(detectedBall != null && detectedBall.isValid)
@@ -534,6 +537,29 @@ namespace ForestReco
 						ballsSurface.AddRange(detectedBall.GetSurfacePoints());
 					}
 
+					//false positive:  -4,63   6,78    1,04(-5, -4; 6,8)
+					bool debugField = CDebug.IsDebugField(field);
+					if(debugField && false)
+					{
+						ballFields.Add(field);
+
+						detectedBall = field.ball;
+						if(detectedBall == null)
+						{
+							CDebug.Error("Nop ball detected in debug field");
+						}
+						else
+						{
+							ballFields.Add(field);
+							ballsMainPoints.AddRange(detectedBall.GetMainPoints(true));
+
+							ballsCenters.Add(detectedBall.center);
+							ballsCenters.AddRange(CUtils.GetPointCross(detectedBall.center));
+
+							ballsSurface.AddRange(detectedBall.GetSurfacePoints());
+						}
+					}
+
 					/*if(count != ballDetailArray.GetPoints().Count)
 					{
 						CDebug.WriteLine();
@@ -544,7 +570,9 @@ namespace ForestReco
 
 				foreach(CBallField field in ballFields)
 				{
-					ballPoints.AddRange(field.points);
+					if(field.ball!= null)
+						ballPoints.AddRange(field.ball.points);
+					//ballPoints.AddRange(field.points);
 				}
 
 			}

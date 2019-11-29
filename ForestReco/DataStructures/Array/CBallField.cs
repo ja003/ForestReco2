@@ -11,9 +11,34 @@ namespace ForestReco
 	{
 		public List<Vector3> filteredOut = new List<Vector3>();
 
+		//keeps record if there is any point at height defined by GetHeightKey
+		HashSet<int> definedAtHeight = new HashSet<int>();
+
 		public CBallField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) :
 			base(pIndexInField, pCenter, pStepSize, pDetail)
 		{
+		}
+
+		public override void AddPoint(Vector3 pPoint)
+		{
+			base.AddPoint(pPoint);
+
+			int heightKey = GetHeightKey(pPoint);
+			definedAtHeight.Add(heightKey);
+		}
+
+		private int GetHeightKey(Vector3 pPoint)
+		{
+			return GetHeightKey(pPoint.Z);
+		}
+
+		/// <summary>
+		/// Calculates height key.
+		/// Percision is always 0.1
+		/// </summary>
+		private int GetHeightKey(float pHeight)
+		{
+			return (int)(pHeight * 10);
 		}
 
 		public override void FillMissingHeight(EFillMethod pMethod, int pParam)
@@ -69,7 +94,7 @@ namespace ForestReco
 
 		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
 		{
-			if(Equals(9, 0))
+			if(Equals(3, 6))
 			{
 				CDebug.WriteLine();
 			}
@@ -84,6 +109,8 @@ namespace ForestReco
 					filteredOut.Add(p);
 				}
 			}
+			//SORT DESCENDING
+			points.Sort((a,b) => b.Z.CompareTo(a.Z));
 		}
 
 		public float GetDefinedHeight()
@@ -149,9 +176,25 @@ namespace ForestReco
 
 		public CBall ball;
 
+		private bool IsProcessedNeighbourhoodDefined()
+		{
+			if(IsDefined())
+				return true;
+			if(Left.IsDefined())
+				return true;
+			if(Bot.IsDefined())
+				return true;
+			if(Bot.Right.IsDefined())
+				return true;
+
+			return false;
+		}
+
 		public void Detect(bool pForce)
 		{
-			if(Equals(3, 7))
+			//po změně nedetekuje kouli na(0, 1; 5,6)
+
+			if(CDebug.IsDebugField(this))
 				CDebug.WriteLine();
 
 			if(!HasAllNeighbours())
@@ -160,26 +203,22 @@ namespace ForestReco
 			if(IsBallInNeigbhourhood())
 				return;
 
-			if(!IsDefined())
+			if(!IsProcessedNeighbourhoodDefined())
 				return;
 
 			//not processed neighbours shouldnt have similar height as the processed field
-			//if some of the does => there is some object in the potential ball height =>
+			//if some of them does => there is some object in the potential ball height =>
 			//the ball cant be here
-			float leftDiff = Math.Abs(((CBallField)Left).GetDefinedHeight() - GetDefinedHeight());
-			float topDiff = Math.Abs(((CBallField)Top).GetDefinedHeight() - GetDefinedHeight());
-			float topRightDiff = Math.Abs(((CBallField)Top.Right).GetDefinedHeight() - GetDefinedHeight());
-			float leftTopDiff = Math.Abs(((CBallField)Left.Top).GetDefinedHeight() - GetDefinedHeight());
-			float leftBotDiff = Math.Abs(((CBallField)Left.Bot).GetDefinedHeight() - GetDefinedHeight());
+			float processHeight = GetProcessedHeight();
 
-			const float min_neighbour_height_diff = 0.5f;
-			if(leftBotDiff < min_neighbour_height_diff ||
-				leftDiff < min_neighbour_height_diff ||
-				leftTopDiff < min_neighbour_height_diff ||
-				topDiff < min_neighbour_height_diff ||
-				topRightDiff < min_neighbour_height_diff)
-				return;
+			List<CBallField> neighboursAroundProcessed = GetNeighboursAroundProcessed();
 
+			foreach(CBallField n in neighboursAroundProcessed)
+			{
+				if(n.IsDefinedAtHeight(processHeight, 0.3f))
+					return;
+			}
+			
 			//we need to make a copy in order not to modify the points
 			Vector3[] _processPoints = new Vector3[points.Count];
 			points.CopyTo(_processPoints);
@@ -193,11 +232,104 @@ namespace ForestReco
 			processPoints.AddRange(Bot.points);
 			processPoints.AddRange(Bot.Right.points);
 
-			const int min_ball_points = 100;
+			const int min_ball_points = 300;
 			if(processPoints.Count < min_ball_points)
 				return;
 
-			ball = new CBall(processPoints, pForce);
+			ball = new CBall(processPoints, pForce, this);
+		}
+
+		/// <summary>
+		/// Returns max height of processed fields
+		/// </summary>
+		private float GetProcessedHeight()
+		{
+			float h0 = GetDefinedHeight();
+			float maxHeight = h0;
+			float h1 = ((CBallField)Right).GetDefinedHeight();
+			float h2 = ((CBallField)Right.Bot).GetDefinedHeight();
+			float h3 = ((CBallField)Bot).GetDefinedHeight();
+			if(h1 > maxHeight)
+				maxHeight = h1;
+			if(h2 > maxHeight)
+				maxHeight = h2;
+			if(h3 > maxHeight)
+				maxHeight = h3;
+			return maxHeight;
+		}
+
+		private bool IsDefinedAtHeight(float pHeight, float pRangeTollerance)
+		{
+			for(float i = -pRangeTollerance; i < pRangeTollerance; i+=0.1f)
+			{
+				float h = pHeight + i;
+				int heightKey = GetHeightKey(h);
+				if(definedAtHeight.Contains(heightKey))
+					return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Returns neighbours around:
+		/// - this
+		/// - right
+		/// - right.bot
+		/// - bot
+		/// TODO: use effectively GetNeighbours()?
+		/// </summary>
+		/// <returns></returns>
+		private List<CBallField> GetNeighboursAroundProcessed()
+		{
+			List<CBallField> neighs = new List<CBallField>();
+			if(!HasAllNeighbours())
+				return neighs;
+
+			neighs.Add((CBallField)Left);
+			neighs.Add((CBallField)Left.Top);
+			neighs.Add((CBallField)Top);
+			neighs.Add((CBallField)Top.Right);
+
+			CBallField n = (CBallField)Top.Right?.Right;
+			if(n != null)
+				neighs.Add(n);
+			n = (CBallField)n?.Bot;
+			if(n != null)
+				neighs.Add(n);
+			n = (CBallField)n?.Bot;
+			if(n != null)
+				neighs.Add(n);
+			n = (CBallField)n?.Bot;
+			if(n != null)
+				neighs.Add(n);
+			n = (CBallField)n?.Left;
+			if(n != null)
+				neighs.Add(n);
+
+			neighs.Add((CBallField)Left.Bot);
+			n = (CBallField)Left.Bot.Bot;
+			if(n != null)
+				neighs.Add(n);
+			n = (CBallField)n?.Right;
+			if(n != null)
+				neighs.Add(n);
+			
+			return neighs;
+		}
+
+		/// <summary>
+		/// Check if diffence between processed height and neighbourhood is small enough.
+		/// If is high => there shouldnt be ball opn this field
+		/// </summary>
+		/// <param name="pDiff"></param>
+		/// <returns></returns>
+		private bool IsHeightDiffInvalid(float pDiff)
+		{
+			if(!IsDefined() && pDiff == 0)
+				return false;
+
+			const float min_neighbour_height_diff = 0.3f;
+			return /*pDiff > 0 || */Math.Abs(pDiff) < min_neighbour_height_diff;
 		}
 
 		private bool IsBallInNeigbhourhood()

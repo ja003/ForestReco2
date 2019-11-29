@@ -393,5 +393,10 @@ namespace ForestReco
 		}
 
 		private const string PREPROCESS = "Preprocess: ";
+
+		internal static bool IsDebugField(CField pField)
+		{
+			return pField.Equals(2,7);// (2,2);
+		}
 	}
 }

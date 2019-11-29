@@ -151,7 +151,7 @@ namespace ForestReco
 				parsed = float.TryParse(textRangeValue, out value);
 				if(!parsed)
 					return;
-				TrySetTrackBarValue(pTrackBar, (int)value * 10);
+				TrySetTrackBarValue(pTrackBar, (int)(value * 10));
 			}
 			SetRangeX();
 			SetRangeY();
