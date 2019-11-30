@@ -10,7 +10,9 @@ namespace ForestReco
 	{
 		public static int loadedPoints;
 		public static int vegePoints;
+		public static int unassignedPoints;
 		public static int groundPoints;
+		public static int buildingPoints;
 		public static int filteredPoints;
 
 		public static float arrayWidth;
@@ -48,6 +50,9 @@ namespace ForestReco
 		public static double reftreeAssignDuration;
 
 		public static double bitmapExportDuration;
+		public static double lasExportDuration;
+
+
 		public static double totalDuration;
 
 		private static string newLine => Environment.NewLine;
@@ -62,6 +67,8 @@ namespace ForestReco
 			output += $"loadedPoints = {loadedPoints} " + newLine;
 			output += $"vegePoints = {vegePoints} " + newLine;
 			output += $"groundPoints = {groundPoints} " + newLine;
+			output += $"unassignedPoints = {unassignedPoints} " + newLine;
+			output += $"buildingPoints = {buildingPoints} " + newLine;
 			output += $"filteredPoints = {filteredPoints}" + newLine2;
 
 			output += $"arrayWidth = {arrayWidth} m" + newLine;
@@ -93,6 +100,7 @@ namespace ForestReco
 			output += $"second merge = {secondMergeDuration} " + newLine;
 			output += $"reftree assignment = {reftreeAssignDuration} " + newLine;
 			output += $"bitmap export = {bitmapExportDuration} " + newLine;
+			output += $"las export = {lasExportDuration} " + newLine;			
 			output += $"-------------------" + newLine;
 			output += $"total = {totalDuration} " + newLine;
 
@@ -105,9 +113,14 @@ namespace ForestReco
 			}
 
 			output += $"\nERRORS" + newLine;
+			int counter = 0;
+			const int MAX_ERROR_DEBUG = 100;
 			foreach (string error in errors)
 			{
 				output += $"- {error} " + newLine;
+				counter++;
+				if(counter > MAX_ERROR_DEBUG)
+					break;
 			}
 
 			//before WriteToFile (it can fail there too)
@@ -122,6 +135,11 @@ namespace ForestReco
 				ExportCsv(ECsvAnalytics.Summary); //probably enough
 			}
 
+		}
+
+		public static void Init()
+		{
+			errors.Clear();
 		}
 
 		private static int GetSecondMergedCount()
@@ -179,8 +197,8 @@ namespace ForestReco
 				case ECsvAnalytics.Summary:
 					ExportCsv(new List<Tuple<string, object>>
 						{
-							new Tuple<string, object>("width", CProjectData.header.Width),
-							new Tuple<string, object>("Height",CProjectData.header.Height),
+							new Tuple<string, object>("width", CProjectData.currentTileHeader.Width),
+							new Tuple<string, object>("Height",CProjectData.currentTileHeader.Height),
 							new Tuple<string, object>("treeExtent",
 								CParameterSetter.GetFloatSettings(ESettings.treeExtent)),
 							new Tuple<string, object>("treeExtentMultiply",
@@ -210,8 +228,8 @@ namespace ForestReco
 		private static void ExportCsv(List<Tuple<string, object>> pParams, string pName, bool pExportGlobal = false)
 		{
 			string fileName = pName + ".csv";
-			string filePath = CObjPartition.folderPath + "/" + fileName;
-			string[] pathSplit = CObjPartition.folderPath.Split('\\');
+			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
+			string[] pathSplit = CProjectData.outputTileSubfolder.Split('\\');
 			string folderName = pathSplit[pathSplit.Length - 2];
 
 			string line;
@@ -295,7 +313,7 @@ namespace ForestReco
 		private static void WriteToFile(string pText)
 		{
 			string fileName = "analytics.txt";
-			string filePath = CObjPartition.folderPath + "/" + fileName;
+			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
 			using (var outStream = File.OpenWrite(filePath))
 			using (var writer = new StreamWriter(outStream))
 			{

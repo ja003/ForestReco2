@@ -7,8 +7,8 @@ namespace ForestReco
 	public class CBoundingBoxObject
 	{
 		//bounding box corners
-		public Vector3 minBB;
-		public Vector3 maxBB;
+		public Vector3 minBB = int.MaxValue * Vector3.One;
+		public Vector3 maxBB = -int.MaxValue * Vector3.One;
 
 		public Vector3 botCenter => (b000 + b101) / 2;
 

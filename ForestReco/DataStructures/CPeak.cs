@@ -24,18 +24,21 @@ namespace ForestReco
 
 		public override bool Includes(Vector3 pPoint, float pToleranceMultiply = 1)
 		{
-			float yDiff = Math.Abs(Center.Y - pPoint.Y);
-			if (yDiff > MAX_PEAK_Y_DIFF) { return false;} //just try if it makes processing faster
+			float zDiff = Math.Abs(Center.Z - pPoint.Z);
+			if(zDiff > MAX_PEAK_Y_DIFF)
+			{
+				return false;
+			} 
 			return base.Includes(pPoint, pToleranceMultiply) || IsPartOfPeak(pPoint);
 		}
 
-		private const float MAX_PEAK_Y_DIFF = 0.25f;
+		public const float MAX_PEAK_Y_DIFF = 0.25f;
 
 		private bool IsPartOfPeak(Vector3 pPointCenter)
 		{
 			float distance2D = CUtils.Get2DDistance(Center, pPointCenter);
-			float yDiff = Math.Abs(Center.Y - pPointCenter.Y);
-			return distance2D < GetMaxPeakExtent() && yDiff < MAX_PEAK_Y_DIFF;
+			float zDiff = Math.Abs(Center.Z - pPointCenter.Z);
+			return distance2D < GetMaxPeakExtent() && zDiff < MAX_PEAK_Y_DIFF;
 		}
 
 		private float GetMaxPeakExtent()
@@ -48,11 +51,16 @@ namespace ForestReco
 		{
 			CPeak clonePeak = new CPeak(Center, treePointExtent);
 			clonePeak.Points = Points;
-			foreach (Vector3 p in Points)
+			foreach(Vector3 p in Points)
 			{
 				OnAddPoint(p);
 			}
 			return clonePeak;
+		}
+
+		public bool CenterEquals(Vector3 pPoint)
+		{
+			return Vector3.Distance(Center, pPoint) < 0.01f;
 		}
 	}
 }

@@ -1,0 +1,218 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{48339AFD-B53E-48BC-A139-D4C99159034E}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ForestReco</RootNamespace>
+    <AssemblyName>ForestReco</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\..\..\Users\ja004\Documents\ForestReco\algLib\csharp\net-core\alglibnet2.dll</HintPath>
+    </Reference>
+    <Reference Include="csMatrix, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\csMatrix.1.0.5\lib\netstandard2.0\csMatrix.dll</HintPath>
+    </Reference>
+    <Reference Include="GeoAPI, Version=1.7.5.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\packages\GeoAPI.Core.1.7.5\lib\net45\GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="GeoAPI.CoordinateSystems, Version=1.7.5.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\packages\GeoAPI.CoordinateSystems.1.7.5\lib\net45\GeoAPI.CoordinateSystems.dll</HintPath>
+    </Reference>
+    <Reference Include="NCalc, Version=1.3.8.0, Culture=neutral, PublicKeyToken=973cde3f1cafed03, processorArchitecture=MSIL">
+      <HintPath>..\packages\ncalc.1.3.8\lib\NCalc.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.15.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.1.15.0-pre063\lib\net45\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.1.14.0.1\lib\net45\NetTopologySuite.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.GeoTools, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.1.14.0.1\lib\net45\NetTopologySuite.IO.GeoTools.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.MsSqlSpatial, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.1.14.0.1\lib\net45\NetTopologySuite.IO.MsSqlSpatial.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.PostGis, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.1.14.0.1\lib\net45\NetTopologySuite.IO.PostGis.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.ShapeFile, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.1.14.0.1\lib\net45\NetTopologySuite.IO.ShapeFile.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite.IO.ShapeFile.Extended, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetTopologySuite.IO.1.14.0.1\lib\net45\NetTopologySuite.IO.ShapeFile.Extended.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjNet, Version=1.2.4455.27045, Culture=neutral, PublicKeyToken=a1f5bdcd9c6f5740, processorArchitecture=MSIL">
+      <HintPath>..\packages\ProjNet.1.2\lib\net20\ProjNet.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\CBallsTransformator.cs" />
+    <Compile Include="Controllers\CBiomassController.cs" />
+    <Compile Include="Controllers\CBitmapExporter.cs" />
+    <Compile Include="Controllers\CCmdController.cs" />
+    <Compile Include="Controllers\CLasExporter.cs" />
+    <Compile Include="Controllers\CMaterialManager.cs" />
+    <Compile Include="Controllers\CParameterSetter.cs" />
+    <Compile Include="Controllers\CPreprocessController.cs" />
+    <Compile Include="Controllers\CProgramStarter.cs" />
+    <Compile Include="Controllers\CResultSize.cs" />
+    <Compile Include="Controllers\CSequenceController.cs" />
+    <Compile Include="Controllers\CShpController.cs" />
+    <Compile Include="Controllers\CTreeRadiusCalculator.cs" />
+    <Compile Include="DataStructures\Array\CTreeArray.cs" />
+    <Compile Include="DataStructures\Array\CTreeField.cs" />
+    <Compile Include="DataStructures\Array\CBallArray.cs" />
+    <Compile Include="DataStructures\Array\CUnassignedArray.cs" />
+    <Compile Include="DataStructures\Array\CBallField.cs" />
+    <Compile Include="DataStructures\Array\CUnassignedField.cs" />
+    <Compile Include="DataStructures\Array\CVegeField.cs" />
+    <Compile Include="DataStructures\Array\CVegeArray.cs" />
+    <Compile Include="DataStructures\Array\IField.cs" />
+    <Compile Include="DataStructures\CAnalytics.cs" />
+    <Compile Include="DataStructures\CBall.cs" />
+    <Compile Include="DataStructures\CDartTxt.cs" />
+    <Compile Include="DataStructures\Array\CGroundArray.cs" />
+    <Compile Include="DataStructures\Array\CGroundField.cs" />
+    <Compile Include="DataStructures\CObjPartition.cs" />
+    <Compile Include="Controllers\CGroundFieldExporter.cs" />
+    <Compile Include="Controllers\CObjExporter.cs" />
+    <Compile Include="Controllers\CProjectData.cs" />
+    <Compile Include="Controllers\CTreeManager.cs" />
+    <Compile Include="Controllers\CRefTreeManager.cs" />
+    <Compile Include="DataStructures\CBoundingBoxObject.cs" />
+    <Compile Include="DataStructures\CBranch.cs" />
+    <Compile Include="DataStructures\CPeak.cs" />
+    <Compile Include="DataStructures\CPointsHolder.cs" />
+    <Compile Include="DataStructures\CTree.cs" />
+    <Compile Include="DataStructures\CRefTree.cs" />
+    <Compile Include="DataStructures\CTreePoint.cs" />
+    <Compile Include="DataStructures\Array\CArray.cs" />
+    <Compile Include="DataStructures\Array\CField.cs" />
+    <Compile Include="DataStructures\CVector2D.cs" />
+    <Compile Include="DataStructures\CVector3D.cs" />
+    <Compile Include="DataStructures\SSplitRange.cs" />
+    <Compile Include="DataStructures\STreeSimilarity.cs" />
+    <Compile Include="Enums\EClass.cs" />
+    <Compile Include="Enums\EDetectionMethod.cs" />
+    <Compile Include="Enums\EDirection.cs" />
+    <Compile Include="Enums\EExportStrategy.cs" />
+    <Compile Include="Enums\EPossibleTreesMethod.cs" />
+    <Compile Include="Enums\EProgramStep.cs" />
+    <Compile Include="Enums\ESplitMode.cs" />
+    <Compile Include="GUI\CTooltipManager.cs" />
+    <Compile Include="GUI\CUiInputCheck.cs" />
+    <Compile Include="GUI\CUiPathSelection.cs" />
+    <Compile Include="GUI\CUiDetectionMethod.cs" />
+    <Compile Include="GUI\CUiRangeController.cs" />
+    <Compile Include="ObjParser\Extent.cs" />
+    <Compile Include="ObjParser\Mtl.cs" />
+    <Compile Include="ObjParser\Obj.cs" />
+    <Compile Include="ObjParser\Types\Color.cs" />
+    <Compile Include="ObjParser\Types\Face.cs" />
+    <Compile Include="ObjParser\Types\IType.cs" />
+    <Compile Include="ObjParser\Types\Material.cs" />
+    <Compile Include="ObjParser\Types\TextureVertex.cs" />
+    <Compile Include="ObjParser\Types\Vertex.cs" />
+    <Compile Include="Parser\CCheckTreeTxtParser.cs" />
+    <Compile Include="Parser\CLazTxtParser.cs" />
+    <Compile Include="DataStructures\CHeaderInfo.cs" />
+    <Compile Include="GUI\CMainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Parser\CRxpParser.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\CConsole.cs" />
+    <Compile Include="Utils\CDebug.cs" />
+    <Compile Include="Utils\CDebugData.cs" />
+    <Compile Include="Controllers\CProgramLoader.cs" />
+    <Compile Include="Utils\CTreeMath.cs" />
+    <Compile Include="Utils\CUtils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="GUI\CMainForm.resx">
+      <DependentUpon>CMainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Program.resx">
+      <DependentUpon>Program.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

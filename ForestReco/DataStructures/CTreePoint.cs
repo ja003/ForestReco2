@@ -45,8 +45,8 @@ namespace ForestReco
 			Points.Add(pPoint);
 			OnAddPoint(pPoint);
 
-			if (pPoint.Y > maxHeight.Y) { maxHeight = pPoint; }
-			if (pPoint.Y < minHeight.Y) { minHeight = pPoint; }
+			if (pPoint.Z > maxHeight.Z) { maxHeight = pPoint; }
+			if (pPoint.Z < minHeight.Z) { minHeight = pPoint; }
 		}
 		
 

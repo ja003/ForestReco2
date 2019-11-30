@@ -17,7 +17,7 @@ namespace ForestReco
 			switch (pSettings)
 			{
 				//buttons
-				case ESettings.forestFilePath:
+				case ESettings.forestFileName:
 					return REQUIRED + "The main processed file.\n" +
 					       "Read the specification of required file format in the documentation.";
 				case ESettings.reftreeFolderPath:
@@ -95,8 +95,31 @@ namespace ForestReco
 
 				case ESettings.treeExtentMultiply:
 					return "[adviced value = 1,2 - 2] The multiplicator of tree extent during merging process.";
-							//"\n\n" +
-						   //"Should result in invalid trees being attached to some higher valid tree which was too far during the first processing.";
+				//"\n\n" +
+				//"Should result in invalid trees being attached to some higher valid tree which was too far during the first processing.";
+
+				case ESettings.treeRadius:
+					return $"Tree radius for tree with height 10m = {CTreeRadiusCalculator.GetTreeRadius(10)}\n" +
+						$"15m = {CTreeRadiusCalculator.GetTreeRadius(15)}, " +
+						$"20m = {CTreeRadiusCalculator.GetTreeRadius(20)}, " +
+						$"25m = {CTreeRadiusCalculator.GetTreeRadius(25)}";
+
+
+
+				case ESettings.calculateAGB:
+					return "Include biomass to shp attributes";
+				case ESettings.calculateDBH:
+					return "Include stem diameter to shp attributes";
+				case ESettings.preprocess:
+					return "Apply las commands: lasnoise, lasground, lasheight, lasclassify before precessing";
+				case ESettings.deleteTmp:
+					return "After each las command during preprocessing a tmp file is created. Check this to delete them when finished.";
+				case ESettings.minTreeHeight:
+					return "Minimal tree height for tree to be considered valid";
+				case ESettings.minTreePoints:
+					return "Minimal tree point count for tree to be considered valid";
+
+
 			}
 
 			return "- no tooltip defined";

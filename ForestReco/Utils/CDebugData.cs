@@ -52,39 +52,39 @@ namespace ForestReco
 			return pointTuples;
 		}
 
-		public static void DefineArray(bool pConstantHeight, float pHeight)
-		{
-			CDebug.WriteLine("Define debug array");
+		//public static void DefineArray(bool pConstantHeight, float pHeight)
+		//{
+		//	CDebug.WriteLine("Define debug array");
 
-			CProjectData.header = new CHeaderInfo(new[]
-			{
-				"","","","","","","","","","","","","","","",
-				"0 0 0", "0 0 0" , "0 0 0" , "0 0 0"
-			});
-			CProjectData.array = new CGroundArray(CParameterSetter.groundArrayStep);
+		//	CProjectData.mainHeader = new CHeaderInfo(new[]
+		//	{
+		//		"","","","","","","","","","","","","","","",
+		//		"0 0 0", "0 0 0" , "0 0 0" , "0 0 0"
+		//	});
+		//	CProjectData.Points.groundArray = new CGroundArray(CParameterSetter.groundArrayStep);
 
-			if (pConstantHeight)
-			{
-				for (int x = 0; x < CProjectData.array.arrayXRange; x++)
-				{
-					for (int y = 0; y < CProjectData.array.arrayXRange; y++)
-					{
-						//CProjectData.array.GetElement(x, y).AddPoint(new Vector3(0, pHeight, 0));
-						CProjectData.array.SetHeight(pHeight, x, y);
-					}
-				}
-			}
-			else
-			{
-				CProjectData.array.SetHeight(0, 0, 0);
-				CProjectData.array.SetHeight(0, CProjectData.array.arrayXRange - 1, 0);
+		//	if (pConstantHeight)
+		//	{
+		//		for (int x = 0; x < CProjectData.Points.groundArray.arrayXRange; x++)
+		//		{
+		//			for (int y = 0; y < CProjectData.Points.groundArray.arrayXRange; y++)
+		//			{
+		//				//CProjectData.array.GetElement(x, y).AddPoint(new Vector3(0, pHeight, 0));
+		//				CProjectData.Points.groundArray.SetHeight(pHeight, x, y);
+		//			}
+		//		}
+		//	}
+		//	else
+		//	{
+		//		CProjectData.Points.groundArray.SetHeight(0, 0, 0);
+		//		CProjectData.Points.groundArray.SetHeight(0, CProjectData.Points.groundArray.arrayXRange - 1, 0);
 
-				CProjectData.array.SetHeight(2, CProjectData.array.arrayXRange / 2, CProjectData.array.arrayYRange / 2);
+		//		CProjectData.Points.groundArray.SetHeight(2, CProjectData.Points.groundArray.arrayXRange / 2, CProjectData.Points.groundArray.arrayYRange / 2);
 
-				CProjectData.array.SetHeight(5, CProjectData.array.arrayXRange - 1, CProjectData.array.arrayYRange - 1);
-				CProjectData.array.SetHeight(5, 0, CProjectData.array.arrayYRange - 1);
-			}
-			CObjPartition.Init();
-		}
+		//		CProjectData.Points.groundArray.SetHeight(5, CProjectData.Points.groundArray.arrayXRange - 1, CProjectData.Points.groundArray.arrayYRange - 1);
+		//		CProjectData.Points.groundArray.SetHeight(5, 0, CProjectData.Points.groundArray.arrayYRange - 1);
+		//	}
+		//	CObjPartition.Init();
+		//}
 	}
 }

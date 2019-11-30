@@ -1,21 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Numerics;
 
 namespace ForestReco
 {
 	public static class CDebug
 	{
 		private static int stepCallCount;
+		private static CMainForm form;
 
-		public static void Init()
+		private static int countedStepsCount; //cache value
+
+		public static void Init(CMainForm pForm)
+		{
+			form = pForm;
+		}
+
+		public static void ReInit()
 		{
 			stepCallCount = 0;
+			countedStepsCount = GetCountedStepsCount();
+		}
+
+		public static string GetString(List<Vector3> pPoints)
+		{
+			string s = "{";
+			foreach(Vector3 p in pPoints)
+			{
+				s += $"{p} ";
+			}
+			s = s.Remove(s.Length - 1);
+			s += "}";
+			return s;
 		}
 
 		public static void Count(string pText, int pCount, int pOutOf = -1)
@@ -23,9 +39,16 @@ namespace ForestReco
 			WriteLine(pText + ": " + pCount + (pOutOf > 0 ? " out of " + pOutOf : ""));
 		}
 
+		public static void WriteLine()
+		{
+			WriteLine("");
+		}
 
 		public static void WriteLine(string pText, bool pBreakLineBefore = false, bool pBreakLineAfter = false)
 		{
+			//emty text is mostly used for debugging and console logging slows process
+			if(pText.Length == 0)
+				return;
 			Console.WriteLine((pBreakLineBefore ? "\n" : "") + pText + (pBreakLineAfter ? "\n" : ""));
 		}
 
@@ -33,8 +56,6 @@ namespace ForestReco
 		{
 			WriteLine(pAction + ": " + pText, true);
 		}
-
-
 
 		internal static void Warning(string pText)
 		{
@@ -44,7 +65,7 @@ namespace ForestReco
 		internal static void Error(string pText, bool pWriteInAnalytics = true)
 		{
 			WriteLine("ERROR: " + pText, true);
-			if (pWriteInAnalytics)
+			if(pWriteInAnalytics)
 			{
 				CAnalytics.AddError(pText);
 			}
@@ -58,9 +79,9 @@ namespace ForestReco
 
 		public static void Progress(int pIteration, int pMaxIteration, int pDebugFrequency, ref DateTime pPreviousDebugStart, DateTime pStart, string pText, bool pShowInConsole = false)
 		{
-			if (pIteration % pDebugFrequency == 0 && pIteration > 0)
+			if(pIteration % pDebugFrequency == 0 && pIteration > 0)
 			{
-				
+
 				double lastIterationBatchTime = (DateTime.Now - pPreviousDebugStart).TotalSeconds;
 
 				double timeFromStart = (DateTime.Now - pStart).TotalSeconds;
@@ -71,7 +92,7 @@ namespace ForestReco
 				int percentage = pIteration * 100 / pMaxIteration;
 
 				string comment = "\n" + pText + " " + pIteration + " out of " + pMaxIteration;
-				if (pShowInConsole)
+				if(pShowInConsole)
 				{
 					WriteLine(comment);
 					WriteLine("- time of last " + pDebugFrequency + " = " + lastIterationBatchTime);
@@ -83,7 +104,7 @@ namespace ForestReco
 
 			//after last iteration set progressbar to 0.
 			//next step doesnt have to use progressbar and it wouldnt get refreshed
-			if (pIteration == pMaxIteration - 1)
+			if(pIteration == pMaxIteration - 1)
 			{
 				WriteExtimatedTimeLeft(100, 0, "done", pShowInConsole);
 			}
@@ -97,7 +118,8 @@ namespace ForestReco
 
 			string timeLeftString =
 				$"- estimated time left = {timeString}\n";
-			if(pShowInConsole){WriteLine(timeLeftString);}
+			if(pShowInConsole)
+				WriteLine(timeLeftString);
 
 			CProjectData.backgroundWorker.ReportProgress(pPercentage, new[]
 			{
@@ -105,11 +127,37 @@ namespace ForestReco
 			});
 		}
 
+		//point in exported obj 
+		static Vector3 DEBUG_POINT_3D = new Vector3(
+			13.38f, 
+			9.935f, 
+			-10.516f);
+		//in obj Y and Z are swapped
+		static Vector3 DEBUG_POINT_3D_swapYZ = 
+			new Vector3(DEBUG_POINT_3D.X, DEBUG_POINT_3D.Z, DEBUG_POINT_3D.Y);
+		public static bool IsDebugPoint3D(Vector3 pPoint)
+		{
+			Vector3 movedPoint = CObjExporter.GetMovedPoint(pPoint);
+			bool result = Vector3.Distance(movedPoint, DEBUG_POINT_3D_swapYZ) < 0.01f;
+			if(result)
+				return result;
+			return result;
+		}
+
+		static Vector3 DEBUG_POINT = new Vector3(549.951f, 518.764f, 26.436f);
+		public static bool IsDebugPoint(Vector3 pPoint)
+		{
+			return Vector3.Distance(pPoint, DEBUG_POINT) < 0.01f;
+		}
+
 		public static void Step(EProgramStep pStep)
 		{
-			lastTextProgress = GetStepText(pStep);
+			string tileProgress = GetTileProgress(pStep);
+
+			lastTextProgress = tileProgress + GetStepText(pStep);
+
 			string[] message = new[] { lastTextProgress };
-			if (pStep == EProgramStep.Exception)
+			if(pStep == EProgramStep.Exception)
 			{
 				CAnalytics.WriteErrors();
 				return;
@@ -118,40 +166,122 @@ namespace ForestReco
 			CProjectData.backgroundWorker.ReportProgress(0, message);
 		}
 
+		private static string GetTileProgress(EProgramStep pStep)
+		{
+			//if(!IsCountableStep(pStep))
+			//	return "";
+			bool isPreprocess = IsPreprocessStep(pStep);
+
+			string progress;
+			if(isPreprocess)
+			{
+				if(IsCountablePreprocessStep(pStep))
+				{
+					progress = 
+						$"{CPreprocessController.currentTileIndex + 1} / {CPreprocessController.tilesCount}";
+				}
+				else
+					progress = "---";
+			}
+			else
+			{
+				if(IsCountableStep(pStep))
+					progress = $"{CProgramStarter.currentTileIndex + 1} / {CProgramStarter.tilesCount}";
+				else 
+					progress = "---";
+			}
+
+			string nl = Environment.NewLine;
+			string sep = "==========";
+			return $"{sep}{nl}TILE: {progress} {nl}{sep}{nl}";
+		}
+
 		public static void WriteProblems(List<string> problems)
 		{
 			string message = "Problems:" + Environment.NewLine;
 
-			foreach (string p in problems)
+			foreach(string p in problems)
 			{
 				message += p + Environment.NewLine;
 			}
 			WriteLine(message);
-			try
-			{
-				CProjectData.backgroundWorker.ReportProgress(0, new string[] { message });
-			}
-			//should not happen
-			catch (Exception e)
-			{
-				Error(e.Message, false);
-			}
+
+			//todo: maybe its not neccessary to handle progress messages 
+			//through ReportProgress but rather like this...but works for now
+			form.textProgress.Text = message;
 		}
 
 		private static string GetStepText(EProgramStep pStep)
 		{
-			if (pStep == EProgramStep.Exception)
+			if(pStep == EProgramStep.Exception)
 			{
 				return "EXCEPTION";
 			}
 
 			stepCallCount++;
-			//-2 for abort states
-			int maxSteps = (Enum.GetNames(typeof(EProgramStep)).Length - 2);
+			int maxSteps = countedStepsCount;
 			stepCallCount = Math.Min(stepCallCount, maxSteps); //bug: sometimes writes higher value
-			string progress = stepCallCount + "/" + maxSteps + ": ";
+			string progress = IsCountableStep(pStep) ?
+				stepCallCount + "/" + maxSteps + ": " : "";
+			string text = GetStepString(pStep);
+
+			return progress + text;
+		}
+
+
+		/// <summary>
+		/// Preprocess steps are not counted.
+		/// </summary>
+		private static int GetCountedStepsCount()
+		{
+			int count = 0;
+			foreach(EProgramStep type in Enum.GetValues(typeof(EProgramStep)))
+			{
+				if(IsCountableStep(type))
+					count++;
+			}
+			return count;
+			//return Enum.GetNames(typeof(EProgramStep)).Length - 3;
+		}
+
+		private static bool IsPreprocessStep(EProgramStep pStep)
+		{
+			return pStep.ToString().Contains("Pre_");
+		}
+
+		private static bool IsCountablePreprocessStep(EProgramStep pStep)
+		{
+			return IsPreprocessStep(pStep) &&
+				pStep != EProgramStep.Pre_Tile &&
+				pStep != EProgramStep.Pre_DeleteTmp &&
+				pStep != EProgramStep.Pre_Split &&
+				pStep != EProgramStep.Pre_LasToTxt &&
+				pStep != EProgramStep.Pre_LasReverseTile;			
+		}
+
+		/// <summary>
+		/// Steps from preprocessing are not counted
+		/// </summary>
+		private static bool IsCountableStep(EProgramStep pStep)
+		{
+			//todo: tmp hack for preprocessing steps
+			if(IsPreprocessStep(pStep))
+				return false;
+
+			switch(pStep)
+			{
+				case EProgramStep.Exception:
+				case EProgramStep.Cancelled:
+				case EProgramStep.LoadReftrees:
+					return false;
+			}
+			return true;
+		}
+
+		private static string GetStepString(EProgramStep pStep)
+		{
 			string text;
-			switch (pStep)
+			switch(pStep)
 			{
 				case EProgramStep.LoadLines:
 					text = "load forest file lines";
@@ -189,52 +319,78 @@ namespace ForestReco
 				case EProgramStep.AssignReftrees:
 					text = "assigning reftrees";
 					break;
-				case EProgramStep.LoadCheckTrees:
-					text = "loading checktrees";
+				//case EProgramStep.LoadCheckTrees:
+				//	text = "loading checktrees";
+				//	break;
+				//case EProgramStep.AssignCheckTrees:
+				//	text = "assigning checktrees";
+				//	break;
+				case EProgramStep.Export3D:
+					text = "exporting 3d model";
 					break;
-				case EProgramStep.AssignCheckTrees:
-					text = "assigning checktrees";
-					break;
-				case EProgramStep.Export:
-					text = "exporting";
+				case EProgramStep.ExportMainFiles:
+					text = "exporting main files";
 					break;
 				case EProgramStep.Bitmap:
 					text = "generating bitmaps";
+
 					break;
+				case EProgramStep.Analytics:
+					text = "exporting analytics";
+					break;
+				case EProgramStep.Dart:
+					text = "exporting dart";
+					break;
+				case EProgramStep.Shp:
+					text = "exporting shp";
+					break;				
+				case EProgramStep.Las:
+					text = "exporting las";
+					break;
+
+
 				case EProgramStep.Done:
 					text = "DONE";
 					break;
 
+
+				case EProgramStep.Pre_Tile:
+					text = PREPROCESS + "creating tiles";
+					break;
+				case EProgramStep.Pre_Noise:
+					text = PREPROCESS + "removing noise";
+					break;
+				case EProgramStep.Pre_LasGround:
+					text = PREPROCESS + "detecting ground";
+					break;
+				case EProgramStep.Pre_LasHeight:
+					text = PREPROCESS + "calculating heights";
+					break;
+				case EProgramStep.Pre_LasClassify:
+					text = PREPROCESS + "classifying points";
+					break;
+				case EProgramStep.Pre_LasReverseTile:
+					text = PREPROCESS + "applying reverse tiling";
+					break;
+				case EProgramStep.Pre_DeleteTmp:
+					text = PREPROCESS + "deleting temporary files";
+					break;
+				case EProgramStep.Pre_Split:
+					text = PREPROCESS + "splitting file";
+					break;
+				case EProgramStep.Pre_LasToTxt:
+					text = PREPROCESS + "converting from laz to txt";
+					break;
+
+
 				default:
-					text = "comment not specified";
+					text = $"{pStep} - comment not specified";
 					break;
 			}
 
-			return progress + text;
+			return text;
 		}
-	}
 
-	public enum EProgramStep
-	{
-		LoadLines = 1,
-		LoadReftrees = 2,
-		ParseLines = 3,
-		ProcessGroundPoints = 4,
-		PreprocessVegePoints = 5,
-		ProcessVegePoints = 6,
-		ValidateTrees1 = 7,
-		MergeTrees1 = 8,
-		ValidateTrees2 = 9,
-		MergeTrees2 = 10,
-		ValidateTrees3 = 11,
-		AssignReftrees = 12,
-		LoadCheckTrees = 13,
-		AssignCheckTrees = 14,
-		Export = 15,
-		Bitmap = 16,
-		Done = 17,
-
-		Cancelled,
-		Exception
+		private const string PREPROCESS = "Preprocess: ";
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -32,7 +31,7 @@ namespace ForestReco
 		{
 			List<string> lines = new List<string>();
 
-			foreach (CTreePoint tp in TreePoints)
+			foreach(CTreePoint tp in TreePoints)
 			{
 				lines.Add(tp.Serialize());
 			}
@@ -46,7 +45,7 @@ namespace ForestReco
 		/// <param name="pTreepointsOnBranch"></param>
 		public void SetTreePoints(List<CTreePoint> pTreepointsOnBranch)
 		{
-			foreach (CTreePoint tp in pTreepointsOnBranch)
+			foreach(CTreePoint tp in pTreepointsOnBranch)
 			{
 				TreePoints.Add(tp);
 				OnAddPoint(tp.minBB);
@@ -63,56 +62,59 @@ namespace ForestReco
 		{
 			float bestFactor = 0;
 			bool merging = pTreeToMerge != null;
-			
+
 			Vector3 refPoint1 = furthestPoint;
 			float refPoint1Factor = GetAddPointFactorInRefTo(pPoint, refPoint1, pSameBranch, merging, pTreeToMerge);
 			bestFactor = refPoint1Factor;
-			if (bestFactor > .99f) { return bestFactor; }
+			if(bestFactor > .99f) { return bestFactor; }
 
-			if (merging)
+			if(merging)
 			{
 				Vector3 closestHigher = GetClosestHigherTo(pTreeToMerge.peak.Center);
 				float distToHigher = Vector3.Distance(pPoint, closestHigher);
 				const float maxDistToHigher = 0.5f;
 				float distToHigherFactor = maxDistToHigher / distToHigher;
-				if (distToHigher < maxDistToHigher) { return 1; }
+				if(distToHigher < maxDistToHigher)
+					return 1;
+
 				float closestHigherFactor = GetAddPointFactorInRefTo(pPoint, closestHigher, pSameBranch, merging, pTreeToMerge);
 				closestHigherFactor = Math.Max(closestHigherFactor, distToHigherFactor);
 				bestFactor = Math.Max(bestFactor, closestHigherFactor);
 
-				if (bestFactor > .99f) { return bestFactor; }
+				if(bestFactor > .99f)
+					return bestFactor;
 
 				Vector3? closestLower = GetClosestLowerTo(pTreeToMerge.peak.Center);
-				if (closestLower != null)
+				if(closestLower != null)
 				{
 					float closestLowerFactor = GetAddPointFactorInRefTo(pPoint, (Vector3)closestLower, pSameBranch, merging, pTreeToMerge);
 					bestFactor = Math.Max(bestFactor, closestLowerFactor);
-					if (bestFactor > .99f) { return bestFactor; }
+					if(bestFactor > .99f) { return bestFactor; }
 				}
 			}
 
 			return bestFactor;
 		}
-		
+
 		public CBranch GetNeigbourBranch(int pIndexIncrement)
 		{
 			int indexOfthis = tree.Branches.IndexOf(this);
 			int neighbourBranchIndex = (indexOfthis + pIndexIncrement) % tree.Branches.Count;
-			if (neighbourBranchIndex < 0) { neighbourBranchIndex += tree.Branches.Count; }
+			if(neighbourBranchIndex < 0) { neighbourBranchIndex += tree.Branches.Count; }
 			return tree.Branches[neighbourBranchIndex];
 		}
 
 		private Vector3 GetClosestPointTo(Vector3 pPoint, int pMaxIterationCount = -1)
 		{
-			if (pMaxIterationCount == -1)
+			if(pMaxIterationCount == -1)
 			{
 				pMaxIterationCount = TreePoints.Count;
 			}
 			Vector3 closestPoint = tree.peak.Center;
-			for (int i = TreePoints.Count - 1; i > TreePoints.Count - pMaxIterationCount; i--)
+			for(int i = TreePoints.Count - 1; i > TreePoints.Count - pMaxIterationCount; i--)
 			{
 				Vector3 treePoint = TreePoints[i].Center;
-				if (Vector3.Distance(treePoint, pPoint) < Vector3.Distance(closestPoint, pPoint))
+				if(Vector3.Distance(treePoint, pPoint) < Vector3.Distance(closestPoint, pPoint))
 				{
 					closestPoint = treePoint;
 				}
@@ -124,11 +126,11 @@ namespace ForestReco
 		{
 			Vector3 closestPoint = tree.peak.Center;
 			float distToClosest = Vector3.Distance(closestPoint, pPoint);
-			for (int i = 0; i < TreePoints.Count; i++)
+			for(int i = 0; i < TreePoints.Count; i++)
 			{
 				Vector3 treePoint = TreePoints[i].Center;
-				if (treePoint.Y < pPoint.Y) { break; }
-				if (Vector3.Distance(treePoint, pPoint) < distToClosest)
+				if(treePoint.Z < pPoint.Z) { break; }
+				if(Vector3.Distance(treePoint, pPoint) < distToClosest)
 				{
 					closestPoint = treePoint;
 					distToClosest = Vector3.Distance(closestPoint, pPoint);
@@ -139,18 +141,18 @@ namespace ForestReco
 		public Vector3? GetClosestLowerTo(Vector3 pPoint)
 		{
 			Vector3? closestPoint = null;
-			for (int i = TreePoints.Count - 1; i >= 0; i--)
+			for(int i = TreePoints.Count - 1; i >= 0; i--)
 			{
 				Vector3 treePoint = TreePoints[i].Center;
-				if (treePoint.Y > pPoint.Y) { break; }
-				if (closestPoint == null || Vector3.Distance(treePoint, pPoint) < Vector3.Distance((Vector3)closestPoint, pPoint))
+				if(treePoint.Z > pPoint.Z) { break; }
+				if(closestPoint == null || Vector3.Distance(treePoint, pPoint) < Vector3.Distance((Vector3)closestPoint, pPoint))
 				{
 					closestPoint = treePoint;
 				}
 			}
 			return closestPoint;
 		}
-		
+
 		private Vector3 GetLastPoint()
 		{
 			return TreePoints.Count == 0 ? tree.peak.Center : TreePoints.Last().Center;
@@ -160,53 +162,53 @@ namespace ForestReco
 			bool pSameBranch, bool pMerging, CTree pTreeToMerge = null)
 		{
 			//during merging it is expected, that added peak will be higher
-			if (!pMerging && pPoint.Y > pReferencePoint.Y)
+			if(!pMerging && pPoint.Z > pReferencePoint.Z)
 			{
 				//points are added in descending order. if true => pPoint belongs to another tree
 				return 0;
 			}
 			float pointDistToRef = Vector3.Distance(pPoint, pReferencePoint);
-			if (pointDistToRef < 0.2)
+			if(pointDistToRef < 0.2)
 			{
 				return 1;
 			}
 
 			float refDistToPeak = CUtils.Get2DDistance(pReferencePoint, tree.peak);
 			float pointDistToPeak = CUtils.Get2DDistance(pPoint, tree.peak);
-			if (!pMerging && pSameBranch)
+			if(!pMerging && pSameBranch)
 			{
-				if (pointDistToPeak < refDistToPeak)
+				if(pointDistToPeak < refDistToPeak)
 				{
 					return 1;
 				}
 			}
 			float distToPeakDiff = pointDistToPeak - refDistToPeak;
-			if (!pMerging && distToPeakDiff < 0.3)
+			if(!pMerging && distToPeakDiff < 0.3)
 			{
 				return 1;
 			}
-			if (!pMerging && distToPeakDiff > 0.5f && refDistToPeak > 0.5f)
+			if(!pMerging && distToPeakDiff > 0.5f && refDistToPeak > 0.5f)
 			{
 				float peakRefPointAngle = CUtils.AngleBetweenThreePoints(tree.peak.Center, pReferencePoint, pPoint);
 				//new point is too far from furthest point and goes too much out of direction of peak->furthestPoint
-				if (peakRefPointAngle < 180 - 45)
+				if(peakRefPointAngle < 180 - 45)
 				{
 					return 0;
 				}
 			}
-			
+
 			float refAngleToPoint =
-				CUtils.AngleBetweenThreePoints(pReferencePoint - Vector3.UnitY, pReferencePoint, pPoint);
+				CUtils.AngleBetweenThreePoints(pReferencePoint - Vector3.UnitZ, pReferencePoint, pPoint);
 
 			Vector3 suitablePeakPoint = tree.peak.Center;
 
 			float peakAngleToPoint =
-				CUtils.AngleBetweenThreePoints(suitablePeakPoint - Vector3.UnitY, suitablePeakPoint, pPoint);
+				CUtils.AngleBetweenThreePoints(suitablePeakPoint - Vector3.UnitZ, suitablePeakPoint, pPoint);
 			float angle = Math.Min(refAngleToPoint, peakAngleToPoint);
 
 			float maxBranchAngle = CTree.GetMaxBranchAngle(suitablePeakPoint, pPoint);
 			float unacceptableAngle = maxBranchAngle;
-			if (!pMerging && angle > unacceptableAngle) { return 0; }
+			if(!pMerging && angle > unacceptableAngle) { return 0; }
 			unacceptableAngle += 30;
 			unacceptableAngle = Math.Min(unacceptableAngle, 100);
 
@@ -215,7 +217,7 @@ namespace ForestReco
 			float unacceptableDistance = tree.GetTreeExtentFor(pPoint,
 				pMerging ? CParameterSetter.treeExtentMultiply : 1);
 			unacceptableDistance += 0.5f;
-			if (pointDistToPeak > unacceptableDistance) { return 0; }
+			if(pointDistToPeak > unacceptableDistance) { return 0; }
 			unacceptableDistance += 0.5f;
 			float distFactor = (unacceptableDistance - pointDistToPeak) / unacceptableDistance;
 
@@ -227,18 +229,18 @@ namespace ForestReco
 
 			float totalFactor;
 
-			if (pMerging)
+			if(pMerging)
 			{
-				if (distFromClosestPoint < maxDistFromClosest && distToPeakDiff < maxDistFromClosest)
+				if(distFromClosestPoint < maxDistFromClosest && distToPeakDiff < maxDistFromClosest)
 				{
 					return 1;
 				}
 			}
 
-			if (pTreeToMerge != null && pMerging && pTreeToMerge.isValid)
+			if(pTreeToMerge != null && pMerging && pTreeToMerge.isValid)
 			{
 				int factorCount = 3;
-				if(distToClosestFactor < .1f){ factorCount -= 1; }
+				if(distToClosestFactor < .1f) { factorCount -= 1; }
 				totalFactor = (distToClosestFactor + angleFactor + distFactor) / factorCount;
 			}
 			else
@@ -252,43 +254,43 @@ namespace ForestReco
 
 		public void AddPoint(Vector3 pPoint)
 		{
-			if (CTreeManager.DEBUG)
+			if(CTreeManager.DEBUG)
 				CDebug.WriteLine("--- AddPoint " + pPoint.ToString("#+0.00#;-0.00") + " to " + this);
 
 			RefreshFurthestPoint(pPoint);
 			OnAddPoint(pPoint);
-			
+
 			int insertAtIndex = 0;
 			//find appropriate insert at index
-			if (TreePoints.Count > 0)
+			if(TreePoints.Count > 0)
 			{
-				for (int i = TreePoints.Count - 1; i >= -1; i--)
+				for(int i = TreePoints.Count - 1; i >= -1; i--)
 				{
 					insertAtIndex = i + 1;
-					if (insertAtIndex == 0)
+					if(insertAtIndex == 0)
 					{
 						break;
 					}
 					CTreePoint pointOnBranch = TreePoints[i];
-					if (pointOnBranch.Includes(pPoint))
+					if(pointOnBranch.Includes(pPoint))
 					{
 						pointOnBranch.AddPoint(pPoint);
 						//boundaries of points are changed, check if the order has to be changed
 
-						if (i > 0)
+						if(i > 0)
 						{
 							CTreePoint previousPoint = TreePoints[i - 1];
 							//if(previousPoint.Contains(pointOnBranch.Center))
-							if (pointOnBranch.Y > previousPoint.Y)
+							if(pointOnBranch.Z > previousPoint.Z)
 							{
 								TreePoints.RemoveAt(i);
 								TreePoints.Insert(i - 1, pointOnBranch);
 							}
 						}
-						if (i < TreePoints.Count - 1)
+						if(i < TreePoints.Count - 1)
 						{
 							CTreePoint nextPoint = TreePoints[i + 1];
-							if (pointOnBranch.Y < nextPoint.Y)
+							if(pointOnBranch.Z < nextPoint.Z)
 							{
 								TreePoints.RemoveAt(i);
 								TreePoints.Insert(i + 1, pointOnBranch);
@@ -298,9 +300,9 @@ namespace ForestReco
 						return;
 
 					}
-					if (pPoint.Y < pointOnBranch.Y)
+					if(pPoint.Z < pointOnBranch.Z)
 					{
-						if (i == TreePoints.Count - 1 || TreePoints[i + 1].Y <= pPoint.Y)
+						if(i == TreePoints.Count - 1 || TreePoints[i + 1].Z <= pPoint.Z)
 						{
 							break;
 						}
@@ -313,22 +315,22 @@ namespace ForestReco
 
 			CheckAddedPoint();
 
-			if (CTreeManager.DEBUG) { CDebug.WriteLine("---- new point"); }
+			if(CTreeManager.DEBUG) { CDebug.WriteLine("---- new point"); }
 
 		}
 
 		private void CheckAddedPoint()
 		{
-			if (TreePoints[0].minHeight.Y > tree.peak.Y)
+			if(TreePoints[0].minHeight.Z > tree.peak.Z)
 			{
 				//not error, can happen after merging when peak is expanded
 				//CDebug.Error($"CheckAddedPoint. tree {tree.treeIndex} : first point {TreePoints[0]} is higher than peak {tree.peak}");
 			}
 
-			if (TreePoints.Count < 2) { return; }
+			if(TreePoints.Count < 2) { return; }
 			CTreePoint previousTp = TreePoints[TreePoints.Count - 2];
 			CTreePoint tp = TreePoints[TreePoints.Count - 1];
-			if (tp.minHeight.Y > previousTp.maxHeight.Y)
+			if(tp.minHeight.Z > previousTp.maxHeight.Z)
 			{
 				CDebug.Error("CheckAddedPoint. tree " + tree.treeIndex + ": " + tp + " is higher than " + previousTp);
 			}
@@ -336,11 +338,11 @@ namespace ForestReco
 
 		public void CheckBranch()
 		{
-			for (int i = 1; i < TreePoints.Count; i++)
+			for(int i = 1; i < TreePoints.Count; i++)
 			{
 				CTreePoint previousTp = TreePoints[i - 1];
 				CTreePoint tp = TreePoints[i];
-				if (tp.minHeight.Y > previousTp.maxHeight.Y)
+				if(tp.minHeight.Z > previousTp.maxHeight.Z)
 				{
 					CDebug.Error("- CheckBranch. tree " + tree.treeIndex + ": " + tp + " is higher than " + previousTp);
 				}
@@ -350,7 +352,7 @@ namespace ForestReco
 		private void RefreshFurthestPoint(Vector3 pPoint)
 		{
 			float pointDistToPeak = CUtils.Get2DDistance(pPoint, tree.peak);
-			if (pointDistToPeak > furthestPointDistance)
+			if(pointDistToPeak > furthestPointDistance)
 			{
 				furthestPoint = pPoint;
 			}
@@ -369,22 +371,22 @@ namespace ForestReco
 			int dir = 1; //actually to be sure we need to check both directions...final treepoints doesnt have to be neccessarily Y-ordered
 						 //if (TreePoints[approxIndex].Y < pPoint.Y) { dir = -1; }
 			CTreePoint pointOnBranch = TreePoints[approxIndex];
-			bool isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Y - pPoint.Y) < treePointExtent + 1;
-			for (int i = approxIndex; isPointOnBranchWithinRange && i > 0 && i < TreePoints.Count; i += dir)
+			bool isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Z - pPoint.Z) < treePointExtent + 1;
+			for(int i = approxIndex; isPointOnBranchWithinRange && i > 0 && i < TreePoints.Count; i += dir)
 			{
 				pointOnBranch = TreePoints[i];
-				if (pointOnBranch.Includes(pPoint, pToleranceMultiply)) { return true; }
-				isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Y - pPoint.Y) < treePointExtent + 1;
+				if(pointOnBranch.Includes(pPoint, pToleranceMultiply)) { return true; }
+				isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Z - pPoint.Z) < treePointExtent + 1;
 			}
 
 			dir = -1;
 			pointOnBranch = TreePoints[approxIndex];
-			isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Y - pPoint.Y) < treePointExtent + 1;
-			for (int i = approxIndex; isPointOnBranchWithinRange && i > 0 && i < TreePoints.Count; i += dir)
+			isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Z - pPoint.Z) < treePointExtent + 1;
+			for(int i = approxIndex; isPointOnBranchWithinRange && i > 0 && i < TreePoints.Count; i += dir)
 			{
 				pointOnBranch = TreePoints[i];
-				if (pointOnBranch.Includes(pPoint, pToleranceMultiply)) { return true; }
-				isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Y - pPoint.Y) < treePointExtent + 1;
+				if(pointOnBranch.Includes(pPoint, pToleranceMultiply)) { return true; }
+				isPointOnBranchWithinRange = Math.Abs(pointOnBranch.Z - pPoint.Z) < treePointExtent + 1;
 			}
 
 			return false;
@@ -400,9 +402,9 @@ namespace ForestReco
 			int selectedIndex = (fromIndex + toIndex) / 2;
 			CTreePoint selectedTreePoint = TreePoints[selectedIndex];
 			int counter = 0;
-			while (Math.Abs(selectedTreePoint.Y - pPoint.Y) > pMaxDiff && toIndex - fromIndex > 1)
+			while(Math.Abs(selectedTreePoint.Z - pPoint.Z) > pMaxDiff && toIndex - fromIndex > 1)
 			{
-				if (selectedTreePoint.Y > pPoint.Y)
+				if(selectedTreePoint.Z > pPoint.Z)
 				{
 					fromIndex += (toIndex - fromIndex) / 2;
 				}
@@ -415,7 +417,7 @@ namespace ForestReco
 				counter++;
 			}
 
-			if (counter > 20) { CDebug.Warning("GetAproxIndexOfPoint " + pPoint + " = " + counter); }
+			if(counter > 20) { CDebug.Warning("GetAproxIndexOfPoint " + pPoint + " = " + counter); }
 
 			return selectedIndex;
 		}
@@ -423,7 +425,7 @@ namespace ForestReco
 		public int GetPointCount()
 		{
 			int count = 0;
-			foreach (CTreePoint p in TreePoints)
+			foreach(CTreePoint p in TreePoints)
 			{
 				count += p.Points.Count;
 			}
@@ -436,9 +438,9 @@ namespace ForestReco
 		/// </summary>
 		public float GetSimilarityWith(CBranch pOtherBranch, Vector3 offsetToThisTree, Matrix4x4 scaleMatrix)
 		{
-			if (pOtherBranch.TreePoints.Count == 0)
+			if(pOtherBranch.TreePoints.Count == 0)
 			{
-				if (TreePoints.Count == 0) { return 1; }
+				if(TreePoints.Count == 0) { return 1; }
 				//situation when other branch has no points.
 				//this can mean that data in this part of tree are just missing therefore it should
 				return UNDEFINED_SIMILARITY;
@@ -451,19 +453,19 @@ namespace ForestReco
 			float angleOffsetRadians = CUtils.ToRadians(-(angleFrom - pOtherBranch.angleFrom));
 			Matrix4x4 rotationMatrix = Matrix4x4.CreateRotationY(angleOffsetRadians, tree.peak.Center);
 
-			foreach (CTreePoint p in pOtherBranch.TreePoints)
+			foreach(CTreePoint p in pOtherBranch.TreePoints)
 			{
 				Vector3 movedPoint = p.Center + offsetToThisTree;
 				Vector3 scaledPoint = Vector3.Transform(movedPoint, scaleMatrix);
 				Vector3 rotatedPoint = Vector3.Transform(scaledPoint, rotationMatrix);
 
 				const int branchToleranceMultiply = 2;
-				if (Contains(rotatedPoint, branchToleranceMultiply))
+				if(Contains(rotatedPoint, branchToleranceMultiply))
 				{
 					similarity += 1f / pOtherBranch.TreePoints.Count;
 				}
 			}
-			if (similarity - 1 > 0.1f) //similarity can be > 1 due to float imprecision
+			if(similarity - 1 > 0.1f) //similarity can be > 1 due to float imprecision
 			{
 				CDebug.Error("Similarity rounding error too big. " + similarity);
 			}
@@ -474,10 +476,10 @@ namespace ForestReco
 		public float GetDistanceTo(Vector3 pPoint)
 		{
 			float distance = int.MaxValue;
-			foreach (CTreePoint p in TreePoints)
+			foreach(CTreePoint p in TreePoints)
 			{
 				float dist = Vector3.Distance(p.Center, pPoint);
-				if (dist < distance)
+				if(dist < distance)
 				{
 					distance = dist;
 				}
@@ -496,29 +498,52 @@ namespace ForestReco
 					"[" + TreePoints.Count.ToString("00") + "] |";
 		}
 
+		/// <summary>
+		/// Is point closer than the "furthestPoint" of this or one
+		/// of neighbouring branches
+		/// </summary>
 		public bool IsPointInExtent(Vector3 pPoint)
 		{
 			float pointDistToPeak = CUtils.Get2DDistance(pPoint, tree.peak);
 			bool thisBranchInExtent = furthestPointDistance > pointDistToPeak;
-			if (thisBranchInExtent) { return true; }
+			Vector3 closestPoint = GetClosestPointTo(pPoint);
+			float distToClosestPoint = Vector3.Distance(pPoint, closestPoint);
 
-			bool leftBranchInExtent = GetNeigbourBranch(-1).furthestPointDistance > pointDistToPeak;
-			if (leftBranchInExtent) { return true; }
+			if(thisBranchInExtent && distToClosestPoint < 1) { return true; }
 
-			bool rightBranchInExtent = GetNeigbourBranch(1).furthestPointDistance > pointDistToPeak;
-			return rightBranchInExtent;
+			CBranch branch1 = GetNeigbourBranch(-1);
+			float dist1 = branch1.furthestPointDistance;
+			bool leftBranchInExtent = dist1 > pointDistToPeak;
+			float distToLeftPoint = CUtils.Get2DDistance(pPoint, branch1.furthestPoint);
+			//restrict only to points close to the furthest point.
+			//for too large branches it was including points way too far
+			bool leftBranchPointClose = distToLeftPoint < 1;
+			if(leftBranchInExtent && leftBranchPointClose)
+				return true;
+
+			CBranch branch2 = GetNeigbourBranch(1);
+			float dist2 = branch2.furthestPointDistance;
+			bool rightBranchInExtent = dist2 > pointDistToPeak;
+			float distToRightPoint = CUtils.Get2DDistance(pPoint, branch2.furthestPoint);
+			bool rightBranchPointClose = distToRightPoint < 1;
+			if(rightBranchInExtent && rightBranchPointClose)
+				return true;
+			
+			return false;
 		}
 
 		public float GetDefinedFactor()
 		{
-			if (TreePoints.Count == 0)
+			List<CTreePoint> topTreePoints = TreePoints;
+
+			if(topTreePoints.Count == 0)
 			{
 				return 0;
 			}
-			if (TreePoints.Count < CTreeManager.MIN_BRANCH_POINT_COUNT)
+			if(TreePoints.Count < CTreeManager.MIN_BRANCH_POINT_COUNT)
 			{
 				int allTreePointsCount = tree.GetAllPoints().Count;
-				if (allTreePointsCount < CTreeManager.MIN_TREE_POINT_COUNT)
+				if(allTreePointsCount < CTreeManager.MIN_TREE_POINT_COUNT)
 				{
 					return 0;
 				}

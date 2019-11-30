@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ForestReco
 {
@@ -18,10 +14,10 @@ namespace ForestReco
 
 		private static bool CheckPath(string pTitle, string pPath, bool pFile) //false = folder
 		{
-			if (pFile)
+			if(pFile)
 			{
 				bool fileExists = File.Exists(pPath);
-				if (!fileExists)
+				if(!fileExists)
 				{
 					problems.Add($"{pTitle} file not found: {pPath}");
 					return false;
@@ -30,7 +26,7 @@ namespace ForestReco
 			else
 			{
 				bool folderExists = Directory.Exists(pPath);
-				if (!folderExists)
+				if(!folderExists)
 				{
 					problems.Add($"{pTitle} folder not found: {pPath}");
 					return false;
@@ -45,43 +41,119 @@ namespace ForestReco
 		public static bool CheckProblems()
 		{
 			Reset();
-			CheckPath("Forest", CParameterSetter.GetStringSettings(ESettings.forestFilePath), true);
-			CheckPath("Reftree", CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath), false);
+			CheckPath("Forest", CParameterSetter.GetStringSettings(ESettings.forestFileFullName), true);
+
+			//if(!CRxpParser.IsRxp)
+			//{
+			//	CheckPath("Reftree", CParameterSetter.GetStringSettings(ESettings.reftreeFolderPath), false);
+			//}
 			CheckPath("Output", CParameterSetter.GetStringSettings(ESettings.outputFolderPath), false);
-			if (CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile))
+			if(CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile))
 			{
 				CheckPath("Checktree", CParameterSetter.GetStringSettings(ESettings.checkTreeFilePath), true);
 			}
+			CheckRange();
 
 			CheckExport();
 
+			if(CShpController.exportShape)
+			{
+				if(CParameterSetter.GetBoolSettings(ESettings.calculateDBH))
+					CheckDBH();
+				if(CParameterSetter.GetBoolSettings(ESettings.calculateAGB))
+					CheckAGB();
+				CheckTreeRadius();
+			}
+
 			bool hasProblems = problems.Count > 0;
-			if (hasProblems)
+			if(hasProblems)
 			{
 				CDebug.WriteProblems(problems);
+				problems.Clear();
 			}
 			return !hasProblems;
 		}
 
+		private static void CheckRange()
+		{
+			switch((ESplitMode)CParameterSetter.GetIntSettings(ESettings.currentSplitMode))
+			{
+				case ESplitMode.Manual:
+					SSplitRange range = CParameterSetter.GetSplitRange();
+					if(!range.IsValid())
+					{
+						problems.Add($"range {range} is not valid");
+					}
+					break;
+				case ESplitMode.Shapefile:
+					string shapefilePath = CParameterSetter.GetStringSettings(ESettings.shapeFilePath);
+					if(!File.Exists(shapefilePath))
+					{
+						problems.Add($"shapefile not defined. {shapefilePath}");
+					}
+					break;
+			}
+
+		}
+
 		private static void CheckExport()
 		{
-			bool export3D = CParameterSetter.GetBoolSettings(ESettings.export3d);
-			bool exportBitmap = CParameterSetter.GetBoolSettings(ESettings.exportBitmap);
-			if (!export3D && !exportBitmap)
+			bool willExportAny3D = CParameterSetter.GetBoolSettings(ESettings.export3d);
+
+			if(willExportAny3D)
 			{
-				problems.Add($"No reason to process when export3D and exportBitmap are false. Result will be empty.");
+				bool exportTreeStructures = CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures);
+				bool exportReftrees = CParameterSetter.GetBoolSettings(ESettings.exportRefTrees);
+				bool exportTreeBoxes = CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes);
+				willExportAny3D = exportTreeStructures || exportReftrees || exportTreeBoxes;
+			}
+
+			bool willExportSomeportBitmap = CParameterSetter.GetBoolSettings(ESettings.exportBitmap);
+
+			if(willExportSomeportBitmap)
+			{
+				bool exportBMHeightmap = CParameterSetter.GetBoolSettings(ESettings.ExportBMHeightmap);
+				bool exportBMTreeBorders = CParameterSetter.GetBoolSettings(ESettings.ExportBMTreeBorders);
+				bool exportBMTreePositions = CParameterSetter.GetBoolSettings(ESettings.ExportBMTreePositions);
+				willExportSomeportBitmap = exportBMHeightmap || exportBMTreeBorders || exportBMTreePositions;
+			}
+
+			bool willExportAnyShp = CParameterSetter.GetBoolSettings(ESettings.exportShape);
+			if(willExportAnyShp)
+			{
+				bool exportShapeTreeAreas = CParameterSetter.GetBoolSettings(ESettings.exportShapeTreeAreas);
+				bool exportShapeTreePositions = CParameterSetter.GetBoolSettings(ESettings.exportShapeTreePositions);
+				willExportAnyShp = exportShapeTreeAreas || exportShapeTreePositions;
+			}
+			bool willExportAnyLas = CParameterSetter.GetBoolSettings(ESettings.exportLas);
+
+
+			if(!willExportAny3D && !willExportSomeportBitmap && !willExportAnyShp && !willExportAnyLas)
+			{
+				problems.Add($"No reason to process when no 3D-obj, bitmap, SHP-file or LAS-file will be exported.");
 				return;
 			}
-			//if we export at least a bitmap, it is ok
-			if(exportBitmap){ return;}
+		}
 
-			bool exportTreeStructures = CParameterSetter.GetBoolSettings(ESettings.exportTreeStructures);
-			bool exportReftrees = CParameterSetter.GetBoolSettings(ESettings.exportRefTrees);
-			bool exportTreeBoxes = CParameterSetter.GetBoolSettings(ESettings.exportTreeBoxes);
-			if (!exportTreeStructures && !exportReftrees && !exportTreeBoxes)
-			{
-				problems.Add($"No reason to process when exportReftrees, exportTreeStructures and exportTreeBoxes are false. Result will be empty.");
-			}
+		private static void CheckDBH()
+		{
+			string problem = CBiomassController.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.dbh));
+			if(problem.Length > 0)
+				problems.Add($"DBH equation problem: {problem}");
+		}
+
+		private static void CheckAGB()
+		{
+			string problem = CBiomassController.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.agb));
+			if(problem.Length > 0)
+				problems.Add($"DBH equation problem: {problem}");
+		}
+
+		private static void CheckTreeRadius()
+		{
+			string problem = CTreeRadiusCalculator.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.treeRadius));
+			if(problem.Length > 0)
+				problems.Add($"tree radius equation problem: {problem}");
 		}
 	}
 }

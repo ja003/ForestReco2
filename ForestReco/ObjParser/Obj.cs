@@ -9,8 +9,7 @@ namespace ObjParser
 {
 	public class Obj
 	{
-		private List<Vertex> vertexList;
-		public List<Vertex> VertexList => vertexList;
+		public List<Vertex> VertexList { get; private set; }
 
 		public List<Face> FaceList;
 		public List<TextureVertex> TextureList;
@@ -43,7 +42,7 @@ namespace ObjParser
 		/// </summary>
 		public Obj(string pName)
 		{
-			vertexList = new List<Vertex>();
+			VertexList = new List<Vertex>();
 			FaceList = new List<Face>();
 			TextureList = new List<TextureVertex>();
 			Name = pName;
@@ -97,7 +96,7 @@ namespace ObjParser
 					writer.WriteLine("mtllib " + Mtl);
 				}
 
-				vertexList.ForEach(v => writer.WriteLine(v));
+				VertexList.ForEach(v => writer.WriteLine(v));
 				TextureList.ForEach(tv => writer.WriteLine(tv));
 				string lastUseMtl = "";
 				foreach (Face face in FaceList)
@@ -128,7 +127,7 @@ namespace ObjParser
 
 		public void AddVertex(Vertex pVertex)
 		{
-			vertexList.Add(pVertex);
+			VertexList.Add(pVertex);
 			UpdateSize(pVertex);
 		}
 
@@ -162,7 +161,7 @@ namespace ObjParser
 		private void updateSize()
 		{
 			// If there are no vertices then size should be 0.
-			if (vertexList.Count == 0)
+			if (VertexList.Count == 0)
 			{
 				Size = new Extent
 				{
@@ -180,12 +179,12 @@ namespace ObjParser
 
 			Size = new Extent
 			{
-				XMax = vertexList.Max(v => v.X),
-				XMin = vertexList.Min(v => v.X),
-				YMax = vertexList.Max(v => v.Y),
-				YMin = vertexList.Min(v => v.Y),
-				ZMax = vertexList.Max(v => v.Z),
-				ZMin = vertexList.Min(v => v.Z)
+				XMax = VertexList.Max(v => v.X),
+				XMin = VertexList.Min(v => v.X),
+				YMax = VertexList.Max(v => v.Y),
+				YMin = VertexList.Min(v => v.Y),
+				ZMax = VertexList.Max(v => v.Z),
+				ZMin = VertexList.Min(v => v.Z)
 			};
 		}
 
@@ -210,8 +209,8 @@ namespace ObjParser
 					case "v":
 						Vertex v = new Vertex();
 						v.LoadFromStringArray(parts);
-						vertexList.Add(v);
-						v.Index = vertexList.Count();
+						VertexList.Add(v);
+						v.Index = VertexList.Count();
 						break;
 					case "f":
 						Face f = new Face();
@@ -234,7 +233,7 @@ namespace ObjParser
 		{
 			Obj clone = new Obj(Name)
 			{
-				vertexList = vertexList,
+				VertexList = VertexList,
 				FaceList = FaceList,
 				TextureList = TextureList,
 				Position = Position,
@@ -250,12 +249,12 @@ namespace ObjParser
 
 		public override string ToString()
 		{
-			return Name + "[" + Position + "]" + vertexList.Count;
+			return Name + "[" + Position + "]" + VertexList.Count;
 		}
 
 		public int GetNextVertexIndex()
 		{
-			return vertexList.Count + 1;
+			return VertexList.Count + 1;
 		}
 	}
 }

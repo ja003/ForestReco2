@@ -26,6 +26,12 @@ namespace ForestReco
 			AddMaterial("fake", 1, 0, 1, EMaterial.Fake);
 			AddMaterial("checkTree", 0, 0, 1, EMaterial.CheckTree);
 
+			//https://www.december.com/html/spec/colorper.html
+			AddMaterial("unassignedGold", .6f, .8f, .1f, EMaterial.UnassignedPoint);
+			AddMaterial("groundBrown", .62f, .44f, .23f, EMaterial.GroundPoint);
+			AddMaterial("vegeGreen", .6f, 1, .6f, EMaterial.VegePoint);
+			AddMaterial("buildingRed", .63f, .32f, .18f, EMaterial.BuildingPoint);
+
 			AddTreeMaterial("red", 1, 0, 0);
 			AddTreeMaterial("orange", 1, .5f, 0);
 			AddTreeMaterial("lightOrange", 1, .2f, 0);
@@ -71,19 +77,22 @@ namespace ForestReco
 			}
 		}
 
-		public static string GetTreeMaterial(CTree pTree)
+		/// <summary>
+		/// Returns a material assigned to this tree
+		/// </summary>
+		public static Material GetTreeMaterial(CTree pTree)
 		{
 			int selectedIndex = pTree.treeIndex;
 
-			List<CTree> neighbourTrees = CProjectData.array.GetTreesInDistanceFrom(pTree.Center, 5);		
-			List<string> assignedMaterials = new List<string>();
+			List<CTree> neighbourTrees = CProjectData.Points.treeNormalArray.GetTreesInMaxStepsFrom(pTree.Center, 5);		
+			List<Material> assignedMaterials = new List<Material>();
 			foreach (CTree tree in neighbourTrees)
 			{
 				if(tree.Equals(pTree)){ continue; }
 				assignedMaterials.Add(tree.assignedMaterial);
 			}
 
-			string selectedMaterial = GetTreeMaterial(selectedIndex);
+			Material selectedMaterial = GetTreeMaterial(selectedIndex);
 			for (int i = 0; i < materialSet[EMaterial.Tree].Count; i++)
 			{
 				selectedMaterial = GetTreeMaterial(selectedIndex + i);
@@ -96,9 +105,10 @@ namespace ForestReco
 			return selectedMaterial;
 		}
 
-		private static string GetTreeMaterial(int pIndex)
+
+		private static Material GetTreeMaterial(int pIndex)
 		{
-			if(!useTreeMaterial){ return ""; }
+			if(!useTreeMaterial){ return null; }
 
 			List<int> treeIndexes = materialSet[EMaterial.Tree];
 			int matIndex = (pIndex % treeIndexes.Count + treeIndexes.Count) % treeIndexes.Count;
@@ -108,27 +118,51 @@ namespace ForestReco
 				matIndex = 0;
 			}
 
-			return materials.MaterialList[treeIndexes[matIndex]].Name;
-		}
-		
-		public static string GetInvalidMaterial()
-		{
-			return materials.MaterialList[materialSet[EMaterial.Invalid][0]].Name;
+			return materials.MaterialList[treeIndexes[matIndex]];
 		}
 
-		public static string GetFakeMaterial()
+
+		public static Material GetPointsMaterial(EClass pClass)
 		{
-			return materials.MaterialList[materialSet[EMaterial.Fake][0]].Name;
+			EMaterial material = GetClassMaterial(pClass);
+			return materials.MaterialList[materialSet[material][0]];
 		}
 
-		public static string GetAlarmMaterial()
+		private static EMaterial GetClassMaterial(EClass pClass)
 		{
-			return materials.MaterialList[materialSet[EMaterial.Alarm][0]].Name;
+			switch(pClass)
+			{
+				case EClass.Unassigned:
+					return EMaterial.UnassignedPoint;
+				case EClass.Ground:
+					return EMaterial.GroundPoint;
+				case EClass.Vege:
+					return EMaterial.VegePoint;
+				case EClass.Building:
+					return EMaterial.BuildingPoint;
+			}
+
+			return EMaterial.None;
 		}
 
-		public static string GetCheckTreeMaterial()
+		public static Material GetInvalidMaterial()
 		{
-			return materials.MaterialList[materialSet[EMaterial.CheckTree][0]].Name;
+			return materials.MaterialList[materialSet[EMaterial.Invalid][0]];
+		}
+
+		public static Material GetFakeMaterial()
+		{
+			return materials.MaterialList[materialSet[EMaterial.Fake][0]];
+		}
+
+		public static Material GetAlarmMaterial()
+		{
+			return materials.MaterialList[materialSet[EMaterial.Alarm][0]];
+		}
+
+		public static Material GetCheckTreeMaterial()
+		{
+			return materials.MaterialList[materialSet[EMaterial.CheckTree][0]];
 		}
 	}
 
@@ -140,6 +174,10 @@ namespace ForestReco
 		CheckTree,
 		Invalid,
 		Fake,
-		Alarm
+		Alarm,
+		VegePoint,
+		UnassignedPoint,
+		GroundPoint,
+		BuildingPoint
 	}
 }

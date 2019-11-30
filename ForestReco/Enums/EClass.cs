@@ -8,9 +8,15 @@ namespace ForestReco
 {
 	public enum EClass
 	{
-		Undefined = 1,
+		Undefined = 0,
+		Unassigned = 1,
 		Ground = 2,
 		Vege = 5,
-		Other = 6
+		Building = 6,
+
+		Balls = 666,
+		BallsMainPoints = 667,
+		BallsCenters = 668,
+		BallsSurface = 669
 	}
 }

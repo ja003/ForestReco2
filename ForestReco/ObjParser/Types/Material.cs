@@ -56,5 +56,14 @@ namespace ObjParser.Types
 
             return b.ToString();
         }
-    }
+
+		public string ToString255()
+		{
+			string output = "";
+			output += $"{(int)(DiffuseReflectivity.r * 255)} ";
+			output += $"{(int)(DiffuseReflectivity.g * 255)} ";
+			output += $"{(int)(DiffuseReflectivity.b * 255)}";
+			return output;
+		}
+	}
 }
