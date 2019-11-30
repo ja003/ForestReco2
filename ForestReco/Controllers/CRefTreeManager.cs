@@ -8,11 +8,14 @@ namespace ForestReco
 {
 	public static class CReftreeManager
 	{
-		public static List<CRefTree> Trees;
+		public static List<CRefTree> Trees = new List<CRefTree>();
 		private const float TREE_POINT_EXTENT = 0.2f;
 
 		public static void Init()
 		{
+			CDebug.Step(EProgramStep.LoadReftrees);
+			return;
+
 			Trees = new List<CRefTree>();
 			if(CRxpParser.IsRxp)
 				return;
@@ -44,10 +47,10 @@ namespace ForestReco
 		/// Assigns to each of detected trees the most suitable refTree
 		/// </summary>
 		public static void AssignRefTrees()
-		{
+		{	
 			if(Trees.Count == 0)
 			{
-				CDebug.Error("no reftrees loaded");
+				//CDebug.Error("no reftrees loaded");
 				return;
 			}
 
@@ -108,7 +111,6 @@ namespace ForestReco
 
 		private static void LoadTrees(List<string> pFileNames)
 		{
-			CDebug.Step(EProgramStep.LoadReftrees);
 
 			DateTime loadTreesStartTime = DateTime.Now;
 			DateTime lastDebugTime = DateTime.Now;

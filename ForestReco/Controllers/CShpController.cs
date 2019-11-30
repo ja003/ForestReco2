@@ -37,11 +37,22 @@ namespace ForestReco
 		private static bool exportShapeTreePos => CParameterSetter.GetBoolSettings(ESettings.exportShapeTreePositions);
 		private static bool exportShapeTreeAreas => CParameterSetter.GetBoolSettings(ESettings.exportShapeTreeAreas);
 
+		private static StringBuilder shpInfoMain = new StringBuilder();
+
 
 		public static void Init()
 		{
 			treePositionsAll = new List<IFeature>();
 			treeAreasAll = new List<IFeature>();
+
+			shpInfoMain = new StringBuilder();
+			shpInfoMain.Append(ATTR_ID + SEP);
+			shpInfoMain.Append(ATTR_X + SEP);
+			shpInfoMain.Append(ATTR_Y + SEP);
+			shpInfoMain.Append(ATTR_HEIGHT + SEP);
+			shpInfoMain.Append(ATTR_DBG + SEP);
+			shpInfoMain.Append(ATTR_AGB);
+			shpInfoMain.AppendLine();
 		}
 
 		/// <summary>
@@ -51,6 +62,8 @@ namespace ForestReco
 		{
 			if(!exportShape)
 				return;
+
+			CLasExporter.WriteToFile(shpInfoMain, CProjectData.outputFolder + "shape_info_main.csv");
 
 			if(exportShapeTreePos)
 				ExportFeatures(treePositionsAll, TREE_POS_FILE + MAIN, true);
@@ -119,27 +132,33 @@ namespace ForestReco
 			AttributesTable attributesTable = new AttributesTable();
 			attributesTable.Add(ATTR_ID, pTree.treeIndex);
 			pString.Append(pTree.treeIndex + SEP);
+			shpInfoMain.Append(pTree.treeIndex + SEP);
 
 			attributesTable.Add(ATTR_X, globalTreepos.X.ToString(NUM_FORMAT));
 			attributesTable.Add(ATTR_Y, globalTreepos.Y.ToString(NUM_FORMAT));
 			pString.Append(globalTreepos.X.ToString(NUM_FORMAT) + SEP);
+			shpInfoMain.Append(globalTreepos.X.ToString(NUM_FORMAT) + SEP);
 			pString.Append(globalTreepos.Y.ToString(NUM_FORMAT) + SEP);
+			shpInfoMain.Append(globalTreepos.Y.ToString(NUM_FORMAT) + SEP);
 
 			float treeHeight = pTree.GetTreeHeight();
 			attributesTable.Add(ATTR_HEIGHT, treeHeight.ToString(NUM_FORMAT));
 			pString.Append(treeHeight.ToString(NUM_FORMAT) + SEP);
+			shpInfoMain.Append(treeHeight.ToString(NUM_FORMAT) + SEP);
 
 			if(CParameterSetter.GetBoolSettings(ESettings.calculateDBH))
 			{
 				double stemDiameter = CBiomassController.GetTreeStemDiameter(treeHeight);
 				attributesTable.Add(ATTR_DBG, stemDiameter.ToString(NUM_FORMAT));
 				pString.Append(stemDiameter.ToString(NUM_FORMAT) + SEP);
+				shpInfoMain.Append(stemDiameter.ToString(NUM_FORMAT) + SEP);
 
 				if(CParameterSetter.GetBoolSettings(ESettings.calculateAGB))
 				{
 					double biomass = CBiomassController.GetTreeBiomass(stemDiameter, treeHeight);
 					attributesTable.Add(ATTR_AGB, biomass.ToString(NUM_FORMAT));
 					pString.Append(biomass.ToString(NUM_FORMAT) + SEP);
+					shpInfoMain.Append(biomass.ToString(NUM_FORMAT) + SEP);
 				}
 			}
 
@@ -149,6 +168,7 @@ namespace ForestReco
 
 			Feature feature = new Feature(myPoint, attributesTable);
 			pString.AppendLine();
+			shpInfoMain.AppendLine();
 
 			return feature;
 		}
@@ -186,7 +206,7 @@ namespace ForestReco
 			attributesTable.Add(ATTR_HEIGHT, treeHeight.ToString(NUM_FORMAT));
 
 			//reftree type
-			attributesTable.Add(ATTR_TYPE, pTree.assignedRefTree.RefTreeTypeName);
+			//attributesTable.Add(ATTR_TYPE, pTree.assignedRefTree.RefTreeTypeName);
 
 			Feature feature = new Feature(polygon, attributesTable);
 

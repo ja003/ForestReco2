@@ -29,6 +29,8 @@ namespace ForestReco
 		/// </summary>
 		public static void ExportMain()
 		{
+			return;
+
 			List<string[]> filesLines = new List<string[]>();
 
 			foreach(FileInfo fi in exportedFiles)
@@ -61,6 +63,8 @@ namespace ForestReco
 
 		public static void ExportTile()
 		{
+			return;
+
 			if(CTreeManager.Trees.Count == 0)
 			{
 				CDebug.Warning($"CDartTxt: no output created on tile {CProgramStarter.currentTileIndex}");

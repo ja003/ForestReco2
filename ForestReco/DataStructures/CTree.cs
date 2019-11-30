@@ -965,7 +965,7 @@ namespace ForestReco
 
 		//BOOLS
 		bool isAtBorder;
-		bool isAtBufferZone;
+		public bool isAtBufferZone;
 
 		public bool Validate(bool pRestrictive, bool pFinal = false)
 		{

@@ -183,6 +183,11 @@ namespace ForestReco
 				CDebug.Progress(i, trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (trees)");
 
 				CTree t = trees[i];
+
+				//without this there are always invalid trees in the main file at buffer zones
+				if(t.isAtBufferZone)
+					continue;
+
 				res = GetTreeLines(t); //already ends with "newLine"
 				pOutput.Append(res);
 			}
