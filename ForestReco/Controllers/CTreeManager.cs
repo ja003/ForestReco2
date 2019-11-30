@@ -334,15 +334,18 @@ namespace ForestReco
 
 		public static EDetectionMethod GetDetectMethod()
 		{
-			EDetectionMethod detectMethod = (EDetectionMethod)CParameterSetter.GetIntSettings(ESettings.detectMethod);
+			//251 - Finalizace produktu
+			return EDetectionMethod.AddFactor;
 
-			if(detectMethod == EDetectionMethod.None)
-			{
-				CDebug.Error("No detection method set! setting default: CanBeAdded");
-				CParameterSetter.SetParameter(ESettings.detectMethod, (int)EDetectionMethod.Detection2D);
-				detectMethod = (EDetectionMethod)CParameterSetter.GetIntSettings(ESettings.detectMethod);
-			}
-			return detectMethod;
+			//EDetectionMethod detectMethod = (EDetectionMethod)CParameterSetter.GetIntSettings(ESettings.detectMethod);
+
+			//if(detectMethod == EDetectionMethod.None)
+			//{
+			//	CDebug.Error("No detection method set! setting default: CanBeAdded");
+			//	CParameterSetter.SetParameter(ESettings.detectMethod, (int)EDetectionMethod.Detection2D);
+			//	detectMethod = (EDetectionMethod)CParameterSetter.GetIntSettings(ESettings.detectMethod);
+			//}
+			//return detectMethod;
 		}
 
 		/// <summary>

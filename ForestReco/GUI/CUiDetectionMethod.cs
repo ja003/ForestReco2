@@ -17,15 +17,15 @@ namespace ForestReco
 			form = pForm;
 		}
 
-		public void OnSelectDetectMethod(EDetectionMethod pMethod)
-		{
-			bool detection2D = pMethod == EDetectionMethod.Detection2D;
-			SetElementEnabled(form.trackBarLocalMaxHeight, detection2D);
-			SetElementEnabled(form.trackBarAllowedDescend, detection2D);
-			SetElementEnabled(form.trackBarMinAscendSteps, detection2D);
-			SetElementEnabled(form.trackBarMinDescendSteps, detection2D);
-			SetElementEnabled(form.richTextTreeRadius, detection2D);
-		}
+		//public void OnSelectDetectMethod(EDetectionMethod pMethod)
+		//{
+		//	bool detection2D = pMethod == EDetectionMethod.Detection2D;
+		//	SetElementEnabled(form.trackBarLocalMaxHeight, detection2D);
+		//	SetElementEnabled(form.trackBarAllowedDescend, detection2D);
+		//	SetElementEnabled(form.trackBarMinAscendSteps, detection2D);
+		//	SetElementEnabled(form.trackBarMinDescendSteps, detection2D);
+		//	SetElementEnabled(form.richTextTreeRadius, detection2D);
+		//}
 
 		private void SetElementEnabled(Control pControl, bool pEnabled)
 		{
