@@ -56,9 +56,14 @@ namespace ForestReco
 
 			CheckExport();
 
-			CheckDBH();
-			CheckAGB();
-			CheckTreeRadius();
+			if(CShpController.exportShape)
+			{
+				if(CParameterSetter.GetBoolSettings(ESettings.calculateDBH))
+					CheckDBH();
+				if(CParameterSetter.GetBoolSettings(ESettings.calculateAGB))
+					CheckAGB();
+				CheckTreeRadius();
+			}
 
 			bool hasProblems = problems.Count > 0;
 			if(hasProblems)
@@ -148,7 +153,7 @@ namespace ForestReco
 		{
 			string problem = CTreeRadiusCalculator.IsValidEquation(CParameterSetter.GetStringSettings(ESettings.treeRadius));
 			if(problem.Length > 0)
-				problems.Add($"treeRadius equation problem: {problem}");
+				problems.Add($"tree radius equation problem: {problem}");
 		}
 	}
 }

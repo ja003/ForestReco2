@@ -226,7 +226,7 @@ namespace ForestReco
 		/// <summary>
 		/// todo: create file manager and use this approach (passing SB and writing by buffers)
 		/// </summary>
-		private static void WriteToFile(StringBuilder pTextSB, string pFilePath)
+		public static void WriteToFile(StringBuilder pTextSB, string pFilePath)
 		{
 			//if file exists, append the text to it
 			using(var writer = new StreamWriter(pFilePath, true))

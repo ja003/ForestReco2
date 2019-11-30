@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Text;
 
 namespace ForestReco
 {
@@ -31,7 +32,7 @@ namespace ForestReco
 
 		private static GeometryFactory factory = new GeometryFactory();
 
-		private static bool exportShape => CParameterSetter.GetBoolSettings(ESettings.exportShape) &&
+		public static bool exportShape => CParameterSetter.GetBoolSettings(ESettings.exportShape) &&
 			(exportShapeTreePos || exportShapeTreeAreas);
 		private static bool exportShapeTreePos => CParameterSetter.GetBoolSettings(ESettings.exportShapeTreePositions);
 		private static bool exportShapeTreeAreas => CParameterSetter.GetBoolSettings(ESettings.exportShapeTreeAreas);
@@ -57,6 +58,8 @@ namespace ForestReco
 				ExportFeatures(treeAreasAll, TREE_BORDER_FILE + MAIN, true);
 		}
 
+		const string SEP = ",";
+
 		/// <summary>
 		/// Export file using data from currently loaded trees
 		/// </summary>
@@ -70,13 +73,23 @@ namespace ForestReco
 
 			List<IFeature> treePositions = new List<IFeature>();
 			List<IFeature> treeBorders = new List<IFeature>();
+			StringBuilder shpInfo = new StringBuilder();
+
+			shpInfo.Append(ATTR_ID + SEP);
+			shpInfo.Append(ATTR_X + SEP);
+			shpInfo.Append(ATTR_Y + SEP);
+			//shpInfo.Append(ATTR_AREA + SEP);
+			shpInfo.Append(ATTR_HEIGHT + SEP);
+			shpInfo.Append(ATTR_DBG + SEP);
+			shpInfo.Append(ATTR_AGB);
+			shpInfo.AppendLine();
 
 			for(int i = 0; i < CTreeManager.Trees.Count; i++)
 			{
 				CDebug.Progress(i, CTreeManager.Trees.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export shp (trees)");
 				CTree tree = CTreeManager.Trees[i];
 				//tree positions
-				Feature f = GetTreePosition(tree);
+				Feature f = GetTreePosition(tree, ref shpInfo);
 				treePositions.Add(f);
 				treePositionsAll.Add(f);
 
@@ -85,47 +98,57 @@ namespace ForestReco
 				treeBorders.Add(f);
 				treeAreasAll.Add(f);
 			}
+			CLasExporter.WriteToFile(shpInfo, CProjectData.outputTileSubfolder + "shape_info.csv");
 
 			if(exportShapeTreePos)
 				ExportFeatures(treePositions, TREE_POS_FILE, false);
 			if(exportShapeTreeAreas)
 				ExportFeatures(treeBorders, TREE_BORDER_FILE, false);
 		}
-
+		
 		/// <summary>
 		/// Generates point feature representing position of the tree.
 		/// Attributes:
 		/// id, X, Y, height, DBH, AGB, type
 		/// </summary>
-		private static Feature GetTreePosition(CTree pTree)
+		private static Feature GetTreePosition(CTree pTree, ref StringBuilder pString)
 		{
 			CVector3D globalTreepos = CUtils.GetGlobalPosition(pTree.peak.Center);
 			IPoint myPoint = factory.CreatePoint(new Coordinate(globalTreepos.X, globalTreepos.Y));
 
 			AttributesTable attributesTable = new AttributesTable();
 			attributesTable.Add(ATTR_ID, pTree.treeIndex);
+			pString.Append(pTree.treeIndex + SEP);
 
 			attributesTable.Add(ATTR_X, globalTreepos.X.ToString(NUM_FORMAT));
 			attributesTable.Add(ATTR_Y, globalTreepos.Y.ToString(NUM_FORMAT));
+			pString.Append(globalTreepos.X.ToString(NUM_FORMAT) + SEP);
+			pString.Append(globalTreepos.Y.ToString(NUM_FORMAT) + SEP);
 
 			float treeHeight = pTree.GetTreeHeight();
 			attributesTable.Add(ATTR_HEIGHT, treeHeight.ToString(NUM_FORMAT));
+			pString.Append(treeHeight.ToString(NUM_FORMAT) + SEP);
 
 			if(CParameterSetter.GetBoolSettings(ESettings.calculateDBH))
 			{
 				double stemDiameter = CBiomassController.GetTreeStemDiameter(treeHeight);
 				attributesTable.Add(ATTR_DBG, stemDiameter.ToString(NUM_FORMAT));
+				pString.Append(stemDiameter.ToString(NUM_FORMAT) + SEP);
 
 				if(CParameterSetter.GetBoolSettings(ESettings.calculateAGB))
 				{
 					double biomass = CBiomassController.GetTreeBiomass(stemDiameter, treeHeight);
 					attributesTable.Add(ATTR_AGB, biomass.ToString(NUM_FORMAT));
+					pString.Append(biomass.ToString(NUM_FORMAT) + SEP);
 				}
 			}
 
-			attributesTable.Add(ATTR_TYPE, pTree.assignedRefTree.RefTreeTypeName);
+			//251 - Finalizace produktu
+			//attributesTable.Add(ATTR_TYPE, pTree.assignedRefTree.RefTreeTypeName);
+			//pString.Append(pTree.assignedRefTree.RefTreeTypeName + SEP);
 
 			Feature feature = new Feature(myPoint, attributesTable);
+			pString.AppendLine();
 
 			return feature;
 		}

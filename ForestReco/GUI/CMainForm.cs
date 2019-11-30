@@ -249,10 +249,10 @@ namespace ForestReco
 			//checkBoxUseCheckTree.Checked =
 				//CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile);
 			//checkBoxUseCheckTree_CheckedChanged(this, EventArgs.Empty); //force refresh
-			//checkBoxDeleteTmp.Checked =
-			//	CParameterSetter.GetBoolSettings(ESettings.deleteTmp);
-			//checkBoxPreprocess.Checked =
-			//   CParameterSetter.GetBoolSettings(ESettings.preprocess);
+			checkBoxDeleteTmp.Checked =
+				CParameterSetter.GetBoolSettings(ESettings.deleteTmp);
+			checkBoxPreprocess.Checked =
+				CParameterSetter.GetBoolSettings(ESettings.preprocess);
 
 			//checkBoxExportCheckTrees.Checked =
 			//	CParameterSetter.GetBoolSettings(ESettings.exportCheckTrees);
@@ -1027,7 +1027,7 @@ namespace ForestReco
 			// 
 			this.richTextDBH.Location = new System.Drawing.Point(823, 11);
 			this.richTextDBH.Name = "richTextDBH";
-			this.richTextDBH.Size = new System.Drawing.Size(205, 27);
+			this.richTextDBH.Size = new System.Drawing.Size(195, 27);
 			this.richTextDBH.TabIndex = 95;
 			this.richTextDBH.Text = "";
 			this.richTextDBH.TextChanged += new System.EventHandler(this.richTextDBH_TextChanged);
@@ -1054,7 +1054,7 @@ namespace ForestReco
 			// 
 			this.richTextAGB.Location = new System.Drawing.Point(823, 49);
 			this.richTextAGB.Name = "richTextAGB";
-			this.richTextAGB.Size = new System.Drawing.Size(205, 27);
+			this.richTextAGB.Size = new System.Drawing.Size(195, 27);
 			this.richTextAGB.TabIndex = 97;
 			this.richTextAGB.Text = "";
 			this.richTextAGB.TextChanged += new System.EventHandler(this.richTextAGB_TextChanged);
@@ -1105,7 +1105,7 @@ namespace ForestReco
 			// 
 			this.richTextTreeRadius.Location = new System.Drawing.Point(823, 82);
 			this.richTextTreeRadius.Name = "richTextTreeRadius";
-			this.richTextTreeRadius.Size = new System.Drawing.Size(205, 27);
+			this.richTextTreeRadius.Size = new System.Drawing.Size(195, 27);
 			this.richTextTreeRadius.TabIndex = 109;
 			this.richTextTreeRadius.Text = "";
 			this.richTextTreeRadius.TextChanged += new System.EventHandler(this.richTextBoxTreeRadius_TextChanged);
@@ -1141,7 +1141,6 @@ namespace ForestReco
 			this.trackBarMinTreeHeight.Name = "trackBarMinTreeHeight";
 			this.trackBarMinTreeHeight.Size = new System.Drawing.Size(140, 30);
 			this.trackBarMinTreeHeight.TabIndex = 115;
-			this.trackBarMinTreeHeight.TickFrequency = 5;
 			this.trackBarMinTreeHeight.Scroll += new System.EventHandler(this.TrackBarMinTreeHeight_Scroll);
 			// 
 			// textMinTreeHeight
@@ -1200,7 +1199,7 @@ namespace ForestReco
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
-			this.ClientSize = new System.Drawing.Size(1084, 561);
+			this.ClientSize = new System.Drawing.Size(1034, 481);
 			this.Controls.Add(this.trackBarMinTreePoints);
 			this.Controls.Add(this.textMinTreePoints);
 			this.Controls.Add(this.label17);
@@ -1550,8 +1549,8 @@ namespace ForestReco
 			CParameterSetter.SetParameter(ESettings.autoAverageTreeHeight, checkBoxAutoTreeHeight.Checked);
 
 			trackBarAvgTreeHeight.Enabled = !checkBoxAutoTreeHeight.Checked;
-			//trackBarAvgTreeHeight.BackColor = checkBoxAutoTreeHeight.Checked ?
-			//	System.Drawing.Color.Gray : trackBarPartition.BackColor; //dont know color code of 'enabled color'
+			trackBarAvgTreeHeight.BackColor = checkBoxAutoTreeHeight.Checked ?
+				System.Drawing.Color.Gray : trackBarMinTreeHeight.BackColor; //dont know color code of 'enabled color'
 		}
 
 		private void checkBoxColorTrees_CheckedChanged(object sender, EventArgs e)
