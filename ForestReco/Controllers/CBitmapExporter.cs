@@ -62,6 +62,12 @@ namespace ForestReco
 			if(!exportMain || !exportBitmap)
 				return;
 
+			if(!CParameterSetter.GetBoolSettings(ESettings.ExportBMTreePositions))
+				return;
+
+			if(CProgramStarter.tilesCount < 2)
+				return;
+
 			//mainMap.SetPixel(0, 0, treeColor);
 
 			//main bitmap has a lot of missing fields - apply filter

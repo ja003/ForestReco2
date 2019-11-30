@@ -10,7 +10,9 @@ namespace ForestReco
 {
 	public static class CRxpParser
 	{
-		public static bool IsRxp => CParameterSetter.GetStringSettings(ESettings.forestFileExtension) == ".rxp";
+		//public static bool IsRxp => CParameterSetter.GetStringSettings(ESettings.forestFileExtension) == ".rxp";
+
+		public static bool IsRxp = false;
 
 		//public static string[] GetDebugHeaderLines()
 		//{
