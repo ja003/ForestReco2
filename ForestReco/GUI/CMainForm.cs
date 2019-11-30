@@ -312,6 +312,16 @@ namespace ForestReco
 
 			CTooltipManager.AssignTooltip(myToolTip, richTextTreeRadius, ESettings.treeRadius);
 
+
+
+			CTooltipManager.AssignTooltip(myToolTip, checkBoxDBH, ESettings.calculateDBH);
+			CTooltipManager.AssignTooltip(myToolTip, checkBoxAGB, ESettings.calculateAGB);
+			CTooltipManager.AssignTooltip(myToolTip, checkBoxPreprocess, ESettings.preprocess);
+			CTooltipManager.AssignTooltip(myToolTip, checkBoxDeleteTmp, ESettings.deleteTmp);
+			CTooltipManager.AssignTooltip(myToolTip, trackBarMinTreeHeight, ESettings.minTreeHeight);
+			CTooltipManager.AssignTooltip(myToolTip, trackBarMinTreePoints, ESettings.minTreePoints);
+
+
 			#endregion
 		}
 
@@ -537,7 +547,7 @@ namespace ForestReco
 			this.trackBarTreeExtent.Name = "trackBarTreeExtent";
 			this.trackBarTreeExtent.Size = new System.Drawing.Size(159, 30);
 			this.trackBarTreeExtent.TabIndex = 29;
-			this.trackBarTreeExtent.TickFrequency = 5;
+			this.trackBarTreeExtent.TickFrequency = 2;
 			this.trackBarTreeExtent.Value = 10;
 			this.trackBarTreeExtent.Scroll += new System.EventHandler(this.trackBarTreeExtent_Scroll);
 			// 
@@ -570,7 +580,7 @@ namespace ForestReco
 			this.trackBarTreeExtentMultiply.Name = "trackBarTreeExtentMultiply";
 			this.trackBarTreeExtentMultiply.Size = new System.Drawing.Size(159, 30);
 			this.trackBarTreeExtentMultiply.TabIndex = 33;
-			this.trackBarTreeExtentMultiply.TickFrequency = 5;
+			this.trackBarTreeExtentMultiply.TickFrequency = 2;
 			this.trackBarTreeExtentMultiply.Value = 10;
 			this.trackBarTreeExtentMultiply.Scroll += new System.EventHandler(this.trackBarTreeExtentMultiply_Scroll);
 			// 
@@ -604,7 +614,7 @@ namespace ForestReco
 			this.trackBarAvgTreeHeight.Name = "trackBarAvgTreeHeight";
 			this.trackBarAvgTreeHeight.Size = new System.Drawing.Size(192, 30);
 			this.trackBarAvgTreeHeight.TabIndex = 37;
-			this.trackBarAvgTreeHeight.TickFrequency = 5;
+			this.trackBarAvgTreeHeight.TickFrequency = 3;
 			this.trackBarAvgTreeHeight.Value = 15;
 			this.trackBarAvgTreeHeight.Scroll += new System.EventHandler(this.trackBarAvgTreeHeight_Scroll);
 			// 
@@ -656,7 +666,6 @@ namespace ForestReco
 			this.checkBoxExportBitmap.Size = new System.Drawing.Size(126, 17);
 			this.checkBoxExportBitmap.TabIndex = 59;
 			this.checkBoxExportBitmap.Text = "EXPORT BITMAP";
-			this.myToolTip.SetToolTip(this.checkBoxExportBitmap, "hh");
 			this.checkBoxExportBitmap.UseVisualStyleBackColor = true;
 			this.checkBoxExportBitmap.CheckedChanged += new System.EventHandler(this.checkBoxExportBitmap_CheckedChanged);
 			// 
@@ -668,7 +677,6 @@ namespace ForestReco
 			this.checkBoxPreprocess.Size = new System.Drawing.Size(78, 17);
 			this.checkBoxPreprocess.TabIndex = 93;
 			this.checkBoxPreprocess.Text = "preprocess";
-			this.myToolTip.SetToolTip(this.checkBoxPreprocess, "hh");
 			this.checkBoxPreprocess.UseVisualStyleBackColor = true;
 			this.checkBoxPreprocess.CheckedChanged += new System.EventHandler(this.checkBoxPreprocess_CheckedChanged);
 			// 
@@ -680,7 +688,6 @@ namespace ForestReco
 			this.checkBoxDeleteTmp.Size = new System.Drawing.Size(96, 17);
 			this.checkBoxDeleteTmp.TabIndex = 94;
 			this.checkBoxDeleteTmp.Text = "delete tmp files";
-			this.myToolTip.SetToolTip(this.checkBoxDeleteTmp, "hh");
 			this.checkBoxDeleteTmp.UseVisualStyleBackColor = true;
 			this.checkBoxDeleteTmp.CheckedChanged += new System.EventHandler(this.checkBoxDeleteTmp_CheckedChanged);
 			// 
@@ -693,7 +700,6 @@ namespace ForestReco
 			this.checkBoxExportShape.Size = new System.Drawing.Size(105, 17);
 			this.checkBoxExportShape.TabIndex = 99;
 			this.checkBoxExportShape.Text = "EXPORT SHP";
-			this.myToolTip.SetToolTip(this.checkBoxExportShape, "hh");
 			this.checkBoxExportShape.UseVisualStyleBackColor = true;
 			this.checkBoxExportShape.CheckedChanged += new System.EventHandler(this.checkBoxExportShape_CheckedChanged);
 			// 
@@ -705,7 +711,6 @@ namespace ForestReco
 			this.checkBoxExportLas.Size = new System.Drawing.Size(71, 17);
 			this.checkBoxExportLas.TabIndex = 101;
 			this.checkBoxExportLas.Text = "export las";
-			this.myToolTip.SetToolTip(this.checkBoxExportLas, "hh");
 			this.checkBoxExportLas.UseVisualStyleBackColor = true;
 			this.checkBoxExportLas.CheckedChanged += new System.EventHandler(this.checkBoxExportLas_CheckedChanged);
 			// 
@@ -716,7 +721,6 @@ namespace ForestReco
 			this.checkBoxDBH.Name = "checkBoxDBH";
 			this.checkBoxDBH.Size = new System.Drawing.Size(15, 14);
 			this.checkBoxDBH.TabIndex = 102;
-			this.myToolTip.SetToolTip(this.checkBoxDBH, "hh");
 			this.checkBoxDBH.UseVisualStyleBackColor = true;
 			this.checkBoxDBH.CheckedChanged += new System.EventHandler(this.checkBoxDBH_CheckedChanged);
 			// 
@@ -727,7 +731,6 @@ namespace ForestReco
 			this.checkBoxAGB.Name = "checkBoxAGB";
 			this.checkBoxAGB.Size = new System.Drawing.Size(15, 14);
 			this.checkBoxAGB.TabIndex = 103;
-			this.myToolTip.SetToolTip(this.checkBoxAGB, "hh");
 			this.checkBoxAGB.UseVisualStyleBackColor = true;
 			this.checkBoxAGB.CheckedChanged += new System.EventHandler(this.checkBoxAGB_CheckedChanged);
 			// 
@@ -986,7 +989,7 @@ namespace ForestReco
 			this.trackBarTileSize.Size = new System.Drawing.Size(140, 30);
 			this.trackBarTileSize.SmallChange = 5;
 			this.trackBarTileSize.TabIndex = 91;
-			this.trackBarTileSize.TickFrequency = 5;
+			this.trackBarTileSize.TickFrequency = 10;
 			this.trackBarTileSize.Value = 30;
 			this.trackBarTileSize.Scroll += new System.EventHandler(this.trackBarTileSize_Scroll);
 			// 
@@ -1137,7 +1140,7 @@ namespace ForestReco
 			// 
 			this.trackBarMinTreeHeight.AutoSize = false;
 			this.trackBarMinTreeHeight.LargeChange = 1;
-			this.trackBarMinTreeHeight.Location = new System.Drawing.Point(367, 179);
+			this.trackBarMinTreeHeight.Location = new System.Drawing.Point(548, 176);
 			this.trackBarMinTreeHeight.Name = "trackBarMinTreeHeight";
 			this.trackBarMinTreeHeight.Size = new System.Drawing.Size(140, 30);
 			this.trackBarMinTreeHeight.TabIndex = 115;
@@ -1145,7 +1148,7 @@ namespace ForestReco
 			// 
 			// textMinTreeHeight
 			// 
-			this.textMinTreeHeight.Location = new System.Drawing.Point(465, 154);
+			this.textMinTreeHeight.Location = new System.Drawing.Point(652, 151);
 			this.textMinTreeHeight.Name = "textMinTreeHeight";
 			this.textMinTreeHeight.ReadOnly = true;
 			this.textMinTreeHeight.Size = new System.Drawing.Size(40, 20);
@@ -1156,7 +1159,7 @@ namespace ForestReco
 			// 
 			this.label12.AutoSize = true;
 			this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label12.Location = new System.Drawing.Point(374, 156);
+			this.label12.Location = new System.Drawing.Point(555, 153);
 			this.label12.Name = "label12";
 			this.label12.Size = new System.Drawing.Size(91, 13);
 			this.label12.TabIndex = 113;
@@ -1166,20 +1169,20 @@ namespace ForestReco
 			// 
 			this.trackBarMinTreePoints.AutoSize = false;
 			this.trackBarMinTreePoints.LargeChange = 1;
-			this.trackBarMinTreePoints.Location = new System.Drawing.Point(202, 179);
+			this.trackBarMinTreePoints.Location = new System.Drawing.Point(545, 120);
 			this.trackBarMinTreePoints.Maximum = 200;
 			this.trackBarMinTreePoints.Minimum = 1;
 			this.trackBarMinTreePoints.Name = "trackBarMinTreePoints";
-			this.trackBarMinTreePoints.Size = new System.Drawing.Size(159, 30);
+			this.trackBarMinTreePoints.Size = new System.Drawing.Size(143, 30);
 			this.trackBarMinTreePoints.SmallChange = 5;
 			this.trackBarMinTreePoints.TabIndex = 131;
-			this.trackBarMinTreePoints.TickFrequency = 10;
+			this.trackBarMinTreePoints.TickFrequency = 15;
 			this.trackBarMinTreePoints.Value = 2;
 			this.trackBarMinTreePoints.Scroll += new System.EventHandler(this.trackBarMinTreePoints_Scroll);
 			// 
 			// textMinTreePoints
 			// 
-			this.textMinTreePoints.Location = new System.Drawing.Point(321, 154);
+			this.textMinTreePoints.Location = new System.Drawing.Point(652, 95);
 			this.textMinTreePoints.Name = "textMinTreePoints";
 			this.textMinTreePoints.ReadOnly = true;
 			this.textMinTreePoints.Size = new System.Drawing.Size(40, 20);
@@ -1190,7 +1193,7 @@ namespace ForestReco
 			// 
 			this.label17.AutoSize = true;
 			this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.label17.Location = new System.Drawing.Point(209, 155);
+			this.label17.Location = new System.Drawing.Point(552, 96);
 			this.label17.Name = "label17";
 			this.label17.Size = new System.Drawing.Size(90, 13);
 			this.label17.TabIndex = 129;

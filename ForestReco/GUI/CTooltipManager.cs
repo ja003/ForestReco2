@@ -103,6 +103,23 @@ namespace ForestReco
 						$"15m = {CTreeRadiusCalculator.GetTreeRadius(15)}, " +
 						$"20m = {CTreeRadiusCalculator.GetTreeRadius(20)}, " +
 						$"25m = {CTreeRadiusCalculator.GetTreeRadius(25)}";
+
+
+
+				case ESettings.calculateAGB:
+					return "Include biomass to shp attributes";
+				case ESettings.calculateDBH:
+					return "Include stem diameter to shp attributes";
+				case ESettings.preprocess:
+					return "Apply las commands: lasnoise, lasground, lasheight, lasclassify before precessing";
+				case ESettings.deleteTmp:
+					return "After each las command during preprocessing a tmp file is created. Check this to delete them when finished.";
+				case ESettings.minTreeHeight:
+					return "Minimal tree height for tree to be considered valid";
+				case ESettings.minTreePoints:
+					return "Minimal tree point count for tree to be considered valid";
+
+
 			}
 
 			return "- no tooltip defined";
