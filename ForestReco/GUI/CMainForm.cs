@@ -706,9 +706,10 @@ namespace ForestReco
 			// checkBoxExportLas
 			// 
 			this.checkBoxExportLas.AutoSize = true;
+			this.checkBoxExportLas.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.checkBoxExportLas.Location = new System.Drawing.Point(13, 416);
 			this.checkBoxExportLas.Name = "checkBoxExportLas";
-			this.checkBoxExportLas.Size = new System.Drawing.Size(71, 17);
+			this.checkBoxExportLas.Size = new System.Drawing.Size(81, 17);
 			this.checkBoxExportLas.TabIndex = 101;
 			this.checkBoxExportLas.Text = "export las";
 			this.checkBoxExportLas.UseVisualStyleBackColor = true;
