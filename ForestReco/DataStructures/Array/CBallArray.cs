@@ -56,6 +56,9 @@ namespace ForestReco
 			foreach(CBallField f in fields)
 			{
 				f.FilterPointsAtDistance(pMinDistance, pMaxDistance);
+
+				if(CProjectData.backgroundWorker.CancellationPending)
+					return;
 			}
 		}
 
@@ -67,6 +70,20 @@ namespace ForestReco
 				filteredOutPoints.AddRange(f.filteredOut);
 			}
 			return filteredOutPoints;
+		}
+
+		internal void AddFilteredOutPointInField(Vector3 pPoint)
+		{
+			CBallField f = GetFieldContainingPoint(pPoint);
+			f.AddPoint(pPoint, true);
+		}
+
+		internal void SortPoints()
+		{
+			foreach(CBallField f in fields)
+			{
+				f.SortPoints();
+			}
 		}
 	}
 }

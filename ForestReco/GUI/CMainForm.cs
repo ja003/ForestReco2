@@ -2254,6 +2254,9 @@ namespace ForestReco
 
 			string[] lines = CPreprocessController.GetHeaderLines(fullFilePath, infoFilePath);
 
+			//dont update if not inited yet
+			rangeController?.UpdateRangeBounds();
+
 			if(lines == null)
 				return;
 
@@ -2261,10 +2264,7 @@ namespace ForestReco
 				return;
 
 			CProjectData.sourceFileHeader = new CHeaderInfo(lines);
-			RefreshEstimatedSize();
-
-			//dont update if not inited yet
-			rangeController?.UpdateRangeBounds();
+			RefreshEstimatedSize();			
 		}
 
 		private void btnSelectCheckTree_Click(object sender, EventArgs e)

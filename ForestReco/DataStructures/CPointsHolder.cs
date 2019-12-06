@@ -69,7 +69,7 @@ namespace ForestReco
 		public List<Vector3> GetPoints(EClass pClass)
 		{
 			const int filter_frequency = 0;// 100;
-			
+
 
 			switch(pClass)
 			{
@@ -81,7 +81,7 @@ namespace ForestReco
 					}
 
 					return unassigned;
-				case EClass.FilteredOut:					
+				case EClass.FilteredOut:
 					if(CTreeManager.GetDetectMethod() == EDetectionMethod.Balls)
 						return CUtils.GetPoints(ballArray.GetFilteredOutPoints(), filter_frequency);
 					return new List<Vector3>();
@@ -476,12 +476,22 @@ namespace ForestReco
 					ballDetailArray.AddPointInField(point);
 				}
 
+				//add filtered out points to detail array
+				List<Vector3> filteredOutPoints = ballArray.GetFilteredOutPoints();
+				foreach(Vector3 point in filteredOutPoints)
+				{
+					if(CProjectData.backgroundWorker.CancellationPending)
+						return true;
+
+					ballDetailArray.AddFilteredOutPointInField(point);
+				}
+
+				//this is actually not necessary
+				//ballDetailArray.SortPoints();
+
 				//array grid points - for result debug (increases file size)
 				//arrayGrid = ballArray.GetArrayGridPoints();
 				arrayGrid = ballDetailArray.GetArrayGridPoints();
-
-				//int filteredOutCount = ballDetailArray.FilterFieldsWithNeighbours();
-				//CDebug.WriteLine($"Filtered out {filteredOutCount} fields");
 
 
 				List<CBallField> ballFields = new List<CBallField>();
@@ -521,7 +531,7 @@ namespace ForestReco
 					//	CDebug.WriteLine();
 					//	force = true;
 					//}
-					
+
 
 					CBall detectedBall = CBallsManager.Process(field, force);
 					if(detectedBall != null && detectedBall.isValid)
@@ -570,7 +580,7 @@ namespace ForestReco
 
 				foreach(CBallField field in ballFields)
 				{
-					if(field.ball!= null)
+					if(field.ball != null)
 						ballPoints.AddRange(field.ball.points);
 					//ballPoints.AddRange(field.points);
 				}

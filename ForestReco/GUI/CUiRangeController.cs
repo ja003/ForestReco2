@@ -7,7 +7,7 @@ namespace ForestReco
 	public class CUiRangeController
 	{
 		private CMainForm form;
-		
+
 		public CUiRangeController(CMainForm pForm)
 		{
 			form = pForm;
@@ -39,11 +39,17 @@ namespace ForestReco
 
 		public void UpdateRangeBounds()
 		{
+			Vector3 min = -1000 * Vector3.One;
+			Vector3 max = 1000 * Vector3.One;
+			if(CProjectData.sourceFileHeader != null)
+			{
+				min = (Vector3)CProjectData.sourceFileHeader.Min_orig;
+				max = (Vector3)CProjectData.sourceFileHeader.Max_orig;
+			}
+
 			//X
 			//range has to match file coordinates
 			//in project are used coordinates moved by offset
-			Vector3 min = (Vector3)CProjectData.sourceFileHeader.Min_orig;
-			Vector3 max = (Vector3)CProjectData.sourceFileHeader.Max_orig;
 			form.trackBarRangeXmin.SetRange((int)min.X * 10, (int)max.X * 10);
 			form.trackBarRangeXmax.SetRange((int)min.X * 10, (int)max.X * 10);
 
@@ -132,7 +138,7 @@ namespace ForestReco
 			//'--' = minus sign to the other value
 			//'+' = plus sign to the other value
 			bool hasSign = textRangeValue[0] == '+' ||
-				(textRangeValue.Length > 1 && 
+				(textRangeValue.Length > 1 &&
 					textRangeValue[0] == '-' && textRangeValue[1] == '-');
 			if(hasSign)
 			{
@@ -184,6 +190,6 @@ namespace ForestReco
 			form.btnShapefile.Enabled = isShapefile;
 		}
 
-		
+
 	}
 }

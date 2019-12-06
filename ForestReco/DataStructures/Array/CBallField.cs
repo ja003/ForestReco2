@@ -13,6 +13,7 @@ namespace ForestReco
 
 		//keeps record if there is any point at height defined by GetHeightKey
 		HashSet<int> definedAtHeight = new HashSet<int>();
+		HashSet<int> filteredOutAtHeight = new HashSet<int>();
 
 		public CBallField(Tuple<int, int> pIndexInField, Vector3 pCenter, float pStepSize, bool pDetail) :
 			base(pIndexInField, pCenter, pStepSize, pDetail)
@@ -21,10 +22,27 @@ namespace ForestReco
 
 		public override void AddPoint(Vector3 pPoint)
 		{
-			base.AddPoint(pPoint);
+			AddPoint(pPoint, false);
+		}
 
+		/// <summary>
+		/// Adds either normal or filtered out point.
+		/// Usage: Filtering is done in normal array and points are then coppied 
+		/// into detail array. We need to keep filtered out points as well.
+		/// </summary>
+		public void AddPoint(Vector3 pPoint, bool pFilteredOut)
+		{
 			int heightKey = GetHeightKey(pPoint);
-			definedAtHeight.Add(heightKey);
+			if(!pFilteredOut)
+			{
+				base.AddPoint(pPoint);
+				definedAtHeight.Add(heightKey);
+			}
+			else
+			{
+				filteredOut.Add(pPoint);
+				filteredOutAtHeight.Add(heightKey);
+			}
 		}
 
 		private int GetHeightKey(Vector3 pPoint)
@@ -91,6 +109,14 @@ namespace ForestReco
 			}
 		}
 
+		/// <summary>
+		/// Sort descending
+		/// </summary>
+		internal void SortPoints()
+		{
+			points.Sort((a, b) => b.Z.CompareTo(a.Z));
+			filteredOut.Sort((a, b) => b.Z.CompareTo(a.Z));
+		}
 
 		public void FilterPointsAtHeight(float pMinHeight, float pMaxHeight)
 		{
@@ -110,7 +136,7 @@ namespace ForestReco
 				}
 			}
 			//SORT DESCENDING
-			points.Sort((a,b) => b.Z.CompareTo(a.Z));
+			points.Sort((a, b) => b.Z.CompareTo(a.Z));
 		}
 
 		public float GetDefinedHeight()
@@ -135,22 +161,7 @@ namespace ForestReco
 			if(definedNeighbours.Count > 4)
 			{
 				filteredSum += FilterOutAllDefinedNeighbours();
-				//foreach(CBallField n in GetNeighbours(true))
-				//{
-				//	n.filteredOut.AddRange(n.points);
-				//	n.points.Clear();
-				//}
 			}
-
-			//if(AreAllNeighboursDefined())
-			//{				
-			//	foreach(CBallField n in GetNeighbours(true))
-			//	{
-			//		n.filteredOut.AddRange(n.points);
-			//		n.points.Clear();
-			//	}
-			//	return true;
-			//}
 			return filteredSum;
 		}
 
@@ -190,10 +201,19 @@ namespace ForestReco
 			return false;
 		}
 
+		/// <summary>
+		/// Try to detect ball in fields:
+		/// - this
+		/// - right
+		/// - bot
+		/// - bot.right
+		/// First the filtering is done:
+		/// - there cant be any filtered out points in similar height as the 
+		/// highest point in the processed fields
+		/// - also no similar heights in neighbouring fields
+		/// </summary>
 		public void Detect(bool pForce)
 		{
-			//po změně nedetekuje kouli na(0, 1; 5,6)
-
 			if(CDebug.IsDebugField(this))
 				CDebug.WriteLine();
 
@@ -215,10 +235,23 @@ namespace ForestReco
 
 			foreach(CBallField n in neighboursAroundProcessed)
 			{
-				if(n.IsDefinedAtHeight(processHeight, 0.3f))
+				if(n.IsDefinedAtHeight(processHeight, 0.3f, false))
 					return;
 			}
-			
+
+			//check if there werent any filtered out points in similar height
+			//as in the processed fields
+			List<CBallField> processedFields = new List<CBallField>();
+			processedFields.Add(this);
+			processedFields.Add((CBallField)Right);
+			processedFields.Add((CBallField)Bot);
+			processedFields.Add((CBallField)Bot.Right);
+			foreach(CBallField f in processedFields)
+			{
+				if(f.IsDefinedAtHeight(processHeight, 0.3f, true))
+					return;
+			}
+
 			//we need to make a copy in order not to modify the points
 			Vector3[] _processPoints = new Vector3[points.Count];
 			points.CopyTo(_processPoints);
@@ -236,6 +269,7 @@ namespace ForestReco
 			if(processPoints.Count < min_ball_points)
 				return;
 
+			//try to create the ball from processed points
 			ball = new CBall(processPoints, pForce, this);
 		}
 
@@ -258,14 +292,26 @@ namespace ForestReco
 			return maxHeight;
 		}
 
-		private bool IsDefinedAtHeight(float pHeight, float pRangeTollerance)
+		/// <summary>
+		/// Check if there is any (filtered out) point in the given height
+		/// </summary>
+		private bool IsDefinedAtHeight(float pHeight, float pRangeTollerance, bool pFilteredOut)
 		{
-			for(float i = -pRangeTollerance; i < pRangeTollerance; i+=0.1f)
+			const float height_diff_step = 0.1f;
+			for(float i = -pRangeTollerance; i < pRangeTollerance; i += height_diff_step)
 			{
 				float h = pHeight + i;
 				int heightKey = GetHeightKey(h);
-				if(definedAtHeight.Contains(heightKey))
-					return true;
+				if(pFilteredOut)
+				{
+					if(filteredOutAtHeight.Contains(heightKey))
+						return true;
+				}
+				else
+				{
+					if(definedAtHeight.Contains(heightKey))
+						return true;
+				}
 			}
 			return false;
 		}
@@ -313,7 +359,7 @@ namespace ForestReco
 			n = (CBallField)n?.Right;
 			if(n != null)
 				neighs.Add(n);
-			
+
 			return neighs;
 		}
 
