@@ -186,6 +186,14 @@ namespace ForestReco
 			}
 		}
 
+		internal string ToStringCenter()
+		{
+			return 
+				center.X.ToString() + "f, " + 
+				center.Y.ToString() + "f, " + 
+				center.Z.ToString() + "f";
+		}
+
 		/// <summary>
 		/// Every point belonging to the ball needs to be in the same
 		/// distance from the center = BALL_RADIUS

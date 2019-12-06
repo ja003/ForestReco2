@@ -62,6 +62,9 @@ namespace ForestReco
 
 			try
 			{
+				if(CBallsManager.useDebugData)
+					goto afterTileProcess;
+
 				List<string> tiledFiles = CProgramLoader.GetTiledPreprocessedFilePaths();
 
 				tilesCount = tiledFiles.Count;
@@ -87,6 +90,8 @@ namespace ForestReco
 				OnException();
 				return EProcessResult.Exception;
 			}
+
+			afterTileProcess: CDebug.WriteLine();
 
 			if(CProjectData.backgroundWorker.CancellationPending)
 			{

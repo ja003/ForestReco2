@@ -152,7 +152,8 @@ namespace ForestReco
 					if(c == null)
 						continue;
 
-					CDebug.Progress(i, linesToRead, 10000, ref previousDebug, start, "Parsing lines");
+					const int debug_freq = 100000;
+					CDebug.Progress(i, linesToRead, debug_freq, ref previousDebug, start, "Parsing lines");
 					parsedLines.Add(c);
 				}
 			}
