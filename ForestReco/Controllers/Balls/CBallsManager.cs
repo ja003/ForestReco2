@@ -24,7 +24,7 @@ namespace ForestReco
 			ballSets = new List<CBallSet>();
 		}
 
-		public const bool useDebugData = true;
+		public const bool useDebugData = false;
 
 		internal static void Init()
 		{
@@ -40,25 +40,47 @@ namespace ForestReco
 		{
 			switch(currentBallSetIndex)
 			{
+				//case 0:
+				//	AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
+				//	AddBall(new CBall(new Vector3(-4.448736f, 6.231966f, 1.994494f))); //2
+				//	AddBall(new CBall(new Vector3(-0.8353631f, -6.669966f, 1.979764f))); //3
+				//	AddBall(new CBall(new Vector3(-3.608419f, -2.88409f, 2.065792f))); //4
+				//	AddBall(new CBall(new Vector3(0.4928541f, 5.454957f, 2.02323f))); //5
+				//	AddBall(new CBall(new Vector3(3.025239f, -4.26632f, 2.103709f))); //6
+				//	AddBall(new CBall(new Vector3(5.462094f, -1.214247f, 2.037038f))); //7
+				//	AddBall(new CBall(new Vector3(5.085885f, 3.084216f, 2.026366f))); //8
+				//	break;
+				//case 1:
+				//	AddBall(new CBall(new Vector3(-4.837209f, -12.86546f, 2.007648f))); //1
+				//	AddBall(new CBall(new Vector3(-3.657253f, -8.836858f, 2.06641f))); //2
+				//	AddBall(new CBall(new Vector3(-0.2954954f, -6.911431f, 2.080708f))); //3
+				//	AddBall(new CBall(new Vector3(-1.448363f, -16.82076f, 2.007916f))); //4
+				//	AddBall(new CBall(new Vector3(4.178645f, -6.046964f, 2.036028f))); //5
+				//	AddBall(new CBall(new Vector3(5.36111f, -10.56972f, 2.041391f))); //6
+				//	AddBall(new CBall(new Vector3(2.850861f, -19.39396f, 1.815004f))); //7
+				//	AddBall(new CBall(new Vector3(4.989944f, -16.49725f, 1.966762f))); //8
+				//	break;
+
+				//update1
 				case 0:
 					AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
-					AddBall(new CBall(new Vector3(-4.448736f, 6.231966f, 1.994494f))); //2
-					AddBall(new CBall(new Vector3(-0.8353631f, -6.669966f, 1.979764f))); //3
-					AddBall(new CBall(new Vector3(-3.608419f, -2.88409f, 2.065792f))); //4
-					AddBall(new CBall(new Vector3(0.4928541f, 5.454957f, 2.02323f))); //5
-					AddBall(new CBall(new Vector3(3.025239f, -4.26632f, 2.103709f))); //6
-					AddBall(new CBall(new Vector3(5.462094f, -1.214247f, 2.037038f))); //7
-					AddBall(new CBall(new Vector3(5.085885f, 3.084216f, 2.026366f))); //8
+					AddBall(new CBall(new Vector3(-4.474649f, 6.281722f, 1.984683f))); //2
+					AddBall(new CBall(new Vector3(-0.8475582f, -6.652481f, 1.986673f))); //3
+					AddBall(new CBall(new Vector3(-3.588191f, -2.87209f, 2.060397f))); //4
+					AddBall(new CBall(new Vector3(0.4957421f, 5.435482f, 2.010766f))); //5
+					AddBall(new CBall(new Vector3(3.025081f, -4.238124f, 2.090678f))); //6
+					AddBall(new CBall(new Vector3(5.482442f, -1.234958f, 2.023156f))); //7
+					AddBall(new CBall(new Vector3(5.093435f, 3.073572f, 2.002615f))); //8
 					break;
 				case 1:
-					AddBall(new CBall(new Vector3(-4.837209f, -12.86546f, 2.007648f))); //1
-					AddBall(new CBall(new Vector3(-3.657253f, -8.836858f, 2.06641f))); //2
-					AddBall(new CBall(new Vector3(-0.2954954f, -6.911431f, 2.080708f))); //3
-					AddBall(new CBall(new Vector3(-1.448363f, -16.82076f, 2.007916f))); //4
-					AddBall(new CBall(new Vector3(4.178645f, -6.046964f, 2.036028f))); //5
-					AddBall(new CBall(new Vector3(5.36111f, -10.56972f, 2.041391f))); //6
-					AddBall(new CBall(new Vector3(2.850861f, -19.39396f, 1.815004f))); //7
-					AddBall(new CBall(new Vector3(4.989944f, -16.49725f, 1.966762f))); //8
+					AddBall(new CBall(new Vector3(-4.845504f, -12.9602f, 1.981996f))); //1
+					AddBall(new CBall(new Vector3(-3.659401f, -8.830884f, 2.058574f))); //2
+					AddBall(new CBall(new Vector3(-0.2793041f, -6.903613f, 2.080702f))); //3
+					AddBall(new CBall(new Vector3(-1.439231f, -16.82587f, 2.00737f))); //4
+					AddBall(new CBall(new Vector3(4.200833f, -6.0719f, 2.031518f))); //5
+					AddBall(new CBall(new Vector3(5.347064f, -10.55185f, 2.028504f))); //6
+					AddBall(new CBall(new Vector3(2.855435f, -19.38328f, 1.809576f))); //7
+					AddBall(new CBall(new Vector3(4.992101f, -16.5478f, 1.970753f))); //8
 					break;
 			}
 		}
@@ -144,15 +166,29 @@ namespace ForestReco
 				output.AppendLine("==============");
 			}
 
-			//write transformations
+			//calculate and write transformations
+			List<CBall> origBallSet = ballSets[0].balls;
 			for(int i = 1; i < ballSets.Count; i++)
 			{
-				ballSets[i].transform = CBallsTransformator.GetRigidTransform(
-					ballSets[i].balls, ballSets[0].balls);
-				string resutI = $"Transform for set {i} is {ballSets[i].transform}";
-				CDebug.WriteLine(resutI);
+				List<CBall> processedBallSet = ballSets[i].balls;
+				ballSets[i].transform = 
+					CBallsTransformator.GetRigidTransform(processedBallSet, origBallSet);
+				CRigidTransform resultTransformation = ballSets[i].transform;
+				string resutI = $"Transform for set {i} is {resultTransformation}";
+				//CDebug.WriteLine(resutI);
 				output.AppendLine(resutI);
+
+				output.AppendLine("---");
+				//write the result projections of processed balls to orig set
+				foreach(CBall ball in processedBallSet)
+				{
+					Vector3 transformedPoint = 
+						CBallsTransformator.GetTransformed(ball.center, resultTransformation);
+					string transformedPointResult = $"{ball.center} => {transformedPoint}";
+					output.AppendLine(transformedPointResult);
+				}
 			}
+			CDebug.WriteLine(output.ToString());
 
 			CUtils.WriteToFile(output, outputFilePath);
 		}

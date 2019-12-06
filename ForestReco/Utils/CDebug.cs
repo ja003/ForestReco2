@@ -396,7 +396,7 @@ namespace ForestReco
 
 		internal static bool IsDebugField(CField pField)
 		{
-			return pField.Equals(2,4);// (2,2);
+			return pField.Equals(5,1);
 		}
 	}
 }

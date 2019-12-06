@@ -160,9 +160,11 @@ namespace ForestReco
 			isValid = HasValidMainPoints();
 
 			//todo: validate based on point count? at least 1000?
+			//todo: balls further from the center have much lower points density (eg. 300 points)
+			//this condition cant be too restrictive
 			if(isValid)
 			{
-				isValid = points.Count > 300;
+				isValid = points.Count > 200;
 			}
 
 			if(isValid)
@@ -188,9 +190,9 @@ namespace ForestReco
 
 		internal string ToStringCenter()
 		{
-			return 
-				center.X.ToString() + "f, " + 
-				center.Y.ToString() + "f, " + 
+			return
+				center.X.ToString() + "f, " +
+				center.Y.ToString() + "f, " +
 				center.Z.ToString() + "f";
 		}
 
@@ -239,7 +241,7 @@ namespace ForestReco
 				}
 
 				//todo: center should be re-approximated better if diff is too big
-				if(diff > 10 * DIST_TOLLERANCE || highDiffCount > 100)
+				if(diff > 10 * DIST_TOLLERANCE || highDiffCount > 300)
 				{
 					return false;
 				}
@@ -254,6 +256,9 @@ namespace ForestReco
 				if(diff < diffMin)
 					diffMin = diff;*/
 			}
+			float highDiffPercentage = highDiffCount / points.Count;
+			if(highDiffPercentage > 0.2f)
+				return false;
 
 			float avgDiff = diffSum / highDiffCount;
 
@@ -512,21 +517,44 @@ namespace ForestReco
 
 		private Vector3? CalculateCenterJS()
 		{
+			List<Vector3> aproximatedCenters = new List<Vector3>();
+
 			//first try calculate center only from main points
+			CircumcentreSolver solver;
+
+			//center calculated from other points are more precise
+			//and results from centers are usually evaluated as valid
+			//todo: improve center validation
+			bool useMainPoints = false;
 			List<Vector3> mainPoints = GetMainPoints();
-			CircumcentreSolver solver = CircumcentreSolver.Create(mainPoints);
-			Vector3 center = new Vector3(
+			if(mainPoints.Count < 4 || !useMainPoints)
+				goto skipCenterApprox;
+
+			//we ned only 4 points to calculate center
+			//use all possible permutation (todo: lots of repeated calculations)
+			IEnumerable<IEnumerable<Vector3>> mainPointsPermutations = mainPoints.Permute();
+			foreach(var mainP in mainPointsPermutations)
+			{
+				List<Vector3> mainP4 = new List<Vector3>();
+				mainP4.AddRange(mainP.Take(4));
+				solver = CircumcentreSolver.Create(mainP4);
+				Vector3 center = new Vector3(
 					(float)solver.Centre[0],
 					(float)solver.Centre[1],
 					(float)solver.Centre[2]);
-			if(CheckCenter(center))
-			{
-				return center;
+
+				aproximatedCenters.Add(center);
 			}
+			Vector3 avgCenter = CUtils.GetAverage(aproximatedCenters);
+			if(CheckCenter(avgCenter))
+				return avgCenter;
+
+			skipCenterApprox: CDebug.WriteLine();
+
+			aproximatedCenters.Clear();
 
 
-			List<Vector3> aproximatedCenters = new List<Vector3>();
-			for(int i = 0; i < 5; i++)
+			for(int i = 0; i < 10; i++)
 			{
 				//random points are hard to debug
 				//List<Vector3> randomBallPoints = GetRandomPoints(4, 5 * DIST_TOLLERANCE);
@@ -553,12 +581,7 @@ namespace ForestReco
 			}
 
 			//use average of calculated centers
-			Vector3 sumCenters = Vector3.Zero;
-			foreach(Vector3 c in aproximatedCenters)
-			{
-				sumCenters += c;
-			}
-			Vector3 avgCenter = sumCenters / aproximatedCenters.Count;
+			avgCenter = CUtils.GetAverage(aproximatedCenters);
 
 			return avgCenter;
 		}

@@ -89,7 +89,7 @@ namespace ForestReco
 			}
 
 			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
-			(curMin, x) => x.offset < curMin.offset ? x : curMin);
+				(curMin, x) => x.offset < curMin.offset ? x : curMin);
 
 			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
 			return minOffsetRigTransform;
@@ -228,6 +228,11 @@ namespace ForestReco
 			return distance;
 		}
 
+		public static Vector3 GetTransformed(Vector3 pPoint, CRigidTransform pTransformation)
+		{
+			return GetTransformed(pPoint, pTransformation.rotation, pTransformation.translation);
+		}
+
 		private static Vector3 GetTransformed(Vector3 pPoint, Matrix pRotation, Matrix pTranslation)
 		{
 			Matrix p = CreateMatrix(pPoint);
@@ -346,8 +351,8 @@ namespace ForestReco
 
 	public class CRigidTransform
 	{
-		Matrix rotation;
-		Matrix translation;
+		public Matrix rotation { get; }
+		public Matrix translation { get; }
 		public float offset { get; private set; }
 
 		public CRigidTransform(Matrix pRotation, Matrix pTransform, float pOffset)
