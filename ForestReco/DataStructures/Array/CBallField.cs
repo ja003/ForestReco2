@@ -235,7 +235,7 @@ namespace ForestReco
 
 			foreach(CBallField n in neighboursAroundProcessed)
 			{
-				if(n.IsDefinedAtHeight(processHeight, 0.3f, false))
+				if(n.IsDefinedAtHeight(processHeight, 0.1f, false))
 					return;
 			}
 

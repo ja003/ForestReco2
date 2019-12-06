@@ -160,6 +160,10 @@ namespace ForestReco
 			isValid = HasValidMainPoints();
 
 			//todo: validate based on point count? at least 1000?
+			if(isValid)
+			{
+				isValid = points.Count > 300;
+			}
 
 			if(isValid)
 			{
