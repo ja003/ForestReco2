@@ -197,5 +197,8 @@
     <Setting Name="maxBallHeight" Type="System.Single" Scope="User">
       <Value Profile="(Default)">4</Value>
     </Setting>
+    <Setting Name="exportUndetected" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

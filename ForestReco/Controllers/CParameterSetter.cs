@@ -255,5 +255,6 @@ namespace ForestReco
 		maxBallDistance,
 		minBallHeight,
 		maxBallHeight,
+		exportUndetected,
 	}
 }

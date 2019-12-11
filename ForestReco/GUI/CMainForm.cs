@@ -157,6 +157,7 @@ namespace ForestReco
 		public TrackBar trackBarMinBallHeight;
 		private TextBox textMinBallHeight;
 		private Label label21;
+		private CheckBox checkBoxExportUndetected;
 		private CUiPathSelection pathSelection;
 
 		public CMainForm()
@@ -326,6 +327,9 @@ namespace ForestReco
 
 			checkBoxExportLas.Checked =
 				CParameterSetter.GetBoolSettings(ESettings.exportLas);
+
+			checkBoxExportUndetected.Checked =
+				CParameterSetter.GetBoolSettings(ESettings.exportUndetected);
 
 			checkBoxDBH.Checked = CParameterSetter.GetBoolSettings(ESettings.calculateDBH);
 			checkBoxDBH_CheckedChanged(this, EventArgs.Empty); //force refresh
@@ -582,6 +586,7 @@ namespace ForestReco
 			this.trackBarMinBallHeight = new System.Windows.Forms.TrackBar();
 			this.textMinBallHeight = new System.Windows.Forms.TextBox();
 			this.label21 = new System.Windows.Forms.Label();
+			this.checkBoxExportUndetected = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarPartition)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarGroundArrayStep)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarTreeExtent)).BeginInit();
@@ -1109,7 +1114,7 @@ namespace ForestReco
 			// checkBoxExportLas
 			// 
 			this.checkBoxExportLas.AutoSize = true;
-			this.checkBoxExportLas.Location = new System.Drawing.Point(232, 845);
+			this.checkBoxExportLas.Location = new System.Drawing.Point(232, 840);
 			this.checkBoxExportLas.Name = "checkBoxExportLas";
 			this.checkBoxExportLas.Size = new System.Drawing.Size(71, 17);
 			this.checkBoxExportLas.TabIndex = 101;
@@ -2011,10 +2016,23 @@ namespace ForestReco
 			this.label21.TabIndex = 138;
 			this.label21.Text = "min ball height";
 			// 
+			// checkBoxExportUndetected
+			// 
+			this.checkBoxExportUndetected.AutoSize = true;
+			this.checkBoxExportUndetected.Location = new System.Drawing.Point(312, 840);
+			this.checkBoxExportUndetected.Name = "checkBoxExportUndetected";
+			this.checkBoxExportUndetected.Size = new System.Drawing.Size(112, 17);
+			this.checkBoxExportUndetected.TabIndex = 144;
+			this.checkBoxExportUndetected.Text = "export undetected";
+			this.myToolTip.SetToolTip(this.checkBoxExportUndetected, "hh");
+			this.checkBoxExportUndetected.UseVisualStyleBackColor = true;
+			this.checkBoxExportUndetected.CheckedChanged += new System.EventHandler(this.checkBoxExportUndetected_CheckedChanged);
+			// 
 			// CMainForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.MenuBar;
 			this.ClientSize = new System.Drawing.Size(1182, 861);
+			this.Controls.Add(this.checkBoxExportUndetected);
 			this.Controls.Add(this.trackBarMaxBallHeight);
 			this.Controls.Add(this.textMaxBallHeight);
 			this.Controls.Add(this.label20);
@@ -2219,7 +2237,8 @@ namespace ForestReco
 
 		private void btnSequence_Click(object sender, EventArgs e)
 		{
-			pathSelection.SelectFile(textForestFileName, "Select sequence config", "seq", "sequence");
+			pathSelection.SelectFile(textForestFileFolder, textForestFileName, textForestFileExtension,
+				 "Select sequence config", new List<string>() { "seq" }, "sequence");
 		}
 
 		private void textForestFileName_TextChanged(object sender, EventArgs e)
@@ -3053,6 +3072,12 @@ namespace ForestReco
 		{
 			RefreshTrackBarValue(trackBarMaxBallHeight, textMaxBallHeight,
 							ESettings.maxBallHeight, true);
+		}
+
+		private void checkBoxExportUndetected_CheckedChanged(object sender, EventArgs e)
+		{
+			CParameterSetter.SetParameter(ESettings.exportUndetected, checkBoxExportUndetected.Checked);
+
 		}
 	}
 }

@@ -68,8 +68,7 @@ namespace ForestReco
 
 		public List<Vector3> GetPoints(EClass pClass)
 		{
-			const int filter_frequency = 0;// 100;
-
+			const int filter_frequency = 100; //0 = no filter
 
 			switch(pClass)
 			{

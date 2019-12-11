@@ -804,5 +804,17 @@ namespace ForestReco.Properties {
                 this["maxBallHeight"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool exportUndetected {
+            get {
+                return ((bool)(this["exportUndetected"]));
+            }
+            set {
+                this["exportUndetected"] = value;
+            }
+        }
     }
 }

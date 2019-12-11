@@ -159,7 +159,9 @@ namespace ForestReco
 				return EProcessResult.Cancelled;
 
 			bool result = CProgramLoader.ProcessParsedLines(parsedLines);
-			bool debug_allowExport = true;
+			bool debug_allowExport = false;
+			//allow export of tiles where no ball has been detected
+			bool exportUndetected = CParameterSetter.GetBoolSettings(ESettings.exportUndetected);
 			if(CRxpParser.IsRxp)
 			{
 				//cant rename folder while it is being used
@@ -171,7 +173,7 @@ namespace ForestReco
 				}
 				else */
 				//dont export tile where no ball was detected
-				if(!result && !debug_allowExport)
+				if(!result && !debug_allowExport && !exportUndetected)
 				{
 					//no ball was detected => delete folder and continue
 					Directory.Delete(CProjectData.outputTileSubfolder);
