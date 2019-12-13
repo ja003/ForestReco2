@@ -288,6 +288,11 @@ namespace ForestReco
 			return Vector3.Distance(pPoint, new Vector3(675.94f, 128.04f, 1140.9f)) < pTolerance;
 		}
 
+		public static bool IsNumberEqualTo(float pNumber, float pTo, float pTollerance = 0.1f)
+		{
+			return Math.Abs(pNumber - pTo) < pTollerance;
+		}
+
 		public static float LimitToRange(this float value, float inclusiveMinimum, float inclusiveMaximum)
 		{
 			if(value < inclusiveMinimum)
@@ -457,6 +462,108 @@ namespace ForestReco
 				pointsCopy.Add(pPoints[i]);
 			}
 			return pointsCopy;
+		}
+
+
+		//FROM: https://codereview.stackexchange.com/questions/194967/get-all-combinations-of-selecting-k-elements-from-an-n-sized-array
+		// Enumerate all possible m-size combinations of [0, 1, ..., n-1] array
+		// in lexicographic order (first [0, 1, 2, ..., m-1]).
+		private static IEnumerable<int[]> CombinationsRosettaWoRecursion(int m, int n)
+		{
+			int[] result = new int[m];
+			Stack<int> stack = new Stack<int>(m);
+			stack.Push(0);
+			while(stack.Count > 0)
+			{
+				int index = stack.Count - 1;
+				int value = stack.Pop();
+				while(value < n)
+				{
+					result[index++] = value++;
+					stack.Push(value);
+					if(index != m) continue;
+					yield return (int[])result.Clone(); // thanks to @xanatos
+														//yield return result;
+					break;
+				}
+			}
+		}
+
+		public static IEnumerable<T[]> CombinationsRosettaWoRecursion<T>(T[] array, int m)
+		{
+			if(array.Length < m)
+				throw new ArgumentException("Array length can't be less than number of selected elements");
+			if(m < 1)
+				throw new ArgumentException("Number of selected elements can't be less than 1");
+			T[] result = new T[m];
+			foreach(int[] j in CombinationsRosettaWoRecursion(m, array.Length))
+			{
+				for(int i = 0; i < m; i++)
+				{
+					result[i] = array[j[i]];
+				}
+				yield return result;
+			}
+		}
+
+		/// <summary>
+		/// True = one of points from pSet has distance to the pPoint 
+		/// lower than pMaxOffset
+		/// </summary>
+		public static bool SetContains(List<Vector3> pSet, Vector3 pPoint, float pMaxOffset)
+		{
+			foreach(Vector3 p in pSet)
+			{
+				if(Vector3.Distance(p, pPoint) < pMaxOffset)
+					return true;
+			}
+			return false;
+		}
+
+		public static IEnumerable<IEnumerable<T>> Permute<T>(this IEnumerable<T> sequence)
+		{
+			if(sequence == null)
+			{
+				yield break;
+			}
+
+			var list = sequence.ToList();
+
+			if(!list.Any())
+			{
+				yield return Enumerable.Empty<T>();
+			}
+			else
+			{
+				var startingElementIndex = 0;
+
+				foreach(var startingElement in list)
+				{
+					var index = startingElementIndex;
+					var remainingItems = list.Where((e, i) => i != index);
+
+					foreach(var permutationOfRemainder in remainingItems.Permute())
+					{
+						yield return startingElement.Concat(permutationOfRemainder);
+					}
+
+					startingElementIndex++;
+				}
+			}
+		}
+
+		private static IEnumerable<T> Concat<T>(this T firstElement, IEnumerable<T> secondSequence)
+		{
+			yield return firstElement;
+			if(secondSequence == null)
+			{
+				yield break;
+			}
+
+			foreach(var item in secondSequence)
+			{
+				yield return item;
+			}
 		}
 
 	}

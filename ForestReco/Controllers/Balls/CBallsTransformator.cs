@@ -67,7 +67,7 @@ namespace ForestReco
 		/// indexing in function CalculateRigidTransform 
 		/// e.g. input (a,b,c), (a',b',c') = OK, but (a,b,c), (b',a',c') = NOK
 		/// </summary>
-		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		internal static CRigidTransform GetRigidTransformAllPermutations(List<Vector3> pCenters, List<Vector3> pCentersOrig)
 		{
 			if(pCenters.Count == 0 || pCentersOrig.Count == 0)
 				return null;
@@ -95,6 +95,62 @@ namespace ForestReco
 			return minOffsetRigTransform;
 
 		}
+
+		/// <summary>
+		/// Same as GetRigidTransformAllPermutations but processes all combinations
+		/// of 4 selected centers from both sets
+		/// </summary>
+		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		{
+			if(pCenters.Count < 4 || pCentersOrig.Count < 4)
+			{
+				CDebug.Error("Cant GetRigidTransform from less than 4 centers");
+				return null;
+			}
+
+			List<CRigidTransform> rigTransforms = new List<CRigidTransform>();
+			IEnumerable<Vector3[]> origAll4Combinations =
+				CUtils.CombinationsRosettaWoRecursion(pCentersOrig.ToArray(), 4);
+			IEnumerable<Vector3[]> otherAll4Combinations =
+				CUtils.CombinationsRosettaWoRecursion(pCenters.ToArray(), 4);
+
+			foreach(Vector3[] origComb in origAll4Combinations)
+			{
+				foreach(Vector3[] otherComb in otherAll4Combinations)
+				{
+					//need to test all permutations because in combinations
+					//the order of elements is ignored
+					var otherPermutation = otherComb.Permute();
+					foreach(IEnumerable<Vector3> otherPerm in otherPermutation)
+					{
+						CRigidTransform rigTransform =
+							CalculateRigidTransform(
+								otherPerm.ToList(), origComb.ToList());
+						
+						//add only transforms with good offset
+						if(rigTransform.offset < 1)
+						{
+							rigTransform.CalculateOffsets(pCenters, pCentersOrig);
+							rigTransforms.Add(rigTransform);
+						}
+
+						if(rigTransform.offset < MAX_OFFSET)
+							break;
+					}
+
+				}
+			}
+
+			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
+				(curMin, x) => x.offset < curMin.offset ? x : curMin);
+
+			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
+			return minOffsetRigTransform;
+
+		}
+
+		
+
 
 		/// <summary>
 		/// Calculates a rotation and translation that needs to be applied
@@ -172,6 +228,11 @@ namespace ForestReco
 			//CDebug.WriteLine("Translation = ");
 			//CDebug.WriteLine("" + T);
 
+
+			//List<Vector3> offsetCheckSetA = pFullSetA != null ? pFullSetA : setAorig;
+			//List<Vector3> offsetCheckSetB = pFullSetOrig != null ? pFullSetOrig : setBorig;
+			//float offset = GetOffset(offsetCheckSetA, offsetCheckSetB, rotation, translation);
+
 			float offset = GetOffset(setAorig, setBorig, rotation, translation);
 
 			return new CRigidTransform(rotation, translation, offset);
@@ -184,34 +245,36 @@ namespace ForestReco
 		/// Returns sum of difference between transformed points from pSetA
 		/// and the closest point from pSetB
 		/// </summary>
-		private static float GetOffset(List<Vector3> pSetA, List<Vector3> pSetB, Matrix pRotation, Matrix pTranslation)
+		public static float GetOffset(List<Vector3> pSetA, List<Vector3> pSetB, Matrix pRotation, Matrix pTranslation)
 		{
-			float offset = 0;
-			//CDebug.WriteLine("GetOffset");
-			foreach(Vector3 p in pSetA)
-			{
-				Vector3 transformedP = GetTransformed(p, pRotation, pTranslation);
-				float distance = GetDistanceToClosest(transformedP, pSetB);
-				offset += distance;
-				//CDebug.WriteLine($"Point {p} transformed to {transformedP}. Result = {SetContains(pSetB, transformedP, 0.01f)}");
-			}
-			//CDebug.WriteLine("=====");
-			return offset;
+			List<float> offsets = GetOffsets(pSetA, pSetB, pRotation, pTranslation);
+			return offsets.Sum();
 		}
 
 		/// <summary>
-		/// True = one of points from pSet has distance to the pPoint 
-		/// lower than pMaxOffset
+		/// Returns differences between transformed points from pSetA
+		/// and the closest point from pSetB
 		/// </summary>
-		private static bool SetContains(List<Vector3> pSet, Vector3 pPoint, float pMaxOffset)
+		public static List<float> GetOffsets(List<Vector3> pSetA, List<Vector3> pSetB, Matrix pRotation, Matrix pTranslation)
 		{
-			foreach(Vector3 p in pSet)
+			List<float> offsets = new List<float>();
+			//CDebug.WriteLine("GetOffset");
+
+			//todo: this is not valid when sets count are not equal
+			int maxCount = Math.Min(pSetA.Count, pSetB.Count);
+			for(int i = 0; i < maxCount; i++)
 			{
-				if(Vector3.Distance(p, pPoint) < pMaxOffset)
-					return true;
+				Vector3 p = pSetA[i];
+				Vector3 transformedP = GetTransformed(p, pRotation, pTranslation);
+				float distance = GetDistanceToClosest(transformedP, pSetB);
+				offsets.Add(distance);
+				//CDebug.WriteLine($"Point {p} transformed to {transformedP}. Result = {SetContains(pSetB, transformedP, 0.01f)}");
 			}
-			return false;
+			//CDebug.WriteLine("=====");
+			return offsets;
 		}
+
+	
 
 		/// <summary>
 		/// Returns a distance from pPoint to the closest point from pSet
@@ -302,51 +365,7 @@ namespace ForestReco
 			return m;
 		}
 
-		public static IEnumerable<IEnumerable<T>> Permute<T>(this IEnumerable<T> sequence)
-		{
-			if(sequence == null)
-			{
-				yield break;
-			}
-
-			var list = sequence.ToList();
-
-			if(!list.Any())
-			{
-				yield return Enumerable.Empty<T>();
-			}
-			else
-			{
-				var startingElementIndex = 0;
-
-				foreach(var startingElement in list)
-				{
-					var index = startingElementIndex;
-					var remainingItems = list.Where((e, i) => i != index);
-
-					foreach(var permutationOfRemainder in remainingItems.Permute())
-					{
-						yield return startingElement.Concat(permutationOfRemainder);
-					}
-
-					startingElementIndex++;
-				}
-			}
-		}
-
-		private static IEnumerable<T> Concat<T>(this T firstElement, IEnumerable<T> secondSequence)
-		{
-			yield return firstElement;
-			if(secondSequence == null)
-			{
-				yield break;
-			}
-
-			foreach(var item in secondSequence)
-			{
-				yield return item;
-			}
-		}
+		
 	}
 
 	public class CRigidTransform
@@ -354,6 +373,7 @@ namespace ForestReco
 		public Matrix rotation { get; }
 		public Matrix translation { get; }
 		public float offset { get; private set; }
+		public List<float> offsets { get; private set; }
 
 		public CRigidTransform(Matrix pRotation, Matrix pTransform, float pOffset)
 		{
@@ -364,7 +384,23 @@ namespace ForestReco
 
 		public override string ToString()
 		{
-			return $"RT:\n-rotation =\n{rotation}-translation =\n{translation}-offset: {offset}";
+			string offsetsStr = "";
+			foreach(float o in offsets)
+			{
+				offsetsStr += o.ToString("0.000") + " ";
+			}
+			offsetsStr += "avg = " + offsets.Average().ToString("0.000");
+
+			return $"RT:\n" +
+				$"-rotation =\n{rotation}" +
+				$"-translation =\n{translation}" +
+				$"-offset (first 4): {offset}\n" +
+				$"-offsets: {offsetsStr}";
+		}
+
+		internal void CalculateOffsets(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		{
+			offsets = CBallsTransformator.GetOffsets(pCenters, pCentersOrig, rotation, translation);
 		}
 	}
 }
