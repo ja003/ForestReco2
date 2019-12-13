@@ -15,45 +15,18 @@ namespace ForestReco
 	{
 		public const float MAX_OFFSET = 0.001F;
 
-		//TODO: check if functionality not broken and remove
-		/// <summary>
-		/// Calculates rigid transformations between all permutations of pSetA and pSetB
-		/// and returns the best one (having the smallest offset).
-		/// This is done due to the expected indexing in function CalculateRigidTransform
-		/// </summary>
-		/*public static CRigidTransform GetRigidTransform(List<Vector3> pSetA, List<Vector3> pSetOrig)
-		{
-			CDebug.WriteLine($"GetRigidTransform from set : {CDebug.GetString(pSetA)} to {CDebug.GetString(pSetOrig)}");
-			if(pSetA.Count != pSetOrig.Count)
-			{
-				CDebug.Error("Sets count dont match");
-				return null;
-			}
-
-			IEnumerable<IEnumerable<Vector3>> setApermutations = pSetA.Permute();
-			List<CRigidTransform> rigTransforms = new List<CRigidTransform>();
-			foreach(var permutation in setApermutations)
-			{
-				CRigidTransform rigTransform = CalculateRigidTransform(permutation.ToList(), pSetOrig);
-				rigTransforms.Add(rigTransform);
-				//CDebug.WriteLine($"{rigTransform}");
-				if(rigTransform.offset < MAX_OFFSET)
-					break;
-			}
-
-			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
-				(curMin, x) => x.offset < curMin.offset ? x : curMin);
-
-			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
-			return minOffsetRigTransform;
-		}*/
-
 		internal static CRigidTransform GetRigidTransform(List<CBall> pBalls1, List<CBall> pBallsOrig)
 		{
-			List<Vector3> centers1 = pBalls1.Select(a => a.center).ToList();
-			List<Vector3> centersOrig = pBallsOrig.Select(a => a.center).ToList();
+			return GetRigidTransform(
+				pBalls1.Select(a => a.center).ToList(),
+				pBallsOrig.Select(a => a.center).ToList());
+		}
 
-			return GetRigidTransform(centers1, centersOrig);
+		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		{
+			//AllPermutations seems to return better result
+			return GetRigidTransformAllPermutations(pCenters, pCentersOrig);
+			//return GetRigidTransform(centers1, centersOrig);
 		}
 
 		/// <summary>
@@ -67,7 +40,7 @@ namespace ForestReco
 		/// indexing in function CalculateRigidTransform 
 		/// e.g. input (a,b,c), (a',b',c') = OK, but (a,b,c), (b',a',c') = NOK
 		/// </summary>
-		internal static CRigidTransform GetRigidTransformAllPermutations(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		private static CRigidTransform GetRigidTransformAllPermutations(List<Vector3> pCenters, List<Vector3> pCentersOrig)
 		{
 			if(pCenters.Count == 0 || pCentersOrig.Count == 0)
 				return null;
@@ -82,7 +55,12 @@ namespace ForestReco
 				CRigidTransform rigTransform = CalculateRigidTransform(
 					isOrigLarger ? smallerSet : permutation.ToList(),
 					isOrigLarger ? permutation.ToList() : smallerSet);
-				rigTransforms.Add(rigTransform);
+
+				if(rigTransform.offset < 1)
+				{
+					rigTransform.CalculateOffsets(pCenters, pCentersOrig);
+					rigTransforms.Add(rigTransform);
+				}
 				//CDebug.WriteLine($"{rigTransform}");
 				if(rigTransform.offset < MAX_OFFSET)
 					break;
@@ -100,7 +78,7 @@ namespace ForestReco
 		/// Same as GetRigidTransformAllPermutations but processes all combinations
 		/// of 4 selected centers from both sets
 		/// </summary>
-		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
+		private static CRigidTransform GetRigidTransform4Comb(List<Vector3> pCenters, List<Vector3> pCentersOrig)
 		{
 			if(pCenters.Count < 4 || pCentersOrig.Count < 4)
 			{
@@ -126,7 +104,7 @@ namespace ForestReco
 						CRigidTransform rigTransform =
 							CalculateRigidTransform(
 								otherPerm.ToList(), origComb.ToList());
-						
+
 						//add only transforms with good offset
 						if(rigTransform.offset < 1)
 						{
@@ -149,7 +127,7 @@ namespace ForestReco
 
 		}
 
-		
+
 
 
 		/// <summary>
@@ -274,7 +252,7 @@ namespace ForestReco
 			return offsets;
 		}
 
-	
+
 
 		/// <summary>
 		/// Returns a distance from pPoint to the closest point from pSet
@@ -365,7 +343,7 @@ namespace ForestReco
 			return m;
 		}
 
-		
+
 	}
 
 	public class CRigidTransform
@@ -389,12 +367,13 @@ namespace ForestReco
 			{
 				offsetsStr += o.ToString("0.000") + " ";
 			}
-			offsetsStr += "avg = " + offsets.Average().ToString("0.000");
+			offsetsStr += "| avg = " + offsets.Average().ToString("0.000") + ", ";
+			offsetsStr += "sum = " + offsets.Sum().ToString("0.000");
 
 			return $"RT:\n" +
 				$"-rotation =\n{rotation}" +
 				$"-translation =\n{translation}" +
-				$"-offset (first 4): {offset}\n" +
+				$"-offset (processed points): {offset}\n" +
 				$"-offsets: {offsetsStr}";
 		}
 
