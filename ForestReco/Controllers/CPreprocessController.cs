@@ -102,7 +102,7 @@ namespace ForestReco
 			string currentFileName = CUtils.GetFileName(forestFilePath);
 
 			string convertedFilePath = currentTmpFolder + forestFileName + ".las";
-			if(File.Exists(convertedFilePath))
+			if(File.Exists(convertedFilePath))// && false) //uncomment to force parse
 				return convertedFilePath;
 
 			string parsedFilePath = currentTmpFolder + forestFileName + ".txt";
@@ -141,11 +141,11 @@ namespace ForestReco
 			return convertedFilePath;
 		}
 
-		private const string NUM_FORMAT = "0.00";
+		//private const string NUM_FORMAT = "0.00"; //too low precision!
 		private static string GetPointLine(Vector3 pPoint)
 		{
 			//todo: make string method
-			string output = $"{pPoint.X.ToString(NUM_FORMAT)} {pPoint.Y.ToString(NUM_FORMAT)} {pPoint.Z.ToString(NUM_FORMAT)} ";//x y z (swap Y Z)
+			string output = $"{pPoint.X.ToString()} {pPoint.Y.ToString()} {pPoint.Z.ToString()} ";//x y z (swap Y Z)
 			output += $"0"; //class
 			return output;
 		}
@@ -591,12 +591,14 @@ namespace ForestReco
 
 		internal static string Txt2Las(string pTxtFilePath, string pOutputFilePath, Vector3 pOffset)
 		{
+			const string scale = "0.0000001";
 			string toLas =
 				"txt2las -i " +
 				pTxtFilePath +
 				" -o " +
 				pOutputFilePath +
 				" -parse xyzc " +
+				$"-set_scale {scale} {scale} {scale} " + //todo: restest if rly needed...does it increase
 				"-set_offset " +
 				$"{pOffset.X} {pOffset.Y} {pOffset.Z}";
 

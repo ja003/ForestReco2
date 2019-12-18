@@ -21,7 +21,7 @@ namespace ForestReco
 
 		private static bool export => CParameterSetter.GetBoolSettings(ESettings.exportLas);
 
-		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i";
+		private const string txt2lasCmd = "txt2las -parse xyzcuRGB -i"; // no need to set scale
 		private const string BALLS_COLOR = "255 0 0";
 		private const string BALLS_MP_COLOR = "0 255 0";
 		private const string BALLS_CENTER_COLOR = "255 0 255";
@@ -36,7 +36,7 @@ namespace ForestReco
 		private const string BUILDING_COLOR = "250 150 150"; //pale red
 		private const string UNDEFINED_COLOR = "0 0 0"; //black
 
-		private const string NUM_FORMAT = "0.000";
+		private const string NUM_FORMAT = "0.00000";
 		private const int DEBUG_FREQUENCY = 100000;
 
 		public static void Init()
@@ -98,7 +98,9 @@ namespace ForestReco
 
 			//3. Convert the txt to las using LasTools
 			//format: x, y, z, class, user comment (id), R, G, B
-			string cmd = $"{txt2lasCmd} {txtOutputPath}";
+			//scale needs to be explicitly defined or Z coord precision is too low
+			const string scale = "-set_scale 0.0000001 0.0000001 0.0000001";
+			string cmd = $"{txt2lasCmd} {txtOutputPath} {scale}";
 			CCmdController.RunLasToolsCmd(cmd, fileFullPath + ".las");
 
 			CAnalytics.lasExportDuration = CAnalytics.GetDuration(exportStart);
