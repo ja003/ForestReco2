@@ -178,7 +178,7 @@ namespace ForestReco
 			if(isValid)
 			{
 				//calculate center
-				Vector3? bestCenter = CalculateCenterJS();
+				Vector3? bestCenter = CalculateCenter();
 				bool check = bestCenter != null;
 
 				if(check)
@@ -452,94 +452,12 @@ namespace ForestReco
 		}
 
 		/// <summary>
-		/// Initial simple method for center approximation.
-		/// Not very precise, probably delete.
+		/// Calculates center from evenly distibuted 4 processed points
+		/// Repeats process several times with different points and
+		/// calculates their average.
+		/// The precisioin of the approximated center is then iteratively increased.
 		/// </summary>
-		private Vector3 CalculateCenterB()
-		{
-			if(!isValid)
-				return Vector3.Zero;
-
-			List<Vector3> centers = new List<Vector3>();
-			Vector3 centerY = (furthestPointMinusY + furthestPointPlusY) / 2;
-			bool isMainPointYValid = IsValidMainPoint(centerY);
-			if(isMainPointYValid)
-				centers.Add(centerY);
-
-			Vector3 centerX = (furthestPointMinusX + furthestPointPlusX) / 2;
-			bool isMainPointXValid = IsValidMainPoint(centerX);
-			if(isMainPointXValid)
-				centers.Add(centerX);
-
-			Vector3 ceterZ = GetAverage(centers);
-			if(ballBot != null)
-			{
-				ceterZ = ((Vector3)ballBot + ballTop) / 2;
-				centers.Add(ceterZ);
-			}
-
-			Vector3 approxCenter = GetAverage(centers);
-			if(isMainPointXValid && isMainPointYValid)
-				return approxCenter;
-
-			//todo: make method
-			if(isMainPointXValid)
-			{
-				Vector3 validMainPointY = (IsValidMainPoint(furthestPointMinusY) ?
-						furthestPointMinusY : furthestPointPlusY);
-				float yDistToMP = approxCenter.Y - validMainPointY.Y;
-				approxCenter = validMainPointY + (yDistToMP > 0 ? 1 : -1) * (approxCenter - validMainPointY) * (BALL_DIAMETER / 2 - Math.Abs(yDistToMP));
-
-			}
-			else if(isMainPointYValid)
-			{
-				Vector3 validMainPointX = (IsValidMainPoint(furthestPointMinusX) ?
-						furthestPointMinusX : furthestPointPlusX);
-				float xDistToMP = approxCenter.X - validMainPointX.X;
-				Vector3 dir = Vector3.Normalize(approxCenter - validMainPointX);
-				float dist = BALL_DIAMETER / 2;// - Math.Abs(xDistToMP);
-				approxCenter = validMainPointX + (xDistToMP > 0 ? 1 : -1) * dir * dist;
-			}
-			else
-			{
-				CDebug.Error("Incorrect calculation");
-			}
-
-			return approxCenter;
-		}
-
-		/// <summary>
-		/// Iterates through possible centers and selects the on having smallest diff
-		/// to distance-to-mainPoints function
-		/// </summary>
-		/// <returns></returns>
 		private Vector3? CalculateCenter()
-		{
-			CDebug.WriteLine($"Ball = {this}");
-
-			List<Vector3> possibleCenters = GetPossibleCenters();
-			Vector3? bestCenter = SelectBestCenter(possibleCenters);
-			if(bestCenter != null)
-			{
-				center = (Vector3)bestCenter;
-				CDebug.WriteLine($"center = {center}");
-				//return center;
-			}
-			else
-			{
-				return null;
-			}
-
-			//increase precision
-			//todo: doesnt SelectBestCenter => FIX!
-			//possibleCenters = GetPointsInRadius(center, 0.01f, 0.001f);
-			//center = (Vector3)SelectBestCenter(possibleCenters);
-			//CDebug.WriteLine($"new center = {center}");
-
-			return center;
-		}
-
-		private Vector3? CalculateCenterJS()
 		{
 			List<Vector3> approximatedCenters = new List<Vector3>();
 
@@ -683,88 +601,7 @@ namespace ForestReco
 
 			return randomPoints;
 		}
-
-		/// <summary>
-		/// Returns the center which has the most equal distance to all of the main points.
-		/// </summary>
-		private Vector3? SelectBestCenter(List<Vector3> pPossibleCenters)
-		{
-			Dictionary<float, Vector3> diffCeters = new Dictionary<float, Vector3>();
-			List<Vector3> mainPoints = GetMainPoints(false);
-
-			foreach(Vector3 possibleCenter in pPossibleCenters)
-			{
-				float diff = 0;
-				//calculate diff to all main points
-				foreach(Vector3 mainPoint in mainPoints)
-				{
-					diff += GetDiffOfPossibleCenter(mainPoint, possibleCenter);
-				}
-
-				const float max_diff = 0.2f;
-				if(diff < max_diff)
-				{
-					if(!diffCeters.ContainsKey(diff))
-						diffCeters.Add(diff, possibleCenter);
-				}
-			}
-
-			var tmp = diffCeters.OrderBy(key => key.Key);
-			var orderedDiffCenters = tmp.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
-
-			int maxCheckCount = Math.Min(10, orderedDiffCenters.Count);
-			for(int i = 0; i < maxCheckCount; i++)
-			{
-				Vector3 c = orderedDiffCenters.ElementAt(i).Value;
-				if(CheckCenter(c))
-					return c;
-
-			}
-
-			return null;
-
-			Vector3 center = orderedDiffCenters.First().Value;
-			return center;
-		}
-
-		/// <summary>
-		/// Returns the difference between ball radius and distance of given points.
-		/// For real center it should return 0.
-		/// </summary>
-		private float GetDiffOfPossibleCenter(Vector3 pPoint, Vector3 pPossibleCenter)
-		{
-			float dist = Vector3.Distance(pPoint, pPossibleCenter);
-			return Math.Abs(dist - BALL_RADIUS);
-		}
-
-		/// <summary>
-		/// Returns points bellow the ball top in 2D distance < ball radius and
-		/// Z difference cca equal to ball radius
-		/// </summary>
-		private List<Vector3> GetPossibleCenters()
-		{
-			List<Vector3> centers = new List<Vector3>();
-
-			const float step = 0.01f;
-			for(float x = -BALL_RADIUS; x < BALL_RADIUS; x += step)
-			{
-				for(float y = -BALL_RADIUS; y < BALL_RADIUS; y += step)
-				{
-					for(float z = GetBallRadius(-5); z < GetBallRadius(5); z += step)
-					{
-						Vector3 possibleCenter = ballTop + new Vector3(x, y, -z);
-						float dist = Vector3.Distance(ballTop, possibleCenter);
-						if(dist < GetBallRadius(2))
-						{
-							centers.Add(possibleCenter);
-						}
-					}
-				}
-			}
-
-			return centers;
-		}
-
+				
 		private static List<Vector3> GetPointsInRadius(Vector3 pPoint, float pRadius, float pStep)
 		{
 			List<Vector3> centers = new List<Vector3>();
@@ -787,17 +624,7 @@ namespace ForestReco
 
 			return centers;
 		}
-
-		private static Vector3 GetAverage(List<Vector3> pPoints)
-		{
-			Vector3 avg = Vector3.Zero;
-			foreach(Vector3 p in pPoints)
-			{
-				avg += p;
-			}
-			return avg / pPoints.Count;
-		}
-
+		
 		/// <summary>
 		/// Generates points which are in radius distance from the center
 		/// </summary>
