@@ -68,7 +68,7 @@ namespace ForestReco
 
 		public List<Vector3> GetPoints(EClass pClass)
 		{
-			const int filter_frequency = 100; //0 = no filter
+			const int filter_frequency = 0;//100; //0 = no filter
 
 			switch(pClass)
 			{
@@ -580,7 +580,7 @@ namespace ForestReco
 				foreach(CBallField field in ballFields)
 				{
 					if(field.ball != null)
-						ballPoints.AddRange(field.ball.points);
+						ballPoints.AddRange(field.ball.GetCenterCalculationPoints());
 					//ballPoints.AddRange(field.points);
 				}
 

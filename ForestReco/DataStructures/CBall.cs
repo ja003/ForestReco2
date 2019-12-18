@@ -100,10 +100,18 @@ namespace ForestReco
 			{
 				float zDiff = ballTop.Z - point.Z;
 
-				if(zDiff > GetMaxPointsDist(1))
+				//dont add points too far from top
+				//there is a part of the ball-holder at the bottom of the ball
+				//we dont want to add it to the processed points
+				if(zDiff > GetMaxPointsDist(-1))
 					break;
 
 				points.Add(point);
+				//we want to calculate center only from central set of points
+				//since there might by some disturbance at the top or bottop of the ball
+				if(zDiff > DIST_TOLLERANCE)
+					centerCalculationPoints.Add(point);
+
 				RefreshBallTop(point);
 
 				float dist3D = Vector3.Distance(point, ballTop);
@@ -188,6 +196,21 @@ namespace ForestReco
 			}
 		}
 
+		//points used for center calculation
+		//these points shouldnt be too close to the very top or bottom of the ball
+		private List<Vector3> centerCalculationPoints = new List<Vector3>();
+
+		/// <summary>
+		/// Getter method for precision comparison
+		/// TODO: test. if ok => remove getter
+		/// </summary>
+		/// <returns></returns>
+		public List<Vector3> GetCenterCalculationPoints()
+		{
+			const bool useAllPoints = false;
+			return useAllPoints ? points : centerCalculationPoints;
+		}
+
 		internal string ToStringCenter()
 		{
 			return
@@ -217,6 +240,12 @@ namespace ForestReco
 		//	}
 		//}
 
+
+		//keep statistics of ball center precision
+		public float maxDiff = int.MinValue;
+		public float minDiff = int.MaxValue;
+		public float avgDiff;
+
 		/// <summary>
 		/// Every point belonging to the ball needs to be in the same
 		/// distance from the center = BALL_RADIUS.
@@ -227,9 +256,7 @@ namespace ForestReco
 		{
 			int highDiffCount = 0;
 			float diffSum = 0;
-			//float diffMax = int.MinValue;
-			//float diffMin = int.MaxValue;
-			foreach(Vector3 point in points)
+			foreach(Vector3 point in GetCenterCalculationPoints())
 			{
 				float dist = Vector3.Distance(pCenter, point);
 				float diff = Math.Abs(BALL_RADIUS - dist);
@@ -246,21 +273,18 @@ namespace ForestReco
 					return false;
 				}
 
-				/*if(diff > DIST_TOLLERANCE)
-				{
-					diffSum += diff;
-					highdiffCount++;
-				}
-				if(diff > diffMax)
-					diffMax = diff;
-				if(diff < diffMin)
-					diffMin = diff;*/
+				diffSum += diff;
+
+				if(diff > maxDiff)
+					maxDiff = diff;
+				if(diff < minDiff)
+					minDiff = diff;
 			}
-			float highDiffPercentage = highDiffCount / points.Count;
+			float highDiffPercentage = highDiffCount / GetCenterCalculationPoints().Count;
 			if(highDiffPercentage > 0.2f)
 				return false;
 
-			float avgDiff = diffSum / highDiffCount;
+			avgDiff = diffSum / GetCenterCalculationPoints().Count;
 
 			return true;
 		}
@@ -517,7 +541,7 @@ namespace ForestReco
 
 		private Vector3? CalculateCenterJS()
 		{
-			List<Vector3> aproximatedCenters = new List<Vector3>();
+			List<Vector3> approximatedCenters = new List<Vector3>();
 
 			//first try calculate center only from main points
 			CircumcentreSolver solver;
@@ -543,18 +567,18 @@ namespace ForestReco
 					(float)solver.Centre[1],
 					(float)solver.Centre[2]);
 
-				aproximatedCenters.Add(center);
+				approximatedCenters.Add(center);
 			}
-			Vector3 avgCenter = CUtils.GetAverage(aproximatedCenters);
+			Vector3 avgCenter = CUtils.GetAverage(approximatedCenters);
 			if(CheckCenter(avgCenter))
 				return avgCenter;
 
 			skipCenterApprox: CDebug.WriteLine();
 
-			aproximatedCenters.Clear();
+			approximatedCenters.Clear();
 
 
-			for(int i = 0; i < 10; i++)
+			for(int i = 0; i < 100; i++)
 			{
 				//random points are hard to debug
 				//List<Vector3> randomBallPoints = GetRandomPoints(4, 5 * DIST_TOLLERANCE);
@@ -573,15 +597,42 @@ namespace ForestReco
 				float distToTop = Vector3.Distance(ballTop, center);
 				if(distToTop > BALL_DIAMETER)
 				{
-					CDebug.Error("Center calculated out of ball extent");
+					CDebug.Warning("Center calculated out of ball extent");
 					continue;
 				}
 
-				aproximatedCenters.Add(center);
+				approximatedCenters.Add(center);
 			}
 
 			//use average of calculated centers
-			avgCenter = CUtils.GetAverage(aproximatedCenters);
+			avgCenter = CUtils.GetAverage(approximatedCenters);
+			//increase center precision by removing approximated centers too far
+			//from their average center
+			for(int i = approximatedCenters.Count - 1; i >= 0; i--)
+			{
+				Vector3 c = approximatedCenters[i];
+				float diff = Vector3.Distance(c, avgCenter);
+				if(diff > 0.02f)
+				{
+					approximatedCenters.RemoveAt(i);
+				}
+				//CDebug.WriteLine("diff = " + diff);
+			}
+
+			avgCenter = CUtils.GetAverage(approximatedCenters);
+			//repeat
+			for(int i = approximatedCenters.Count - 1; i >= 0; i--)
+			{
+				Vector3 c = approximatedCenters[i];
+				float diff = Vector3.Distance(c, avgCenter);
+				if(diff > 0.01f)
+				{
+					approximatedCenters.RemoveAt(i);
+				}
+				//CDebug.WriteLine("diff = " + diff);
+			}
+
+			avgCenter = CUtils.GetAverage(approximatedCenters);
 
 			return avgCenter;
 		}
@@ -589,7 +640,7 @@ namespace ForestReco
 		private List<Vector3> GetEvenlyDistributedPoints(int pCount, int pOffset)
 		{
 			List<Vector3> evenPoints = new List<Vector3>();
-			int totalCount = points.Count;
+			int totalCount = GetCenterCalculationPoints().Count;
 			int step = totalCount / (pCount - 1);
 			for(int i = 0; i < pCount; i++)
 			{
@@ -600,7 +651,7 @@ namespace ForestReco
 				index = Math.Max(0, index);
 				index = Math.Min(totalCount - 1, index);
 
-				evenPoints.Add(points[index]);
+				evenPoints.Add(GetCenterCalculationPoints()[index]);
 			}
 			return evenPoints;
 		}
@@ -608,13 +659,13 @@ namespace ForestReco
 		private List<Vector3> GetRandomPoints(int pCount, float pMinDistance)
 		{
 			List<Vector3> randomPoints = new List<Vector3>();
-			if(points.Count < pCount)
-				return points;
+			if(GetCenterCalculationPoints().Count < pCount)
+				return randomPoints;
 
 			for(int i = 0; i < pCount; i++)
 			{
-				int randomIndex = new Random().Next(0, points.Count);
-				Vector3 point = points[randomIndex];
+				int randomIndex = new Random().Next(0, GetCenterCalculationPoints().Count);
+				Vector3 point = GetCenterCalculationPoints()[randomIndex];
 				bool isTooClose = false;
 				foreach(Vector3 randPoint in randomPoints)
 				{
@@ -775,7 +826,8 @@ namespace ForestReco
 
 		public override string ToString()
 		{
-			return $"Ball[{isValid}], center = {center}, ballTop = {ballTop}, Tile = {tileIndex}";
+			//return $"Ball[{isValid}], center = {center}, ballTop = {ballTop}, Tile = {tileIndex}";
+			return $"Ball ({points.Count}), center = {center}, avgDiff = {avgDiff}, minDiff = {minDiff}, maxDiff = {maxDiff}";
 		}
 	}
 }
