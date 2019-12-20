@@ -62,25 +62,49 @@ namespace ForestReco
 				//	break;
 
 				//update1
-				case 0:
-					AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
-					AddBall(new CBall(new Vector3(-4.474649f, 6.281722f, 1.984683f))); //2
-					AddBall(new CBall(new Vector3(-0.8475582f, -6.652481f, 1.986673f))); //3
-					AddBall(new CBall(new Vector3(-3.588191f, -2.87209f, 2.060397f))); //4
-					AddBall(new CBall(new Vector3(0.4957421f, 5.435482f, 2.010766f))); //5
-					AddBall(new CBall(new Vector3(3.025081f, -4.238124f, 2.090678f))); //6
+				//case 0:
+				//	AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
+				//	AddBall(new CBall(new Vector3(-4.474649f, 6.281722f, 1.984683f))); //2
+				//	AddBall(new CBall(new Vector3(-0.8475582f, -6.652481f, 1.986673f))); //3
+				//	AddBall(new CBall(new Vector3(-3.588191f, -2.87209f, 2.060397f))); //4
+				//	AddBall(new CBall(new Vector3(0.4957421f, 5.435482f, 2.010766f))); //5
+				//	AddBall(new CBall(new Vector3(3.025081f, -4.238124f, 2.090678f))); //6
+				//	AddBall(new CBall(new Vector3(5.482442f, -1.234958f, 2.023156f))); //7
+				//	AddBall(new CBall(new Vector3(5.093435f, 3.073572f, 2.002615f))); //8
+				//	break;
+				//case 1:
+				//	AddBall(new CBall(new Vector3(-4.845504f, -12.9602f, 1.981996f))); //1
+				//	AddBall(new CBall(new Vector3(-3.659401f, -8.830884f, 2.058574f))); //2
+				//	AddBall(new CBall(new Vector3(-0.2793041f, -6.903613f, 2.080702f))); //3
+				//	AddBall(new CBall(new Vector3(-1.439231f, -16.82587f, 2.00737f))); //4
+				//	AddBall(new CBall(new Vector3(4.200833f, -6.0719f, 2.031518f))); //5
+				//	AddBall(new CBall(new Vector3(5.347064f, -10.55185f, 2.028504f))); //6
+				//	AddBall(new CBall(new Vector3(2.855435f, -19.38328f, 1.809576f))); //7
+				//	AddBall(new CBall(new Vector3(4.992101f, -16.5478f, 1.970753f))); //8
+				//	break;
+
+				//just some balls
+				case 0: //31
+					//AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
+					//AddBall(new CBall(new Vector3(-4.474649f, 6.281722f, 1.984683f))); //2
+					//AddBall(new CBall(new Vector3(-0.8475582f, -6.652481f, 1.986673f))); //3
+					//AddBall(new CBall(new Vector3(-3.588191f, -2.87209f, 2.060397f))); //4
+					//AddBall(new CBall(new Vector3(0.4957421f, 5.435482f, 2.010766f))); //5
+
+					//AddBall(new CBall(new Vector3(3.025081f, -4.238124f, 2.090678f))); //6
 					AddBall(new CBall(new Vector3(5.482442f, -1.234958f, 2.023156f))); //7
 					AddBall(new CBall(new Vector3(5.093435f, 3.073572f, 2.002615f))); //8
 					break;
-				case 1:
-					AddBall(new CBall(new Vector3(-4.845504f, -12.9602f, 1.981996f))); //1
-					AddBall(new CBall(new Vector3(-3.659401f, -8.830884f, 2.058574f))); //2
-					AddBall(new CBall(new Vector3(-0.2793041f, -6.903613f, 2.080702f))); //3
-					AddBall(new CBall(new Vector3(-1.439231f, -16.82587f, 2.00737f))); //4
-					AddBall(new CBall(new Vector3(4.200833f, -6.0719f, 2.031518f))); //5
-					AddBall(new CBall(new Vector3(5.347064f, -10.55185f, 2.028504f))); //6
-					AddBall(new CBall(new Vector3(2.855435f, -19.38328f, 1.809576f))); //7
-					AddBall(new CBall(new Vector3(4.992101f, -16.5478f, 1.970753f))); //8
+				case 1: //10
+					AddBall(new CBall(new Vector3(-4.845504f, -12.9602f, 1.981996f))); //1=>8
+					AddBall(new CBall(new Vector3(-3.659401f, -8.830884f, 2.058574f))); //2=>7
+					AddBall(new CBall(new Vector3(-0.2793041f, -6.903613f, 2.080702f))); //3=>6
+
+					//AddBall(new CBall(new Vector3(-1.439231f, -16.82587f, 2.00737f))); //4
+					//AddBall(new CBall(new Vector3(4.200833f, -6.0719f, 2.031518f))); //5
+					//AddBall(new CBall(new Vector3(5.347064f, -10.55185f, 2.028504f))); //6
+					//AddBall(new CBall(new Vector3(2.855435f, -19.38328f, 1.809576f))); //7
+					//AddBall(new CBall(new Vector3(4.992101f, -16.5478f, 1.970753f))); //8
 					break;
 			}
 		}

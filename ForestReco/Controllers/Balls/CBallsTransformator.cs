@@ -32,13 +32,14 @@ namespace ForestReco
 		/// <summary>
 		/// Calculates rigid transformations between all permutations of larger set
 		/// from pCenters and pCentersOrig and the smaller one.
-		/// Sets have to have the same points count so we need o try all permutations of the 
-		/// larger set.
+		/// Sets have might have different points count so we process only the smaller 
+		/// number from both sets
 		/// 
-		/// Returns the best transformation (having the smallest offset).
-		/// Permutating needs to be done also due to the expected 
+		/// Permutating needs to be done on the larger set due to the expected 
 		/// indexing in function CalculateRigidTransform 
 		/// e.g. input (a,b,c), (a',b',c') = OK, but (a,b,c), (b',a',c') = NOK
+		/// 
+		/// Returns the best transformation (having the smallest offset).
 		/// </summary>
 		private static CRigidTransform GetRigidTransformAllPermutations(List<Vector3> pCenters, List<Vector3> pCentersOrig)
 		{
@@ -48,13 +49,24 @@ namespace ForestReco
 			bool isOrigLarger = pCentersOrig.Count > pCenters.Count;
 			IEnumerable<IEnumerable<Vector3>> largerSetPermutations = isOrigLarger ? pCentersOrig.Permute() : pCenters.Permute();
 			List<Vector3> smallerSet = isOrigLarger ? pCenters : pCentersOrig;
+			int processCount = smallerSet.Count;
 
 			List<CRigidTransform> rigTransforms = new List<CRigidTransform>();
 			foreach(var permutation in largerSetPermutations)
 			{
-				CRigidTransform rigTransform = CalculateRigidTransform(
-					isOrigLarger ? smallerSet : permutation.ToList(),
-					isOrigLarger ? permutation.ToList() : smallerSet);
+				//select only smaller number of ceters from both sets
+				List<Vector3> setA = isOrigLarger ?
+					pCenters.Take(processCount).ToList() :
+					permutation.Take(processCount).ToList();
+
+				List<Vector3> setOrig = isOrigLarger ?
+					permutation.Take(processCount).ToList() :
+					pCentersOrig.Take(processCount).ToList();
+
+				//orig set needs to be the 2nd parameter
+				CRigidTransform rigTransform = CalculateRigidTransform(setA, setOrig);
+				if(rigTransform == null)
+					continue;
 
 				if(rigTransform.offset < 1)
 				{
@@ -137,6 +149,9 @@ namespace ForestReco
 		/// </summary>
 		private static CRigidTransform CalculateRigidTransform(List<Vector3> pSetA, List<Vector3> pSetOrig)
 		{
+			if(pSetA.Count != pSetOrig.Count || pSetA.Count == 0)
+				return null;
+
 			//prevent modification of the input parameters
 			List<Vector3> setA = CUtils.GetCopy(pSetA);
 			List<Vector3> setB = CUtils.GetCopy(pSetOrig);
@@ -350,14 +365,15 @@ namespace ForestReco
 	{
 		public Matrix rotation { get; }
 		public Matrix translation { get; }
-		public float offset { get; private set; }
+		public float offset { get; private set; } //sum of offsets
 		public List<float> offsets { get; private set; }
 
 		public CRigidTransform(Matrix pRotation, Matrix pTransform, float pOffset)
 		{
 			rotation = pRotation;
 			translation = pTransform;
-			this.offset = pOffset;
+			offset = pOffset;
+			offsets = new List<float>(); //needs to be calculated aferwards using CalculateOffsets
 		}
 
 		public override string ToString()
@@ -373,7 +389,6 @@ namespace ForestReco
 			return $"RT:\n" +
 				$"-rotation =\n{rotation}" +
 				$"-translation =\n{translation}" +
-				$"-offset (processed points): {offset}\n" +
 				$"-offsets: {offsetsStr}";
 		}
 
