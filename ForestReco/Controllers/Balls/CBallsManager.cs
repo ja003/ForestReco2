@@ -85,6 +85,7 @@ namespace ForestReco
 			}
 		}
 
+
 		/// <summary>
 		/// Ball detection
 		/// </summary>
@@ -138,20 +139,59 @@ namespace ForestReco
 			return true;
 		}
 
-		private const string transformationFileName = "transform.txt";
-		private static string outputFilePath => CProjectData.outputFolder + transformationFileName;
+
+		private static string GetOutputFilePath(bool pIsFinal)
+		{
+			const string fileName = "transform";
+			const string ext = ".txt";
+
+			string appendix = pIsFinal ? "_final" : "";
+
+			return CProjectData.outputFolder + fileName + appendix + ext;
+		}
+
 
 		/// <summary>
-		/// Calculate transformation of each set to the set[0]
+		/// Process the last calculated ballSet and the first (origin)
+		/// Export into file
+		/// </summary>
+		internal static void OnSequenceDone()
+		{
+			if(ballSets.Count == 0)
+			{
+				CDebug.Error("No ball sets detected");
+				return;
+			}
+
+			List<CBallSet> firstAndLastSet = new List<CBallSet>();
+			firstAndLastSet.Add(ballSets.First());
+			firstAndLastSet.Add(ballSets.Last());
+
+			StringBuilder output = ProcessSets(firstAndLastSet);
+			CUtils.WriteToFile(output, GetOutputFilePath(false));
+		}
+
+		/// <summary>
+		/// Process all calculated ballSets
 		/// Export into file
 		/// </summary>
 		internal static void OnLastSequenceDone()
 		{
-			CDebug.WriteLine("TODO: calculate tranformations");
+			StringBuilder output = ProcessSets(ballSets);
+			CUtils.WriteToFile(output, GetOutputFilePath(true));
+		}
+
+
+		/// <summary>
+		/// Calculate transformation of each set to the set[0]
+		/// Return the output string
+		/// </summary>
+		internal static StringBuilder ProcessSets(List<CBallSet> pSets)
+		{
 			StringBuilder output = new StringBuilder();
 
 			//write detected balls
-			foreach(CBallSet ballSet in ballSets)
+			foreach(CBallSet ballSet in pSets)
 			{
 				output.AppendLine(ballSet.sourceFile);
 				foreach(CBall ball in ballSet.balls)
@@ -163,17 +203,17 @@ namespace ForestReco
 				{
 					output.AppendLine(ball.ToStringCenter());
 				}
-				output.AppendLine("==============");
+				output.AppendLine("================================");
 			}
 
 			//calculate and write transformations
-			List<CBall> origBallSet = ballSets[0].balls;
-			for(int i = 1; i < ballSets.Count; i++)
+			List<CBall> origBallSet = pSets[0].balls;
+			for(int i = 1; i < pSets.Count; i++)
 			{
-				List<CBall> processedBallSet = ballSets[i].balls;
-				ballSets[i].transform = 
+				List<CBall> processedBallSet = pSets[i].balls;
+				pSets[i].transform =
 					CBallsTransformator.GetRigidTransform(processedBallSet, origBallSet);
-				CRigidTransform resultTransformation = ballSets[i].transform;
+				CRigidTransform resultTransformation = pSets[i].transform;
 				if(resultTransformation == null)
 				{
 					CDebug.Error($"No transformation for the set {i} has been calculated.");
@@ -184,32 +224,21 @@ namespace ForestReco
 				//CDebug.WriteLine(resutI);
 				output.AppendLine(resutI);
 
-				output.AppendLine("---");
+				output.AppendLine("---------");
 				//write the result projections of processed balls to orig set
 				foreach(CBall ball in processedBallSet)
 				{
-					Vector3 transformedPoint = 
+					Vector3 transformedPoint =
 						CBallsTransformator.GetTransformed(ball.center, resultTransformation);
 					string transformedPointResult = $"{ball.center} => {transformedPoint}";
 					output.AppendLine(transformedPointResult);
 				}
+				output.AppendLine("-----------------------------------------------------");
 			}
 			CDebug.WriteLine(output.ToString());
 
-			CUtils.WriteToFile(output, outputFilePath);
+			return output;
 		}
-	}
 
-	public class CBallSet
-	{
-		public List<CBall> balls;
-		public CRigidTransform transform;
-		public string sourceFile;
-
-		public CBallSet(string pSourceFile)
-		{
-			sourceFile = pSourceFile;
-			balls = new List<CBall>();
-		}
 	}
 }

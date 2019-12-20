@@ -118,6 +118,11 @@ namespace ForestReco
 				CBallsManager.OnLastSequenceDone();
 				return EProcessResult.Done;
 			}
+			else
+			{
+				//calculate a transformation of the last processed file
+				CBallsManager.OnSequenceDone();
+			}
 
 			CSequenceController.currentConfigIndex++;
 			return Start();

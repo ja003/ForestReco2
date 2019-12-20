@@ -134,6 +134,7 @@
     <Compile Include="DataStructures\Array\IField.cs" />
     <Compile Include="DataStructures\CAnalytics.cs" />
     <Compile Include="DataStructures\CBall.cs" />
+    <Compile Include="DataStructures\CBallSet.cs" />
     <Compile Include="DataStructures\CDartTxt.cs" />
     <Compile Include="DataStructures\Array\CGroundArray.cs" />
     <Compile Include="DataStructures\Array\CGroundField.cs" />
