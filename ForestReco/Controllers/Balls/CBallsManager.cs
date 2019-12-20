@@ -174,6 +174,12 @@ namespace ForestReco
 				ballSets[i].transform = 
 					CBallsTransformator.GetRigidTransform(processedBallSet, origBallSet);
 				CRigidTransform resultTransformation = ballSets[i].transform;
+				if(resultTransformation == null)
+				{
+					CDebug.Error($"No transformation for the set {i} has been calculated.");
+					continue;
+				}
+
 				string resutI = $"Transform for set {i} is {resultTransformation}";
 				//CDebug.WriteLine(resutI);
 				output.AppendLine(resutI);

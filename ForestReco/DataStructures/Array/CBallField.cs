@@ -331,31 +331,48 @@ namespace ForestReco
 			if(!HasAllNeighbours())
 				return neighs;
 
+
+			//processed:
+			//[0,0], [1,0]
+			//[0,1], [1,1]
+
+			//[-1,0]
 			neighs.Add((CBallField)Left);
+			//[-1,-1]
 			neighs.Add((CBallField)Left.Top);
+			//[0,-1]
 			neighs.Add((CBallField)Top);
+			//[1,-1]
 			neighs.Add((CBallField)Top.Right);
 
+			//[2,-1]
 			CBallField n = (CBallField)Top.Right?.Right;
 			if(n != null)
 				neighs.Add(n);
+			//[2,0]
 			n = (CBallField)n?.Bot;
 			if(n != null)
 				neighs.Add(n);
+			//[2,1]
 			n = (CBallField)n?.Bot;
 			if(n != null)
 				neighs.Add(n);
+			//[2,2]
 			n = (CBallField)n?.Bot;
-			if(n != null)
-				neighs.Add(n);
-			n = (CBallField)n?.Left;
 			if(n != null)
 				neighs.Add(n);
 
+			//[-1,1]
 			neighs.Add((CBallField)Left.Bot);
+			//[-1,2]
 			n = (CBallField)Left.Bot.Bot;
 			if(n != null)
 				neighs.Add(n);
+			//[0,2]
+			n = (CBallField)n?.Right;
+			if(n != null)
+				neighs.Add(n);
+			//[1,2]
 			n = (CBallField)n?.Right;
 			if(n != null)
 				neighs.Add(n);

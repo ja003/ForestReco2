@@ -164,16 +164,9 @@ namespace ForestReco
 			bool exportUndetected = CParameterSetter.GetBoolSettings(ESettings.exportUndetected);
 			if(CRxpParser.IsRxp)
 			{
-				//cant rename folder while it is being used
-				/*if(result)
-				{
-					const string ball_ext = "_ball";
-					Directory.Move(CProjectData.outputTileSubfolder, CProjectData.outputTileSubfolder + ball_ext);
-					CProjectData.outputTileSubfolder += ball_ext;
-				}
-				else */
 				//dont export tile where no ball was detected
-				if(!result && !debug_allowExport && !exportUndetected)
+				//dont delete if only 1 tile is being processed
+				if(!result && !debug_allowExport && !exportUndetected && !CProjectData.IsOnlyTile)
 				{
 					//no ball was detected => delete folder and continue
 					Directory.Delete(CProjectData.outputTileSubfolder);

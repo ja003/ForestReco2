@@ -71,15 +71,17 @@ namespace ForestReco
 			Points = new CPointsHolder();
 		}
 
+		public static bool IsOnlyTile => CProgramStarter.tilesCount == 1;
+
 		public static void ReInit(int pTileIndex)
 		{
 			//dont create subfolder if we export only one tile
-			bool isOnlyTile = CProgramStarter.tilesCount == 1;
+			
 			string tileIndexString = GetTileIndexString(pTileIndex);
 
 			string tileExtent = currentTileHeader.GetExtentString();
 
-			outputTileSubfolder = isOnlyTile ? outputFolder :
+			outputTileSubfolder = IsOnlyTile ? outputFolder :
 				CObjExporter.CreateFolderIn($"tile_{tileIndexString}_{tileExtent}", outputFolder);
 
 			Points.ReInit();
