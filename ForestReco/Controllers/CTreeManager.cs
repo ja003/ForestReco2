@@ -454,6 +454,9 @@ namespace ForestReco
 		/// </summary>
 		public static void TryMergeNotTrees()
 		{
+			if(NotTrees.Count == 0)
+				return;
+
 			IsMerging = true;
 			DateTime mergeStartTime = DateTime.Now;
 			CDebug.WriteLine("TryMergeNotTrees");
@@ -507,6 +510,9 @@ namespace ForestReco
 
 		public static void TryMergeAllTrees(bool pOnlyInvalid)
 		{
+			if(Trees.Count == 0)
+				return;
+
 			IsMerging = true;
 			DateTime mergeStartTime = DateTime.Now;
 			CDebug.WriteLine("TryMergeAllTrees");
@@ -810,7 +816,7 @@ namespace ForestReco
 		/// </summary>
 		public static void ValidateTrees(bool pCathegorize, bool pRestrictive, bool pFinal = false)
 		{
-			CDebug.WriteLine("Detect invalid trees", true);
+			//CDebug.WriteLine("Detect invalid trees", true);
 
 			for(int i = Trees.Count - 1; i >= 0; i--)
 			{
@@ -831,6 +837,9 @@ namespace ForestReco
 
 		public static void DebugTrees()
 		{
+			if(Trees.Count == 0)
+				return;
+
 			CDebug.WriteLine("===============", true);
 			CDebug.WriteLine("Detected trees");
 			foreach(CTree t in Trees)

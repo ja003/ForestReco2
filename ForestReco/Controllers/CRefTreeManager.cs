@@ -45,6 +45,10 @@ namespace ForestReco
 		/// </summary>
 		public static void AssignRefTrees()
 		{
+			//dont log as error if processing rxp
+			if(CRxpParser.IsRxp)
+				return;
+
 			if(Trees.Count == 0)
 			{
 				CDebug.Error("no reftrees loaded");

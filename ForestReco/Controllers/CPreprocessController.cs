@@ -69,6 +69,13 @@ namespace ForestReco
 				return null;
 			}
 
+			//cant load header of files from sequence
+			//(we could but the result is not unambiguous)
+			if(CSequenceController.IsSequence())
+			{
+				return null;
+			}
+
 			//string infoFileName = Path.GetFileNameWithoutExtension(pSourceFilePath) + "_i.txt";
 			//string infoFilePath = currentTmpFolder + infoFileName;
 
@@ -135,7 +142,7 @@ namespace ForestReco
 					break;
 			}
 
-			CDebug.Progress(3, 3, 1, ref start, start, $"Converting txt to las");
+			CDebug.Progress(3, 3, 1, ref start, start, $"Converting txt to las", false);
 			Txt2Las(parsedFilePath, convertedFilePath, Vector3.Zero);
 
 			return convertedFilePath;
@@ -537,8 +544,9 @@ namespace ForestReco
 			//todo: when split file not created there is no error...(ie when invalid range is given)
 			try
 			{
-				//todo: split fails on jen2_merged_preprocessed.laz
-				CCmdController.RunLasToolsCmd(split, splitFilePath);
+				//dont report error, split file is generated under different
+				//name than expected
+				CCmdController.RunLasToolsCmd(split, splitFilePath, false);
 			}
 			catch(Exception e)
 			{
@@ -556,7 +564,7 @@ namespace ForestReco
 			if(fi.Exists)
 			{
 				fi.MoveTo(currentTmpFolder + splitFileName + LAZ);
-				Console.WriteLine("Split file Renamed.");
+				//Console.WriteLine("Split file Renamed.");
 			}
 			else
 			{

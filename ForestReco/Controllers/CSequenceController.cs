@@ -26,16 +26,19 @@ namespace ForestReco
 
 		public static void SetValues()
 		{
-			if (configs.Count == 0) { return; }
+			if(configs.Count == 0) { return; }
 
-			CDebug.WriteLine("SetValues from config");
+			//CDebug.WriteLine("SetValues from config");
+			CDebug.WriteLine($"================================\n" +
+				$"Start processing sequence {currentConfigIndex + 1}/{configs.Count}" +
+				$"\n================================", true, true);
 
 			SSequenceConfig currentConfig = configs[currentConfigIndex];
 			CParameterSetter.SetParameter(ESettings.forestFileFullName, currentConfig.path);
 			int treeHeight = currentConfig.treeHeight;
 
 			CParameterSetter.SetParameter(ESettings.autoAverageTreeHeight, treeHeight <= 0);
-			if (treeHeight > 0)
+			if(treeHeight > 0)
 			{
 				CParameterSetter.SetParameter(ESettings.avgTreeHeigh, treeHeight);
 			}
@@ -45,8 +48,11 @@ namespace ForestReco
 
 		public static void OnLastSequenceEnd()
 		{
-			if(string.IsNullOrEmpty(lastSequenceFile)){ return;}
+			CDebug.WriteLine("LAST SEQUENCE DONE", true, true);
 
+			if(string.IsNullOrEmpty(lastSequenceFile)) { return; }
+
+			//set the processed sequence file back as a forest file
 			CParameterSetter.SetParameter(ESettings.forestFileFullName, lastSequenceFile);
 		}
 
@@ -56,7 +62,7 @@ namespace ForestReco
 		{
 			configs = new List<SSequenceConfig>();
 			currentConfigIndex = 0;
-			if (!IsSequence()) { return; }
+			if(!IsSequence()) { return; }
 
 			oneSequenceLength = CTreeManager.GetDetectMethod() == EDetectionMethod.Balls ?
 				1 : 5;
@@ -65,7 +71,7 @@ namespace ForestReco
 
 			string[] lines = File.ReadAllLines(lastSequenceFile);
 
-			for (int i = 0; i < lines.Length; i += oneSequenceLength)
+			for(int i = 0; i < lines.Length; i += oneSequenceLength)
 			{
 				string[] configLines = new string[oneSequenceLength];
 				for(int j = 0; j < oneSequenceLength; j++)
@@ -83,11 +89,11 @@ namespace ForestReco
 			config.path = GetValue(pLines[0]);
 			if(pLines.Length == 1)
 			{
-				config.treeHeight = 
+				config.treeHeight =
 					CParameterSetter.GetIntSettings(ESettings.avgTreeHeigh);
-				config.treeExtent = 
+				config.treeExtent =
 					CParameterSetter.GetFloatSettings(ESettings.treeExtent);
-				config.treeExtentMultiply = 
+				config.treeExtentMultiply =
 					CParameterSetter.GetFloatSettings(ESettings.treeExtentMultiply);
 				return config;
 			}
@@ -107,7 +113,7 @@ namespace ForestReco
 		public static bool IsSequence()
 		{
 			string mainFile = CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
-			if (!File.Exists(mainFile)) { return false; }
+			if(!File.Exists(mainFile)) { return false; }
 			return Path.GetExtension(mainFile) == SEQ_EXTENSION;
 		}
 

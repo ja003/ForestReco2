@@ -61,6 +61,11 @@ namespace ForestReco
 		public static void Write(bool pToFile)
 		{
 			string output = " - ANALYTICS - " + newLine2;
+
+			//dont write tree analytics when processing rxp
+			if(CRxpParser.IsRxp)
+				goto skip_tree_analytics;
+
 			output += $"treeExtent = {CParameterSetter.GetFloatSettings(ESettings.treeExtent)} " + newLine;
 			output += $"treeExtentMultiply = {CParameterSetter.GetFloatSettings(ESettings.treeExtentMultiply)} " + newLine2;
 
@@ -100,11 +105,11 @@ namespace ForestReco
 			output += $"second merge = {secondMergeDuration} " + newLine;
 			output += $"reftree assignment = {reftreeAssignDuration} " + newLine;
 			output += $"bitmap export = {bitmapExportDuration} " + newLine;
-			output += $"las export = {lasExportDuration} " + newLine;			
+			output += $"las export = {lasExportDuration} " + newLine;
 			output += $"-------------------" + newLine;
 			output += $"total = {totalDuration} " + newLine;
 
-			if (CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile))
+			if(CParameterSetter.GetBoolSettings(ESettings.useCheckTreeFile))
 			{
 				output += "Checktree" + newLine;
 				output += $"loadedCheckTrees = {loadedCheckTrees} " + newLine;
@@ -112,10 +117,16 @@ namespace ForestReco
 				output += $"invalidCheckTrees = {invalidCheckTrees} " + newLine;
 			}
 
-			output += $"\nERRORS" + newLine;
+			skip_tree_analytics: output += ""; //: output += "tree analytics skipped" + newLine;
+
+			output += $"\nERRORS:" + newLine;
+			if(errors.Count == 0)
+				output += $"- none -" + newLine;
+
+
 			int counter = 0;
 			const int MAX_ERROR_DEBUG = 100;
-			foreach (string error in errors)
+			foreach(string error in errors)
 			{
 				output += $"- {error} " + newLine;
 				counter++;
@@ -127,7 +138,7 @@ namespace ForestReco
 			errors.Clear(); //reset, so errors dont stack with previous error
 
 			CDebug.WriteLine(output);
-			if (pToFile)
+			if(pToFile)
 			{
 				WriteToFile(output);
 				//ExportCsv(ECsvAnalytics.InputParams);
@@ -162,7 +173,7 @@ namespace ForestReco
 
 		private static void ExportCsv(ECsvAnalytics pType)
 		{
-			switch (pType)
+			switch(pType)
 			{
 				/*case ECsvAnalytics.InputParams:
 					ExportCsv(new List<object>
@@ -233,14 +244,14 @@ namespace ForestReco
 			string folderName = pathSplit[pathSplit.Length - 2];
 
 			string line;
-			using (var outStream = File.OpenWrite(filePath))
-			using (var writer = new StreamWriter(outStream))
+			using(var outStream = File.OpenWrite(filePath))
+			using(var writer = new StreamWriter(outStream))
 			{
 				writer.WriteLine(GetHeaderString(pParams));
 
 				writer.Write(folderName);
 				line = folderName;
-				foreach (Tuple<string, object> param in pParams)
+				foreach(Tuple<string, object> param in pParams)
 				{
 					string val = "," + param.Item2;
 					writer.Write(val);
@@ -250,10 +261,10 @@ namespace ForestReco
 
 			string mainSummaryFile = CParameterSetter.GetStringSettings(ESettings.analyticsFilePath);
 			FileMode fileMode = FileMode.Append;
-			if (!File.Exists(mainSummaryFile))
+			if(!File.Exists(mainSummaryFile))
 			{
-				CDebug.WriteLine("analytics file not defined");
-				if (!string.IsNullOrEmpty(mainSummaryFile))
+				//CDebug.WriteLine("main analytics file not defined");
+				if(!string.IsNullOrEmpty(mainSummaryFile))
 				{
 					fileMode = FileMode.Create;
 					CDebug.WriteLine(" - creating");
@@ -269,10 +280,10 @@ namespace ForestReco
 			//we expect, that if it already has text, it also contains header
 			bool hasHeader = fileMode == FileMode.Append && File.ReadAllLines(mainSummaryFile).Length != 0;
 
-			using (FileStream fs = new FileStream(mainSummaryFile, fileMode, FileAccess.Write))
-			using (var writer = new StreamWriter(fs))
+			using(FileStream fs = new FileStream(mainSummaryFile, fileMode, FileAccess.Write))
+			using(var writer = new StreamWriter(fs))
 			{
-				if (!hasHeader)
+				if(!hasHeader)
 				{
 					writer.WriteLine(GetHeaderString(pParams));
 				}
@@ -283,7 +294,7 @@ namespace ForestReco
 		private static string GetHeaderString(List<Tuple<string, object>> pParams)
 		{
 			string header = "name";
-			foreach (Tuple<string, object> param in pParams)
+			foreach(Tuple<string, object> param in pParams)
 			{
 				header += "," + param.Item1;
 			}
@@ -293,7 +304,7 @@ namespace ForestReco
 		public static void WriteErrors()
 		{
 			string message = "ERRORS:" + Environment.NewLine;
-			foreach (string error in errors)
+			foreach(string error in errors)
 			{
 				message += error + Environment.NewLine;
 			}
@@ -314,8 +325,8 @@ namespace ForestReco
 		{
 			string fileName = "analytics.txt";
 			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
-			using (var outStream = File.OpenWrite(filePath))
-			using (var writer = new StreamWriter(outStream))
+			using(var outStream = File.OpenWrite(filePath))
+			using(var writer = new StreamWriter(outStream))
 			{
 				writer.Write(pText);
 			}

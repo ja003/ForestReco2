@@ -100,16 +100,25 @@ namespace ForestReco
 			return null;
 		}
 
-		internal List<Vector3> GetBoundaryPoints()
+		internal List<Vector3> GetBoundaryPoints(bool pConnectLines)
 		{
 			List<Vector3> boundPoints = new List<Vector3>();
 
-			float point_frequency = IsDetail ? 0.02f : 0.05f;
-			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, TopRight, point_frequency));
-			boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, BotLeft, point_frequency));
-			boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, TopRight, point_frequency));
-			boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, BotLeft, point_frequency));
-
+			if(pConnectLines)
+			{
+				float point_frequency = IsDetail ? 0.02f : 0.05f;
+				boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, TopRight, point_frequency));
+				boundPoints.AddRange(CUtils.GetPointLineFromTo(TopLeft, BotLeft, point_frequency));
+				boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, TopRight, point_frequency));
+				boundPoints.AddRange(CUtils.GetPointLineFromTo(BotRight, BotLeft, point_frequency));
+			}
+			else
+			{
+				boundPoints.Add(TopLeft);
+				boundPoints.Add(TopRight);
+				boundPoints.Add(BotLeft);
+				boundPoints.Add(BotRight);
+			}
 			return boundPoints;
 		}
 

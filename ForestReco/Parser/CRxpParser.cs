@@ -44,7 +44,7 @@ namespace ForestReco
 			currentFilePath = pFile;
 			int sync_to_pps = 0;
 			int opened = scanifc_point3dstream_open(pFile, ref sync_to_pps, ref h3ds);
-			Console.WriteLine($"opened = {opened}, h3ds = {h3ds}");
+			//CDebug.WriteLine($"opened = {opened}, h3ds = {h3ds}");
 			return h3ds;
 		}
 

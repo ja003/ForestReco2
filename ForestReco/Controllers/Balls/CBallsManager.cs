@@ -85,11 +85,11 @@ namespace ForestReco
 
 				//just some balls
 				case 0: //31
-					//AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
-					//AddBall(new CBall(new Vector3(-4.474649f, 6.281722f, 1.984683f))); //2
-					//AddBall(new CBall(new Vector3(-0.8475582f, -6.652481f, 1.986673f))); //3
-					//AddBall(new CBall(new Vector3(-3.588191f, -2.87209f, 2.060397f))); //4
-					//AddBall(new CBall(new Vector3(0.4957421f, 5.435482f, 2.010766f))); //5
+						//AddBall(new CBall(new Vector3(-5.453406f, 2.855769f, 2.109725f))); //1
+						//AddBall(new CBall(new Vector3(-4.474649f, 6.281722f, 1.984683f))); //2
+						//AddBall(new CBall(new Vector3(-0.8475582f, -6.652481f, 1.986673f))); //3
+						//AddBall(new CBall(new Vector3(-3.588191f, -2.87209f, 2.060397f))); //4
+						//AddBall(new CBall(new Vector3(0.4957421f, 5.435482f, 2.010766f))); //5
 
 					//AddBall(new CBall(new Vector3(3.025081f, -4.238124f, 2.090678f))); //6
 					AddBall(new CBall(new Vector3(5.482442f, -1.234958f, 2.023156f))); //7
@@ -151,9 +151,14 @@ namespace ForestReco
 					CDebug.Warning($"Ball { ball} already in ballset {currentBallSetIndex}");
 					return false;
 				}
-				if(dist < 1)
+				const int min_ball_distance = 1;
+				if(dist < min_ball_distance)
 				{
-					CDebug.Error("Balls are too close to each other!");
+					//if balls are very close to each other they are most likely
+					//the same ball detected twice => not error
+					if(dist > CBall.BALL_DIAMETER)
+						CDebug.Error("Balls are too close to each other!");
+
 					//todo: calculate average center?
 					return false;
 				}
@@ -181,9 +186,10 @@ namespace ForestReco
 		/// </summary>
 		internal static void OnSequenceDone()
 		{
-			if(ballSets.Count == 0)
+			if(ballSets.Count <= 1) //is 1 in after the first set is processed
 			{
-				CDebug.Error("No ball sets detected");
+				if(ballSets.Count == 0)
+					CDebug.Error("No ball sets detected");
 				return;
 			}
 
@@ -231,16 +237,18 @@ namespace ForestReco
 			}
 
 			//calculate and write transformations
-			List<CBall> origBallSet = pSets[0].balls;
+			List<CBall> origBalls = pSets[0].balls;
 			for(int i = 1; i < pSets.Count; i++)
 			{
-				List<CBall> processedBallSet = pSets[i].balls;
+				List<CBall> processedBalls = pSets[i].balls;
 				pSets[i].transform =
-					CBallsTransformator.GetRigidTransform(processedBallSet, origBallSet);
+					CBallsTransformator.GetRigidTransform(processedBalls, origBalls);
 				CRigidTransform resultTransformation = pSets[i].transform;
 				if(resultTransformation == null)
 				{
-					CDebug.Error($"No transformation for the set {i} has been calculated.");
+					CDebug.Error($"No transformation for the set {pSets[i]} has been calculated.\n" +
+						$"Origin set = {pSets[0].ToStringFileBallsCount()}\n" +
+						$"This set = {pSets[i].ToStringFileBallsCount()}\n");
 					continue;
 				}
 
@@ -250,7 +258,7 @@ namespace ForestReco
 
 				output.AppendLine("---------");
 				//write the result projections of processed balls to orig set
-				foreach(CBall ball in processedBallSet)
+				foreach(CBall ball in processedBalls)
 				{
 					Vector3 transformedPoint =
 						CBallsTransformator.GetTransformed(ball.center, resultTransformation);

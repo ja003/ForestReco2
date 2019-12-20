@@ -61,7 +61,7 @@ namespace ForestReco
 			DateTime getPreprocessedFilePathStart = DateTime.Now;
 			DateTime start = DateTime.Now;
 
-			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", true);
+			CDebug.Progress(1, 3, 1, ref start, getPreprocessedFilePathStart, "classifyFilePath", false);
 
 			if(CRxpParser.IsRxp)
 			{
@@ -76,7 +76,7 @@ namespace ForestReco
 
 			CDebug.Step(EProgramStep.Pre_Split);
 
-			CDebug.Progress(2, 3, 1, ref start, getPreprocessedFilePathStart, "splitFilePath", true);
+			CDebug.Progress(2, 3, 1, ref start, getPreprocessedFilePathStart, "splitFilePath", false);
 
 			//split mode = NONE => split file is same as classified file
 			string splitFilePath = classifyFilePath;
@@ -128,7 +128,7 @@ namespace ForestReco
 			const int DEFAULT_START_LINE = 19;
 			int startLine = pUseHeader && CProjectData.mainHeader != null ? DEFAULT_START_LINE : 0;
 
-			CDebug.Warning("loading " + lines.Length + " lines!");
+			//CDebug.Warning("loading " + lines.Length + " lines!");
 
 			int linesToRead = lines.Length;
 
@@ -158,7 +158,7 @@ namespace ForestReco
 				}
 			}
 
-			CDebug.Count("parsedLines", parsedLines.Count);
+			//CDebug.Count("parsedLines", parsedLines.Count);
 
 			return parsedLines;
 		}
@@ -178,7 +178,7 @@ namespace ForestReco
 				CObjPartition.AddPoints(EClass.Building);
 			}
 
-			CDebug.Count("Trees", CTreeManager.Trees.Count);
+			//CDebug.Count("Trees", CTreeManager.Trees.Count);
 
 			CTreeManager.CheckAllTrees();
 
@@ -258,8 +258,8 @@ namespace ForestReco
 			CAnalytics.maxTreeHeight = CTreeManager.MaxTreeHeight;
 			CAnalytics.minTreeHeight = CTreeManager.GetMinTreeHeight();
 
-			CDebug.Count("Trees", CTreeManager.Trees.Count);
-			CDebug.Count("InvalidTrees", CTreeManager.InvalidTrees.Count);
+			//CDebug.Count("Trees", CTreeManager.Trees.Count);
+			//CDebug.Count("InvalidTrees", CTreeManager.InvalidTrees.Count);
 			//CProjectData.array.DebugDetectedTrees();
 
 			CTreeManager.AssignMaterials();

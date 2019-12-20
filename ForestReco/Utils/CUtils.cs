@@ -90,7 +90,7 @@ namespace ForestReco
 			pArrayIndex = new Tuple<int, int>(bitmapXindex, bitmapYindex);
 		}
 
-		
+
 
 		internal static bool IsInBitmap(Tuple<int, int> pIndex, Bitmap pBitmap)
 		{
@@ -381,9 +381,9 @@ namespace ForestReco
 		public static List<Vector3> GetPointLine(Vector3 pStart, Vector3 pDirection, float pLength = 0.1f, float pFrequency = 0.005f)
 		{
 			//const float DEBUG_OFFSET = 0.0005f;
-			List<Vector3> points = new List<Vector3>();
+			List<Vector3> points = new List<Vector3>() { pStart };
 			Vector3 dir = Vector3.Normalize(pDirection);
-			for(float i = 0; i < pLength; i+= pFrequency)
+			for(float i = pFrequency; i < pLength; i += pFrequency)
 			{
 				points.Add(pStart + dir * i);
 			}

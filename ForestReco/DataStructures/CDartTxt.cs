@@ -38,7 +38,7 @@ namespace ForestReco
 
 			if(filesLines.Count == 0)
 			{
-				CDebug.Warning($"CDartTxt: no main output created");
+				//CDebug.Warning($"CDartTxt: no main output created");
 				return;
 			}
 
@@ -63,7 +63,7 @@ namespace ForestReco
 		{
 			if(CTreeManager.Trees.Count == 0)
 			{
-				CDebug.Warning($"CDartTxt: no output created on tile {CProgramStarter.currentTileIndex}");
+				//CDebug.Warning($"CDartTxt: no output created on tile {CProgramStarter.currentTileIndex}");
 				return;
 			}
 			DateTime start = DateTime.Now;

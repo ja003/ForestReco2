@@ -17,5 +17,20 @@ namespace ForestReco
 			sourceFile = pSourceFile;
 			balls = new List<CBall>();
 		}
+
+		public override string ToString()
+		{
+			return sourceFile;
+		}
+
+		public string ToStringFile()
+		{
+			return sourceFile;
+		}
+
+		public string ToStringFileBallsCount()
+		{
+			return sourceFile + " balls: " + balls.Count;
+		}
 	}
 }

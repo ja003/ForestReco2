@@ -19,7 +19,7 @@ namespace ForestReco
 		public Vector3 furthestPointPlusY;
 		public Vector3 furthestPointMinusY;
 
-		const float BALL_DIAMETER = 0.145f;
+		public const float BALL_DIAMETER = 0.145f;
 
 		private float BALL_RADIUS => BALL_DIAMETER / 2;
 

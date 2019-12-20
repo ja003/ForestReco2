@@ -32,7 +32,7 @@ namespace ForestReco
 			partitionYRange = CProjectData.Points.groundArray.arrayYRange / partitionStepSize + 1;
 
 			objPartition = new List<Obj>[partitionXRange, partitionYRange];
-			Console.WriteLine($"objPartition: {partitionXRange} x {partitionYRange}");
+			//Console.WriteLine($"objPartition: {partitionXRange} x {partitionYRange}");
 			for(int x = 0; x < partitionXRange; x++)
 			{
 				for(int y = 0; y < partitionYRange; y++)
@@ -196,7 +196,7 @@ namespace ForestReco
 			//just creates a folder (for analytics etc)
 			if(!CParameterSetter.GetBoolSettings(ESettings.export3d) || CRxpParser.IsRxp)
 			{
-				CDebug.WriteLine("Skipping export");
+				//CDebug.WriteLine("Skipping export");
 				return;
 			}
 

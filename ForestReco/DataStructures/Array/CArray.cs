@@ -61,12 +61,12 @@ namespace ForestReco
 
 		}
 
-		internal List<Vector3> GetArrayGridPoints()
+		internal List<Vector3> GetArrayGridPoints(bool pConnectLines)
 		{
 			List<Vector3> gridPoints = new List<Vector3>();
 			foreach(CField field in fields)
 			{
-				gridPoints.AddRange(field.GetBoundaryPoints());
+				gridPoints.AddRange(field.GetBoundaryPoints(pConnectLines));
 			}
 			return gridPoints;
 		}

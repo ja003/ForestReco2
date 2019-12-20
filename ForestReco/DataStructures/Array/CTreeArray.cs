@@ -151,6 +151,9 @@ namespace ForestReco
 					}
 				}
 			}
+			if(detectedTreesCount == 0)
+				return;
+
 			CDebug.Count("Detected trees", detectedTreesCount);
 			CDebug.Count("valid trees", validTreesCount);
 			CDebug.Count("invalid trees", invalidTreesCount);

@@ -48,7 +48,7 @@ namespace ForestReco
 			//return false;
 		}
 
-		public static void RunLasToolsCmd(string pLasToolCommand, string pOutputFilePath)
+		public static void RunLasToolsCmd(string pLasToolCommand, string pOutputFilePath, bool pReportFileStatus = false)
 		{
 			if(!CanRunCommand(pLasToolCommand))
 			{
@@ -57,7 +57,8 @@ namespace ForestReco
 
 			//string outputFilePath = tmpFolder + pOutputFilePath;
 			bool outputFileExists = File.Exists(pOutputFilePath);
-			CDebug.WriteLine($"file: {pOutputFilePath} exists = {outputFileExists}");
+			if(pReportFileStatus)
+				CDebug.WriteLine($"file: {pOutputFilePath} exists = {outputFileExists}");
 
 			if(!outputFileExists)
 			{
@@ -95,7 +96,7 @@ namespace ForestReco
 				}
 				// Check if command generated desired result
 				outputFileExists = File.Exists(pOutputFilePath);
-				if(!outputFileExists)
+				if(!outputFileExists && pReportFileStatus)
 				{
 					throw new Exception($"File {pOutputFilePath} not created");
 				}

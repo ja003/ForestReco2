@@ -120,7 +120,7 @@ namespace ForestReco
 			ClassifyPoints(pParsedLines);
 
 			DateTime processStartTime = DateTime.Now;
-			CDebug.Count("ProcessParsedLines", pParsedLines.Count);
+			//CDebug.Count("ProcessParsedLines", pParsedLines.Count);
 
 			//TODO: unite processing all points
 
@@ -142,7 +142,7 @@ namespace ForestReco
 
 			SetAnalytics();
 
-			CDebug.Duration("All points added", processStartTime);
+			//CDebug.Duration("All points added", processStartTime);
 			return result;
 		}
 
@@ -279,7 +279,7 @@ namespace ForestReco
 			const int debugFrequency = 10000;
 
 			DateTime PreprocessVegePointsStart = DateTime.Now;
-			CDebug.WriteLine("PreprocessVegePoints", true);
+			//CDebug.WriteLine("PreprocessVegePoints", true);
 
 			DateTime preprocessVegePointsStart = DateTime.Now;
 			DateTime previousDebugStart = DateTime.Now;
@@ -301,7 +301,7 @@ namespace ForestReco
 			preprocessDetailArray.FillMissingHeights(2);
 			preprocessDetailArray.FillMissingHeights(2);
 
-			CDebug.Duration("PreprocessVegePoints", PreprocessVegePointsStart);
+			//CDebug.Duration("PreprocessVegePoints", PreprocessVegePointsStart);
 
 			//determine average tree height
 			if(CParameterSetter.GetBoolSettings(ESettings.autoAverageTreeHeight))
@@ -353,7 +353,7 @@ namespace ForestReco
 			const int debugFrequency = 10000;
 
 			DateTime processVegePointsStart = DateTime.Now;
-			CDebug.WriteLine("ProcessVegePoints", true);
+			//CDebug.WriteLine("ProcessVegePoints", true);
 
 			DateTime previousDebugStart = DateTime.Now;
 
@@ -371,11 +371,11 @@ namespace ForestReco
 
 				CDebug.Progress(i, vege.Count, debugFrequency, ref previousDebugStart, processVegePointsStart, "added point");
 			}
-			CDebug.WriteLine("maxPossibleTreesAssignment = " + CTreeManager.maxPossibleTreesAssignment + " todo: investigate if too high");
+			//CDebug.WriteLine("maxPossibleTreesAssignment = " + CTreeManager.maxPossibleTreesAssignment + " todo: investigate if too high");
 
 
 			CAnalytics.processVegePointsDuration = CAnalytics.GetDuration(processVegePointsStart);
-			CDebug.Duration("ProcessVegePoints", processVegePointsStart);
+			//CDebug.Duration("ProcessVegePoints", processVegePointsStart);
 		}
 
 		/// <summary>
@@ -490,7 +490,7 @@ namespace ForestReco
 
 				//array grid points - for result debug (increases file size)
 				//arrayGrid = ballArray.GetArrayGridPoints();
-				arrayGrid = ballDetailArray.GetArrayGridPoints();
+				arrayGrid = ballDetailArray.GetArrayGridPoints(false);
 
 
 				List<CBallField> ballFields = new List<CBallField>();
