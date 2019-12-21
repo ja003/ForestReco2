@@ -112,16 +112,14 @@ namespace ForestReco
 
 			CDebug.Step(EProgramStep.Done);
 
+			//calculate a transformation of the last processed file
+			CBallsManager.OnSequenceDone();
+
 			if(CSequenceController.IsLastSequence())
 			{
 				CSequenceController.OnLastSequenceEnd();
 				CBallsManager.OnLastSequenceDone();
 				return EProcessResult.Done;
-			}
-			else
-			{
-				//calculate a transformation of the last processed file
-				CBallsManager.OnSequenceDone();
 			}
 
 			CSequenceController.currentConfigIndex++;

@@ -11,6 +11,8 @@ namespace ForestReco
 		public List<CBall> balls;
 		public CRigidTransform transform;
 		public string sourceFile;
+		public string applyOnFile; //todo: apply on all source files and connect them?
+			//"C:\\Users\\ja004\\Documents\\ForestReco\\tmp\\190910_103910_tmp\\_tiles[5]_190910_103910_s[-1.5,-7]-[1,-5]\\190910_103910_s[-1.5,-7]-[1,-5].txt";
 
 		public CBallSet(string pSourceFile)
 		{

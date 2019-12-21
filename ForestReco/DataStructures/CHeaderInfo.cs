@@ -55,6 +55,11 @@ namespace ForestReco
 			SetValues(pScale, pOffset, (CVector3D)pMin, (CVector3D)pMax);
 		}
 
+		public CHeaderInfo()
+		{
+			SetValues(Vector3.Zero, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+		}
+
 		private void SetValues(Vector3 pScaleFactor, Vector3 pOffset, CVector3D pMin, CVector3D pMax)
 		{
 			ScaleFactor = pScaleFactor;

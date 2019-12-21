@@ -138,21 +138,26 @@ namespace ForestReco
 		}
 
 		/// <summary>
-		/// Add points from given class to the output and main output
+		/// Add points from given class to the output
 		/// </summary>
 		private static void AddPointsTo(ref StringBuilder pOutput, EClass pClass, ref DateTime start)
 		{
 			List<Vector3> points = CProjectData.Points.GetPoints(pClass);
+			AddPointsTo(ref pOutput, points, pClass, ref start);
+		}
+		
+		private static void AddPointsTo(ref StringBuilder pOutput, List<Vector3> pPoints, EClass pClass, ref DateTime start)
+		{
 			string res;
 			DateTime lastDebug = DateTime.Now;
 
-			for(int i = 0; i < points.Count; i++)
+			for(int i = 0; i < pPoints.Count; i++)
 			{
 				if(CProjectData.backgroundWorker.CancellationPending) { return; }
 
-				CDebug.Progress(i, points.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (ground points)");
+				CDebug.Progress(i, pPoints.Count, DEBUG_FREQUENCY, ref lastDebug, start, "Export las (ground points)");
 
-				Vector3 p = points[i];
+				Vector3 p = pPoints[i];
 				CVector3D globalP = CUtils.GetGlobalPosition(p);
 				res = GetPointLine(globalP, 1, 0, GetClassColor(pClass)) + newLine;
 				pOutput.Append(res);
@@ -243,5 +248,23 @@ namespace ForestReco
 			return output;
 		}
 
+
+		/// <summary>
+		/// Exports points into the main output folder as txt and converts it into las
+		/// </summary>
+		internal static void ExportPoints(List<Vector3> pPoints, string pFileName)
+		{
+			StringBuilder output = new StringBuilder();
+			DateTime start = DateTime.Now;
+			AddPointsTo(ref output, pPoints, EClass.Undefined, ref start);
+
+			string fileFullPath = CProjectData.outputFolder + pFileName;
+			string txtOutputPath = fileFullPath + ".txt";
+			CUtils.WriteToFile(output, txtOutputPath);
+
+			const string scale = "-set_scale 0.0000001 0.0000001 0.0000001";
+			string cmd = $"{txt2lasCmd} {txtOutputPath} {scale}";
+			CCmdController.RunLasToolsCmd(cmd, fileFullPath + ".las");
+		}
 	}
 }

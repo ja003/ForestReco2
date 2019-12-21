@@ -20,7 +20,7 @@ namespace ForestReco
 		public static CPointsHolder Points;
 
 		public static CHeaderInfo sourceFileHeader; //header of source file (not split)
-		public static CHeaderInfo mainHeader; //header of file being processed (split applied)
+		public static CHeaderInfo mainHeader = new CHeaderInfo(); //header of file being processed (split applied)
 		public static CHeaderInfo currentTileHeader; //header of currently processed tile file
 
 		public static bool tryMergeTrees = true; //default true, user dont choose

@@ -120,13 +120,13 @@ namespace ForestReco
 		/// Reads parsed lines and loads class and point list.
 		/// Result is sorted in descending order.
 		/// </summary>
-		public static List<Tuple<EClass, Vector3>> ParseLines(string[] lines, bool pUseHeader)
+		public static List<Tuple<EClass, Vector3>> ParseLines(string[] lines, bool pUseHeader, bool pForceSkipHeader = false)
 		{
 			CDebug.Step(EProgramStep.ParseLines);
 
 			//store coordinates to corresponding data strucures based on their class
 			const int DEFAULT_START_LINE = 19;
-			int startLine = pUseHeader && CProjectData.mainHeader != null ? DEFAULT_START_LINE : 0;
+			int startLine = pForceSkipHeader || (pUseHeader && CProjectData.mainHeader != null) ? DEFAULT_START_LINE : 0;
 
 			//CDebug.Warning("loading " + lines.Length + " lines!");
 

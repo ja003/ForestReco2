@@ -282,11 +282,31 @@ namespace ForestReco
 					output.AppendLine(transformedPointResult);
 				}
 				output.AppendLine("-----------------------------------------------------");
+
+				if(pSets[i].applyOnFile != null)
+					ApplyTransform(resultTransformation, pSets[i].applyOnFile);
 			}
 			CDebug.WriteLine(output.ToString());
 
 			return output;
 		}
 
+		/// <summary>
+		/// Reads the file, applies transformation on every point and exports it to las
+		/// </summary>
+		private static void ApplyTransform(CRigidTransform pTransformation, string pApplyOnFile)
+		{
+			string[] lines = CProgramLoader.GetFileLines(pApplyOnFile);
+			List<Tuple<EClass, Vector3>> parsedLines = CProgramLoader.ParseLines(lines, false, true);
+
+			List<Vector3> projectedPoints = new List<Vector3>();
+			foreach(Tuple<EClass, Vector3> line in parsedLines)
+			{
+				Vector3 projected = CBallsTransformator.GetTransformed(line.Item2, pTransformation);
+				projectedPoints.Add(projected);
+			}
+
+			CLasExporter.ExportPoints(projectedPoints, "projected");
+		}
 	}
 }
