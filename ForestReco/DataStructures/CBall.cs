@@ -494,9 +494,11 @@ namespace ForestReco
 			skipCenterApprox: CDebug.WriteLine();
 
 			approximatedCenters.Clear();
+			int invalidCentersCount = 0;
 
+			const int approximationCount = 100;
 
-			for(int i = 0; i < 100; i++)
+			for(int i = 0; i < approximationCount; i++)
 			{
 				//random points are hard to debug
 				//List<Vector3> randomBallPoints = GetRandomPoints(4, 5 * DIST_TOLLERANCE);
@@ -515,11 +517,22 @@ namespace ForestReco
 				float distToTop = Vector3.Distance(ballTop, center);
 				if(distToTop > BALL_DIAMETER)
 				{
-					CDebug.Warning("Center calculated out of ball extent");
+					invalidCentersCount++;
 					continue;
 				}
 
 				approximatedCenters.Add(center);
+			}
+
+			if(invalidCentersCount > approximationCount / 10)
+			{
+				CDebug.Warning($"Too many centers calculated out of ball extent: {this}");
+			}
+
+			if(approximatedCenters.Count == 0)
+			{
+				isValid = false;
+				return null;
 			}
 
 			//use average of calculated centers
@@ -601,7 +614,7 @@ namespace ForestReco
 
 			return randomPoints;
 		}
-				
+
 		private static List<Vector3> GetPointsInRadius(Vector3 pPoint, float pRadius, float pStep)
 		{
 			List<Vector3> centers = new List<Vector3>();
@@ -624,7 +637,7 @@ namespace ForestReco
 
 			return centers;
 		}
-		
+
 		/// <summary>
 		/// Generates points which are in radius distance from the center
 		/// </summary>
