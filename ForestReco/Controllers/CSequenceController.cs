@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace ForestReco
 {
@@ -44,6 +46,14 @@ namespace ForestReco
 			}
 			CParameterSetter.SetParameter(ESettings.treeExtent, currentConfig.treeExtent);
 			CParameterSetter.SetParameter(ESettings.treeExtentMultiply, currentConfig.treeExtentMultiply);
+
+			CBallsManager.useConfigDebugData = false;
+			CBallsManager.configBallCenters.Clear();
+			foreach(Vector3 ballCenter in configs[currentConfigIndex].ballCenters)
+			{
+				CBallsManager.configBallCenters.Add(ballCenter);
+				CBallsManager.useConfigDebugData = true;
+			}
 		}
 
 		public static void OnLastSequenceEnd()
@@ -64,8 +74,14 @@ namespace ForestReco
 			currentConfigIndex = 0;
 			if(!IsSequence()) { return; }
 
-			oneSequenceLength = CTreeManager.GetDetectMethod() == EDetectionMethod.Balls ?
-				1 : 5;
+			oneSequenceLength = CTreeManager.GetDetectMethod() ==
+				EDetectionMethod.Balls ? 2 : 5;
+			//expected format for rxp:
+			//1) full file path 1
+			//2) center1xf, center1yf, center1zf;center2xf, center2yf, center2zf;... 
+			//		(if none, has to be empty)
+			//3) full file path 2
+			//...
 
 			lastSequenceFile = CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
 
@@ -76,6 +92,8 @@ namespace ForestReco
 				string[] configLines = new string[oneSequenceLength];
 				for(int j = 0; j < oneSequenceLength; j++)
 				{
+					if(i + j >= lines.Length)
+						continue;
 					configLines[j] = lines[i + j];
 				}
 				SSequenceConfig config = GetConfig(configLines);
@@ -87,6 +105,12 @@ namespace ForestReco
 		{
 			SSequenceConfig config = new SSequenceConfig();
 			config.path = GetValue(pLines[0]);
+			if(CRxpParser.IsRxp)
+			{
+				config.ballCenters = ParseBallCenters(pLines[1]);
+				return config;
+			}
+
 			if(pLines.Length == 1)
 			{
 				config.treeHeight =
@@ -103,6 +127,28 @@ namespace ForestReco
 			return config;
 		}
 
+		/// <summary>
+		/// Expected format: center1xf, center1yf, center1zf
+		/// </summary>
+		private static List<Vector3> ParseBallCenters(string pCentersLine)
+		{
+			List<Vector3> ballCenters = new List<Vector3>();
+			if(pCentersLine == null || pCentersLine.Length == 0)
+				return ballCenters;
+
+			string[] centers = pCentersLine.Split(';');
+			for(int i = 0; i < centers.Length; i++)
+			{
+				string[] coords = centers[i].Split(',');
+				//cant parse float with 'f'
+				float x = float.Parse(coords[0].Replace('f', '0'));
+				float y = float.Parse(coords[1].Replace('f', '0'));
+				float z = float.Parse(coords[2].Replace('f', '0'));
+				ballCenters.Add(new Vector3(x, y, z));
+			}
+
+			return ballCenters;
+		}
 
 		private static string GetValue(string pLine)
 		{
@@ -130,5 +176,6 @@ namespace ForestReco
 		public int treeHeight;
 		public float treeExtent;
 		public float treeExtentMultiply;
+		public List<Vector3> ballCenters;
 	}
 }

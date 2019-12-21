@@ -24,7 +24,12 @@ namespace ForestReco
 			ballSets = new List<CBallSet>();
 		}
 
+		//skips detection process and uses data defined in UseDebugData()
 		public const bool useDebugData = false;
+
+		//skips detection process and uses data defined in config file 
+		//(see CSequenceController::GetConfig)
+		public static bool useConfigDebugData = false;		
 
 		internal static void Init()
 		{
@@ -34,6 +39,17 @@ namespace ForestReco
 
 			if(useDebugData)
 				UseDebugData();
+			if(useConfigDebugData)
+				UseConfigDebugData();
+		}
+
+		public static List<Vector3> configBallCenters = new List<Vector3>();
+		private static void UseConfigDebugData()
+		{
+			foreach(Vector3 c in configBallCenters)
+			{
+				AddBall(new CBall(c));
+			}
 		}
 
 		private static void UseDebugData()
@@ -135,7 +151,7 @@ namespace ForestReco
 		/// Balls should be at least 1m away from each other.
 		/// Returns true if the ball was successfully added.
 		/// </summary>
-		private static bool AddBall(CBall pBall)
+		public static bool AddBall(CBall pBall)
 		{
 			if(currentBallSetIndex < 0 || currentBallSetIndex >= ballSets.Count)
 			{

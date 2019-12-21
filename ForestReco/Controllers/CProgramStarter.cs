@@ -62,7 +62,7 @@ namespace ForestReco
 
 			try
 			{
-				if(CBallsManager.useDebugData)
+				if(CBallsManager.useDebugData || CBallsManager.useConfigDebugData)
 					goto afterTileProcess;
 
 				List<string> tiledFiles = CProgramLoader.GetTiledPreprocessedFilePaths();
