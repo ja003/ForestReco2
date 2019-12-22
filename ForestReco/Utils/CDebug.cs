@@ -59,7 +59,7 @@ namespace ForestReco
 
 		internal static void Warning(string pText)
 		{
-			WriteLine("WARNING: " + pText, true);
+			WriteLine("WARNING: " + pText);
 		}
 
 		internal static void Error(string pText, bool pWriteInAnalytics = true)

@@ -84,6 +84,7 @@ namespace ForestReco
 			//...
 
 			lastSequenceFile = CParameterSetter.GetStringSettings(ESettings.forestFileFullName);
+			CDebug.WriteLine($"Setting file from config: {lastSequenceFile}");
 
 			string[] lines = File.ReadAllLines(lastSequenceFile);
 
@@ -105,6 +106,8 @@ namespace ForestReco
 		{
 			SSequenceConfig config = new SSequenceConfig();
 			config.path = GetValue(pLines[0]);
+			CDebug.WriteLine($"File: {config.path}", true);
+
 			if(CRxpParser.IsRxp)
 			{
 				config.ballCenters = ParseBallCenters(pLines[1]);
@@ -132,6 +135,8 @@ namespace ForestReco
 		/// </summary>
 		private static List<Vector3> ParseBallCenters(string pCentersLine)
 		{
+			CDebug.WriteLine($"Parsing ball centers");
+
 			List<Vector3> ballCenters = new List<Vector3>();
 			if(pCentersLine == null || pCentersLine.Length == 0)
 				return ballCenters;
@@ -140,11 +145,20 @@ namespace ForestReco
 			for(int i = 0; i < centers.Length; i++)
 			{
 				string[] coords = centers[i].Split(',');
+				if(coords.Length < 2)
+				{
+					string parsedStr = centers[i].Length == 0 ? "empty" : centers[i];
+					CDebug.Warning($"Invalid format of parsed coordinates: {parsedStr}. Skipping");
+					continue;
+				}
+
 				//cant parse float with 'f'
 				float x = float.Parse(coords[0].Replace('f', '0'));
 				float y = float.Parse(coords[1].Replace('f', '0'));
 				float z = float.Parse(coords[2].Replace('f', '0'));
-				ballCenters.Add(new Vector3(x, y, z));
+				Vector3 center = new Vector3(x, y, z);
+				ballCenters.Add(center);
+				CDebug.WriteLine($"- add center {center}");
 			}
 
 			return ballCenters;

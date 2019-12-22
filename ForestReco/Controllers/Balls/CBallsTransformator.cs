@@ -404,9 +404,9 @@ namespace ForestReco
 			offsetsStr += "sum = " + offsets.Sum().ToString("0.000");
 
 			return $"RT:\n" +
-				$"-rotation =\n{rotation}" +
-				$"-translation =\n{translation}" +
-				$"-offsets: {offsetsStr}";
+				$" rotation =\n{rotation}" +
+				$" translation =\n{translation}" +
+				$" offsets: {offsetsStr}";
 		}
 
 		internal void CalculateOffsets(List<Vector3> pCenters, List<Vector3> pCentersOrig)
