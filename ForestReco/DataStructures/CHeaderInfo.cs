@@ -57,10 +57,10 @@ namespace ForestReco
 
 		public CHeaderInfo()
 		{
-			SetValues(Vector3.Zero, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+			SetValues(Vector3.Zero, Vector3.Zero, Vector3.Zero, Vector3.Zero, false);
 		}
 
-		private void SetValues(Vector3 pScaleFactor, Vector3 pOffset, CVector3D pMin, CVector3D pMax)
+		private void SetValues(Vector3 pScaleFactor, Vector3 pOffset, CVector3D pMin, CVector3D pMax, bool pReportError = true)
 		{
 			ScaleFactor = pScaleFactor;
 			Offset = pOffset;
@@ -74,7 +74,8 @@ namespace ForestReco
 
 			if(Min == Vector3.Zero && Max == Vector3.Zero)
 			{
-				CDebug.Error("Invalid header. Creating default header.");
+				if(pReportError)
+					CDebug.Error("Invalid header. Creating default header.");
 				const int defaultArraySize = 15;
 				Min = new Vector3(-defaultArraySize, -defaultArraySize, 0);
 				Max = new Vector3(defaultArraySize, defaultArraySize, 0);

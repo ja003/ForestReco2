@@ -137,7 +137,9 @@ namespace ForestReco
 			//before WriteToFile (it can fail there too)
 			errors.Clear(); //reset, so errors dont stack with previous error
 
-			CDebug.WriteLine(output);
+			output += "-------------------";
+
+			CDebug.WriteLine(output, true, true);
 			if(pToFile)
 			{
 				WriteToFile(output);
@@ -323,6 +325,11 @@ namespace ForestReco
 
 		private static void WriteToFile(string pText)
 		{
+			if(!Directory.Exists(CProjectData.outputTileSubfolder))
+			{
+				CDebug.Error($"Writing analytics file. outputTileSubfolder does not exists {CProjectData.outputTileSubfolder}");
+				return;
+			}
 			string fileName = "analytics.txt";
 			string filePath = CProjectData.outputTileSubfolder + "/" + fileName;
 			using(var outStream = File.OpenWrite(filePath))

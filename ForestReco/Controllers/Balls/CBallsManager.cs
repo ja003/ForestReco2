@@ -286,7 +286,7 @@ namespace ForestReco
 				if(pSets[i].applyOnFile != null)
 					ApplyTransform(resultTransformation, pSets[i].applyOnFile);
 			}
-			CDebug.WriteLine(output.ToString());
+			CDebug.WriteLine(output.ToString(), true);
 
 			return output;
 		}

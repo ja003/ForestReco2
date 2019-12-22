@@ -60,10 +60,11 @@ namespace ForestReco
 			workerResult[1] = "some other string";
 			CProjectData.backgroundWorker.ReportProgress(10, workerResult);
 
+			bool skipProcess = CBallsManager.useDebugData || CBallsManager.useConfigDebugData;
 			try
 			{
-				if(CBallsManager.useDebugData || CBallsManager.useConfigDebugData)
-					goto afterTileProcess;
+				if(skipProcess)
+					goto skipTileProcess;
 
 				List<string> tiledFiles = CProgramLoader.GetTiledPreprocessedFilePaths();
 
@@ -91,7 +92,7 @@ namespace ForestReco
 				return EProcessResult.Exception;
 			}
 
-			afterTileProcess: CDebug.WriteLine();
+			skipTileProcess: if(skipProcess) { CDebug.WriteLine($"Skipped tile processing"); }
 
 			if(CProjectData.backgroundWorker.CancellationPending)
 			{
@@ -214,7 +215,7 @@ namespace ForestReco
 
 			CDebug.Step(EProgramStep.Analytics);
 			CAnalytics.Write(true);
-			
+
 			return EProcessResult.Done;
 		}
 

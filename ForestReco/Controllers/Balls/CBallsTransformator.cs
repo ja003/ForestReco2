@@ -25,8 +25,22 @@ namespace ForestReco
 		internal static CRigidTransform GetRigidTransform(List<Vector3> pCenters, List<Vector3> pCentersOrig)
 		{
 			//AllPermutations seems to return better result
-			return GetRigidTransformAllPermutations(pCenters, pCentersOrig);
-			//return GetRigidTransform(centers1, centersOrig);
+			CRigidTransform transform = GetRigidTransformAllPermutations(pCenters, pCentersOrig);
+			if(transform == null)
+			{
+				CDebug.Error($"No rigid transformation was found (using GetRigidTransformAllPermutations => try GetRigidTransform4Comb");
+				transform = GetRigidTransform4Comb(pCenters, pCentersOrig);
+				if(transform == null)
+				{
+					CDebug.Error($"GetRigidTransform4Comb also failed");
+				}
+				else
+				{
+					CDebug.WriteLine("GetRigidTransform4Comb success");
+				}
+			}
+
+			return transform;
 		}
 
 		/// <summary>
@@ -78,10 +92,13 @@ namespace ForestReco
 					break;
 			}
 
+			if(rigTransforms.Count == 0)
+				return null;
+
 			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
 				(curMin, x) => x.offset < curMin.offset ? x : curMin);
 
-			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
+			//CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
 			return minOffsetRigTransform;
 
 		}
@@ -134,7 +151,7 @@ namespace ForestReco
 			CRigidTransform minOffsetRigTransform = rigTransforms.Aggregate(
 				(curMin, x) => x.offset < curMin.offset ? x : curMin);
 
-			CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
+			//CDebug.WriteLine($"Selected {minOffsetRigTransform}", true, true);
 			return minOffsetRigTransform;
 
 		}
